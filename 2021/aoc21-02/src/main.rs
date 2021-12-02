@@ -1,47 +1,103 @@
 use std::fs;
+use std::str::FromStr;
 
 fn main() {
     let sample = fs::read_to_string("./sample.txt")
         .expect("Something went wrong reading the file");
-    print_answer(&sample, "sample");
     let input = fs::read_to_string("./input.txt")
         .expect("Something went wrong reading the file");
-    print_answer(&input, "input");
+
+    part1(&sample, "sample");
+    part1(&input, "input");
+
+    part2(&sample, "sample");
+    part2(&input, "input");
 }
 
-/*
- * down X increases your aim by X units.
-up X decreases your aim by X units.
-forward X does two things:
-It increases your horizontal position by X units.
-It increases your depth by your aim multiplied by X.
-*/
+enum Cmd {
+    Forward,
+    Down,
+    Up,
+}
 
-fn print_answer(contents:&str, description: &str) {
-    let mut horizontal_position = 0;
-    let mut depth_1 = 0;
-    let mut depth_2 = 0;
-    let mut aim = 0;
-    for line in contents.lines().into_iter() {
-        let line: Vec<&str> =  line.split_whitespace().collect();
-        let delta:u32 = line.get(1).expect("Invalid line structure").parse().expect("Ivalid line structure");
-        match line.get(0).expect("Invalid line structure") {
-            &"forward" => {
-                horizontal_position += delta;
-                depth_2 += aim * delta;
+impl FromStr for Cmd {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<Cmd, Self::Err> {
+        match input {
+            "forward"  => Ok(Cmd::Forward),
+            "down"  => Ok(Cmd::Down),
+            "up"  => Ok(Cmd::Up),
+            _      => Err(()),
+        }
+    }
+}
+
+
+struct CmdVec {
+    command: Cmd,
+    magnitude: u32,
+}
+
+impl FromStr for CmdVec {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<CmdVec, Self::Err> {
+        let parts: Vec<&str> = input.split_whitespace().collect();
+
+        if parts.len() != 2 {
+            return Err(());
+        }
+
+        return match Cmd::from_str(parts[0]) {
+            Ok(cmd) => match parts[1].parse() {
+                Ok(mag) => Ok(CmdVec{
+                    command: cmd,
+                    magnitude: mag,
+                }),
+                Err(_) => Err(())
             },
-            &"down" => {
-                depth_1 += delta;
-                aim += delta;
-            },
-            &"up" => {
-                depth_1 -= delta;
-                aim -= delta;
-            },
-            _ => ()
+            Err(_) => Err(()),
+        }
+    }
+}
+
+fn parse(contents:&str) -> Vec<CmdVec> {
+    return contents.lines().into_iter().map(|x| CmdVec::from_str(x).expect("invalid input")).collect();
+}
+
+fn part1(contents:&str, description: &str){
+    let mut x = 0;
+    let mut depth = 0;
+
+    let contents = parse(contents);
+    for cmd_vec in contents {
+        match cmd_vec.command {
+            Cmd::Forward => x += cmd_vec.magnitude,
+            Cmd::Down => depth += cmd_vec.magnitude,
+            Cmd::Up => depth -= cmd_vec.magnitude,
         }
     }
 
-    println!("Answer Part 1 ({}) = x={}, depth={}, mult={}", description, horizontal_position, depth_1, horizontal_position * depth_1);
-    println!("Answer Part 2 ({}) = x={}, depth={}, mult={}", description, horizontal_position, depth_2, horizontal_position * depth_2);
+    println!("Answer Part 1 ({}) = x={}, depth={}, mult={}", description, x, depth, x * depth);
+}
+
+fn part2(contents:&str, description: &str){
+    let mut x = 0;
+    let mut aim = 0;
+    let mut depth = 0;
+
+    let contents = parse(contents);
+    for cmd_vec in contents {
+        match cmd_vec.command {
+            Cmd::Forward => {
+                x += cmd_vec.magnitude;
+                depth += aim * cmd_vec.magnitude;
+            },
+            Cmd::Down => aim += cmd_vec.magnitude,
+            Cmd::Up => aim -= cmd_vec.magnitude,
+        }
+    }
+
+    println!("Answer Part 2 ({}) = x={}, depth={}, mult={}", description, x, depth, x * depth);
 }
