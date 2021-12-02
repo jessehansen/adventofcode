@@ -63,7 +63,7 @@ impl FromStr for CmdVec {
 }
 
 fn parse(contents:&str) -> Vec<CmdVec> {
-    return contents.lines().into_iter().map(|x| CmdVec::from_str(x).expect("invalid input")).collect();
+    return contents.lines().into_iter().map(|x| x.parse().expect("invalid input")).collect();
 }
 
 fn part1(contents:&str, description: &str){
