@@ -1,39 +1,36 @@
 use std::fs;
 
 fn main() {
-    let contents = fs::read_to_string("./input.txt")
+    let sample = fs::read_to_string("./sample.txt")
+        .expect("Something went wrong reading the file");
+    let input = fs::read_to_string("./input.txt")
         .expect("Something went wrong reading the file");
 
-    // for part 1 answer
-    let mut prev = 0;
-    let mut count = -1; // start at -1 since the first entry doesn't count
+    part1(&sample, "sample");
+    part2(&sample, "sample");
 
-    // for part 2 answer, keep a sliding sum.
-    let mut prev_window = 0;
-    let mut sliding_count = -3; // start at -3 since the first sliding window doesn't count
-    let mut sliding_index = 0;
-    let mut sliding_window = [0,0,0];
-    for line in contents.lines().into_iter() {
-        // parse input line
-        let cur = line.parse().expect("invalid input");
+    part1(&input, "input");
+    part2(&input, "input");
+}
 
-        // calc part 1
-        if cur > prev {
-            count = count + 1;
-        }
-        prev = cur;
+fn parse(contents:&str) -> Vec<u32> {
+    return contents.lines().into_iter().map(|x| x.parse().expect("invalid input")).collect();
+}
 
-        // calc part 2
-        sliding_window[sliding_index] = cur;
-        let cur_window_sum = sliding_window[0] + sliding_window[1] + sliding_window[2];
+fn part1(contents:&str, description: &str) {
+    let contents = parse(contents);
+    let count = contents.windows(2).filter(|x| x[1] > x[0]).count();
 
-        if cur_window_sum > prev_window {
-            sliding_count = sliding_count + 1;
-        }
-        sliding_index = (sliding_index + 1) % 3;
-        prev_window = cur_window_sum;
-    }
+    println!("Answer (Part 1) ({}) = {}", description, count)
+}
 
-    println!("Answer (Part 1)={}", count);
-    println!("Answer (Part 2)={}", sliding_count);
+fn part2(contents:&str, description: &str) {
+    let contents = parse(contents);
+
+    // this probably could be done without collecting early here (resuling in more memory use)
+    // but I'm not familiar enough with rust to do it
+    let windows_of_3:Vec<u32> = contents.windows(3).map(|x| x.into_iter().sum()).collect();
+
+    let count = windows_of_3.windows(2).filter(|x| x[1] > x[0]).count();
+    println!("Answer (Part 2) ({}) = {}", description, count)
 }
