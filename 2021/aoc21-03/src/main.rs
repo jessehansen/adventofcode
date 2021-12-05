@@ -79,7 +79,7 @@ fn get_mcb_at_pos(lines:&Vec<String>, pos: usize) -> char {
     let half_line_count = lines.len() as f64 / 2.0;
     let line_count = lines.iter().filter(|x| x.chars().nth(pos).unwrap() == '1').count() as f64;
 
-    if line_count as f64 >= half_line_count {
+    if line_count >= half_line_count {
         return '1';
     }
 
