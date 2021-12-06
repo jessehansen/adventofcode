@@ -1,20 +1,18 @@
 #![feature(drain_filter)]
-use std::fs;
+
+use aoc_common::run;
 use std::fmt;
 
 fn main() {
-    let sample = fs::read_to_string("./sample.txt")
-        .expect("Something went wrong reading the file");
-    let input = fs::read_to_string("./input.txt")
-        .expect("Something went wrong reading the file");
-
-    part1(&sample, "sample");
-    part1(&input, "input");
-
-    part2(&sample, "sample");
-    part2(&input, "input");
+    run(&parse, &part1, &part2);
 }
 
+struct Game {
+    draws: Vec<u32>,
+    boards: Vec<Board>,
+}
+
+#[derive(Clone)]
 struct Board {
     cells: [[u32; 5]; 5],
     marks: [[bool; 5]; 5],
@@ -120,7 +118,6 @@ fn bool_star(a:bool) -> &'static str {
     " "
 }
 
-
 fn lines_to_board(lines: &str) -> Result<Board, ()> {
     let lines: Vec<&str> = lines.lines().into_iter().filter(|x| x.len() != 0).collect();
     if lines.len() < 5{
@@ -139,7 +136,7 @@ fn lines_to_board(lines: &str) -> Result<Board, ()> {
     return Ok(board);
 }
 
-fn parse(contents: &str) -> (Vec<u32>, Vec<Board>) {
+fn parse(contents: &str) -> Game {
     let mut parts:Vec<&str> = contents.split("\n\n").into_iter().collect();
 
     let boards = parts.split_off(1);
@@ -148,37 +145,39 @@ fn parse(contents: &str) -> (Vec<u32>, Vec<Board>) {
 
     let boards: Vec<Board> = boards.into_iter().map(|x| lines_to_board(x).unwrap()).collect();
 
-    return (draws, boards);
+    return Game{draws, boards};
 }
 
-fn part1(contents:&str, description: &str){
-    let (draws, mut boards) = parse(contents);
+fn part1(game: &Game) -> String {
+    let mut boards = game.boards.clone();
 
-    for draw in draws {
+    for draw in &game.draws {
         for board in &mut boards {
-            if board.mark(draw) {
-                println!("Answer Part 1 ({}) = {}", description, board.score(draw));
-                return;
+            if board.mark(*draw) {
+                return format!("{}", board.score(*draw));
             }
         }
     }
+
+    return "No winner".to_string();
 }
 
-fn part2(contents:&str, description: &str){
-    let (draws, mut boards) = parse(contents);
+fn part2(game: &Game) -> String {
+    let mut boards = game.boards.clone();
 
-    for draw in draws {
+    for draw in &game.draws {
         let mut last_win: Option<u32> = None;
         boards.drain_filter(|x| {
-            if x.mark(draw) {
-                last_win = Some(x.score(draw));
+            if x.mark(*draw) {
+                last_win = Some(x.score(*draw));
                 return true;
             }
             return false;
         });
         if boards.len() == 0 {
-            println!("Answer Part 2 ({}) = {}", description, last_win.unwrap());
-            return;
+            return format!("{}", last_win.unwrap());
         }
     }
+
+    return "No last winner".to_string();
 }
