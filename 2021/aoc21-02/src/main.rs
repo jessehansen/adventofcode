@@ -1,17 +1,8 @@
-use std::fs;
+use aoc_common::run;
 use std::str::FromStr;
 
 fn main() {
-    let sample = fs::read_to_string("./sample.txt")
-        .expect("Something went wrong reading the file");
-    let input = fs::read_to_string("./input.txt")
-        .expect("Something went wrong reading the file");
-
-    part1(&sample, "sample");
-    part1(&input, "input");
-
-    part2(&sample, "sample");
-    part2(&input, "input");
+    run(&parse, &part1, &part2);
 }
 
 enum Cmd {
@@ -32,7 +23,6 @@ impl FromStr for Cmd {
         }
     }
 }
-
 
 struct CmdVec {
     command: Cmd,
@@ -63,14 +53,13 @@ impl FromStr for CmdVec {
 }
 
 fn parse(contents:&str) -> Vec<CmdVec> {
-    return contents.lines().into_iter().map(|x| x.parse().expect("invalid input")).collect();
+    contents.lines().into_iter().map(|x| x.parse().expect("invalid input")).collect()
 }
 
-fn part1(contents:&str, description: &str){
+fn part1(contents: &Vec<CmdVec>) -> String {
     let mut x = 0;
     let mut depth = 0;
 
-    let contents = parse(contents);
     for cmd_vec in contents {
         match cmd_vec.command {
             Cmd::Forward => x += cmd_vec.magnitude,
@@ -79,15 +68,14 @@ fn part1(contents:&str, description: &str){
         }
     }
 
-    println!("Answer Part 1 ({}) = x={}, depth={}, mult={}", description, x, depth, x * depth);
+    format!("x={}, depth={}, mult={}", x, depth, x * depth)
 }
 
-fn part2(contents:&str, description: &str){
+fn part2(contents: &Vec<CmdVec>) -> String {
     let mut x = 0;
     let mut aim = 0;
     let mut depth = 0;
 
-    let contents = parse(contents);
     for cmd_vec in contents {
         match cmd_vec.command {
             Cmd::Forward => {
@@ -99,5 +87,5 @@ fn part2(contents:&str, description: &str){
         }
     }
 
-    println!("Answer Part 2 ({}) = x={}, depth={}, mult={}", description, x, depth, x * depth);
+    format!("x={}, depth={}, mult={}", x, depth, x * depth)
 }

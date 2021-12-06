@@ -1,19 +1,10 @@
-use std::fs;
+use aoc_common::run;
 use std::str::FromStr;
 use std::fmt;
 use std::collections::HashMap;
 
 fn main() {
-    let sample = fs::read_to_string("./sample.txt")
-        .expect("Something went wrong reading the file");
-    let input = fs::read_to_string("./input.txt")
-        .expect("Something went wrong reading the file");
-
-    part1(&sample, "sample");
-    part1(&input, "input");
-
-    part2(&sample, "sample");
-    part2(&input, "input");
+    run(&parse, &part1, &part2);
 }
 
 #[derive(Copy, Clone)]
@@ -105,11 +96,10 @@ impl Iterator for LineIter {
 }
 
 fn parse(contents:&str) -> Vec<Line> {
-    return contents.lines().into_iter().map(|x| x.parse().expect("invalid input")).collect();
+    contents.lines().into_iter().map(|x| x.parse().expect("invalid input")).collect()
 }
 
-fn part1(contents:&str, description: &str){
-    let lines = parse(contents);
+fn part1(lines: &Vec<Line>) -> String {
     let mut grid = HashMap::new();
     for line in lines {
         if line.a.x != line.b.x && line.a.y != line.b.y {
@@ -123,11 +113,10 @@ fn part1(contents:&str, description: &str){
 
     let hot_spots = grid.into_values().filter(|x| *x > 1).count();
 
-    println!("Answer Part 1 ({}) = {}", description, hot_spots);
+    format!("{}", hot_spots)
 }
 
-fn part2(contents:&str, description: &str){
-    let lines = parse(contents);
+fn part2(lines: &Vec<Line>) -> String {
     let mut grid = HashMap::new();
     for line in lines {
         for point in line.iter() {
@@ -138,5 +127,5 @@ fn part2(contents:&str, description: &str){
 
     let hot_spots = grid.into_values().filter(|x| *x > 1).count();
 
-    println!("Answer Part 2 ({}) = {}", description, hot_spots);
+    format!("{}", hot_spots)
 }

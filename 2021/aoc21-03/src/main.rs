@@ -1,25 +1,14 @@
-use std::fs;
-use std::error::Error;
+use aoc_common::run;
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let sample = fs::read_to_string("./sample.txt")?;
-    let input = fs::read_to_string("./input.txt")?;
-
-    part1(&sample, "sample");
-    part1(&input, "input");
-
-    part2(&sample, "sample");
-    part2(&input, "input");
-
-    Ok(())
+fn main() {
+    run(&parse, &part1, &part2);
 }
 
 fn parse(contents:&str) -> Vec<String> {
     contents.lines().into_iter().map(|x| x.to_string()).collect()
 }
 
-fn part1(contents:&str, description: &str) {
-    let contents = parse(contents);
+fn part1(contents: &Vec<String>) -> String {
     let item_length = contents[0].len();
     let half_line_count = contents.len() / 2;
     let mut mcbs = vec![0; item_length];
@@ -43,11 +32,10 @@ fn part1(contents:&str, description: &str) {
         }
     }
 
-    println!("Answer Part 1 ({}) - gamma={:b}, epsilon={:b}, consumption={}", description, gamma, epsilon, gamma * epsilon);
+    format!("gamma={:b}, epsilon={:b}, consumption={}", gamma, epsilon, gamma * epsilon)
 }
 
-fn part2(contents:&str, description: &str) {
-    let contents = parse(contents);
+fn part2(contents: &Vec<String>) -> String {
     let item_length = contents[0].len();
 
     let mut oxygen_lines = contents.clone();
@@ -72,7 +60,7 @@ fn part2(contents:&str, description: &str) {
     let oxygen_rating = u32::from_str_radix(oxygen_lines[0].as_str(), 2).unwrap();
     let scrubber_rating = u32::from_str_radix(scrubber_lines[0].as_str(), 2).unwrap();
 
-    println!("Answer Part 2 ({}) - oxygen={}, scrubber={}, life_support={}", description, oxygen_rating, scrubber_rating, oxygen_rating * scrubber_rating);
+    format!("oxygen={}, scrubber={}, life_support={}", oxygen_rating, scrubber_rating, oxygen_rating * scrubber_rating)
 }
 
 fn get_mcb_at_pos(lines:&Vec<String>, pos: usize) -> char {

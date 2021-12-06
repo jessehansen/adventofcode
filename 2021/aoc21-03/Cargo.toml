@@ -3,4 +3,5 @@ name = "aoc21-03"
 version = "0.1.0"
 edition = "2021"
 
-[features]
+[dependencies]
+aoc_common = { path = "../../common" }
