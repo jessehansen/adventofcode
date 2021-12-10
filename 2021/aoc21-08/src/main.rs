@@ -2,7 +2,7 @@ use aoc_common::run;
 use itertools::Itertools;
 
 fn main() {
-    run(&parse, &part1, &part2);
+    run(parse, part1, part2);
 }
 
 struct DisplayLine {

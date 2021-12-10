@@ -1,7 +1,7 @@
 use aoc_common::run;
 
 fn main() {
-    run(&parse, &part1, &part2);
+    run(parse, part1, part2);
 }
 
 fn parse(contents:&str) -> Vec<u32> {

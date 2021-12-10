@@ -4,7 +4,7 @@ use std::fmt;
 use std::collections::HashMap;
 
 fn main() {
-    run(&parse, &part1, &part2);
+    run(parse, part1, part2);
 }
 
 #[derive(Copy, Clone)]

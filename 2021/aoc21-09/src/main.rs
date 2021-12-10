@@ -2,7 +2,7 @@ use aoc_common::run;
 use aoc_common::{Grid2D,Point2D};
 
 fn main() {
-    run(&parse, &part1, &part2);
+    run(parse, part1, part2);
 }
 
 fn parse(contents:&str) -> Grid2D<u32> {
