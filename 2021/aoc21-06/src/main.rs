@@ -4,8 +4,13 @@ fn main() {
     run(parse, part1, part2);
 }
 
-fn parse(contents:&str) -> Vec<i32> {
-    contents.trim().split(",").into_iter().map(|x| x.parse().expect("invalid input")).collect()
+fn parse(contents: &str) -> Vec<i32> {
+    contents
+        .trim()
+        .split(",")
+        .into_iter()
+        .map(|x| x.parse().expect("invalid input"))
+        .collect()
 }
 
 fn times(n: usize) -> impl Iterator {
@@ -14,7 +19,7 @@ fn times(n: usize) -> impl Iterator {
 
 // this can be solved in the same way as part 2, but I thought it was interesting to leave in a
 // naive solution
-fn part1(fishes:&Vec<i32>) -> String {
+fn part1(fishes: &Vec<i32>) -> String {
     let mut fishes = fishes.clone();
 
     for _ in times(80) {
@@ -35,11 +40,11 @@ fn part1(fishes:&Vec<i32>) -> String {
     format!("{}", fishes.len())
 }
 
-fn part2(fishes:&Vec<i32>) -> String {
+fn part2(fishes: &Vec<i32>) -> String {
     // breeders by day of week
-    let mut breeders:Vec<usize> = vec![0,0,0,0,0,0,0];
+    let mut breeders: Vec<usize> = vec![0, 0, 0, 0, 0, 0, 0];
     // new babies by day of week
-    let mut babies:Vec<usize> = vec![0,0,0,0,0,0,0];
+    let mut babies: Vec<usize> = vec![0, 0, 0, 0, 0, 0, 0];
     for fish in fishes {
         breeders[*fish as usize] += 1;
     }
@@ -57,7 +62,7 @@ fn part2(fishes:&Vec<i32>) -> String {
         day += 1;
     }
 
-    let pop:usize = breeders.iter().sum::<usize>() + babies.iter().sum::<usize>();
+    let pop: usize = breeders.iter().sum::<usize>() + babies.iter().sum::<usize>();
 
     format!("{}", pop)
 }
