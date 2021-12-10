@@ -1,6 +1,10 @@
 use std::fs;
 use std::time::{Instant, Duration};
 
+mod grid;
+
+pub use grid::*;
+
 pub fn run<T>(
     parse: &dyn Fn(&str) -> T,
     part1: &dyn Fn(&T) -> String,
@@ -60,11 +64,3 @@ fn print_result(description: &str, runner: &dyn Fn() -> String) -> Duration {
     start.elapsed()
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}
