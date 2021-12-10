@@ -4,8 +4,12 @@ fn main() {
     run(parse, part1, part2);
 }
 
-fn parse(contents:&str) -> Vec<String> {
-    contents.lines().into_iter().map(|x| x.to_string()).collect()
+fn parse(contents: &str) -> Vec<String> {
+    contents
+        .lines()
+        .into_iter()
+        .map(|x| x.to_string())
+        .collect()
 }
 
 fn part1(contents: &Vec<String>) -> String {
@@ -20,8 +24,8 @@ fn part1(contents: &Vec<String>) -> String {
         }
     }
 
-    let mut gamma:u32 = 0;
-    let mut epsilon:u32 = 0;
+    let mut gamma: u32 = 0;
+    let mut epsilon: u32 = 0;
     for (pos, mcb) in mcbs.iter().enumerate() {
         let bit_pos = item_length - pos - 1;
 
@@ -32,7 +36,12 @@ fn part1(contents: &Vec<String>) -> String {
         }
     }
 
-    format!("gamma={:b}, epsilon={:b}, consumption={}", gamma, epsilon, gamma * epsilon)
+    format!(
+        "gamma={:b}, epsilon={:b}, consumption={}",
+        gamma,
+        epsilon,
+        gamma * epsilon
+    )
 }
 
 fn part2(contents: &Vec<String>) -> String {
@@ -46,11 +55,21 @@ fn part2(contents: &Vec<String>) -> String {
     for (pos, _) in pos_vec.iter().enumerate() {
         if oxygen_lines.len() > 1 {
             let oxygen_mcb = get_mcb_at_pos(&oxygen_lines, pos);
-            oxygen_lines = oxygen_lines.into_iter().filter(|x| x.chars().nth(pos).unwrap() == oxygen_mcb).collect();
+            oxygen_lines = oxygen_lines
+                .into_iter()
+                .filter(|x| x.chars().nth(pos).unwrap() == oxygen_mcb)
+                .collect();
         }
         if scrubber_lines.len() > 1 {
-            let scrubber_lcb = if get_mcb_at_pos(&scrubber_lines, pos) == '1' { '0' } else { '1' };
-            scrubber_lines = scrubber_lines.into_iter().filter(|x| x.chars().nth(pos).unwrap() == scrubber_lcb).collect();
+            let scrubber_lcb = if get_mcb_at_pos(&scrubber_lines, pos) == '1' {
+                '0'
+            } else {
+                '1'
+            };
+            scrubber_lines = scrubber_lines
+                .into_iter()
+                .filter(|x| x.chars().nth(pos).unwrap() == scrubber_lcb)
+                .collect();
         }
         if oxygen_lines.len() == 1 && scrubber_lines.len() == 1 {
             break;
@@ -60,12 +79,20 @@ fn part2(contents: &Vec<String>) -> String {
     let oxygen_rating = u32::from_str_radix(oxygen_lines[0].as_str(), 2).unwrap();
     let scrubber_rating = u32::from_str_radix(scrubber_lines[0].as_str(), 2).unwrap();
 
-    format!("oxygen={}, scrubber={}, life_support={}", oxygen_rating, scrubber_rating, oxygen_rating * scrubber_rating)
+    format!(
+        "oxygen={}, scrubber={}, life_support={}",
+        oxygen_rating,
+        scrubber_rating,
+        oxygen_rating * scrubber_rating
+    )
 }
 
-fn get_mcb_at_pos(lines:&Vec<String>, pos: usize) -> char {
+fn get_mcb_at_pos(lines: &Vec<String>, pos: usize) -> char {
     let half_line_count = lines.len() as f64 / 2.0;
-    let line_count = lines.iter().filter(|x| x.chars().nth(pos).unwrap() == '1').count() as f64;
+    let line_count = lines
+        .iter()
+        .filter(|x| x.chars().nth(pos).unwrap() == '1')
+        .count() as f64;
 
     if line_count >= half_line_count {
         return '1';

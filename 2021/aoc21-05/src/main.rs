@@ -1,7 +1,7 @@
 use aoc_common::run;
-use std::str::FromStr;
-use std::fmt;
 use std::collections::HashMap;
+use std::fmt;
+use std::str::FromStr;
 
 fn main() {
     run(parse, part1, part2);
@@ -23,7 +23,10 @@ impl FromStr for Point {
             return Err(());
         }
 
-        Ok(Point{x: parts[0], y: parts[1]})
+        Ok(Point {
+            x: parts[0],
+            y: parts[1],
+        })
     }
 }
 
@@ -49,7 +52,7 @@ impl FromStr for Line {
             return Err(());
         }
 
-        Ok(Line{
+        Ok(Line {
             a: Point::from_str(parts[0])?,
             b: Point::from_str(parts[2])?,
         })
@@ -65,10 +68,26 @@ struct LineIter {
 }
 
 impl Line {
-    fn iter(&self) -> LineIter{
-        let delta_x = if self.a.x != self.b.x { if self.a.x > self.b.x { -1 } else { 1 } } else { 0 };
-        let delta_y = if self.a.y != self.b.y { if self.a.y > self.b.y { -1 } else { 1 } } else { 0 };
-        LineIter{
+    fn iter(&self) -> LineIter {
+        let delta_x = if self.a.x != self.b.x {
+            if self.a.x > self.b.x {
+                -1
+            } else {
+                1
+            }
+        } else {
+            0
+        };
+        let delta_y = if self.a.y != self.b.y {
+            if self.a.y > self.b.y {
+                -1
+            } else {
+                1
+            }
+        } else {
+            0
+        };
+        LineIter {
             current: self.a,
             end: self.b,
             delta_x,
@@ -83,20 +102,27 @@ impl Iterator for LineIter {
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.done {
-            return None
+            return None;
         }
         let result = self.current;
         if result.x == self.end.x && result.y == self.end.y {
             self.done = true;
         } else {
-            self.current = Point{x:self.current.x + self.delta_x, y: self.current.y + self.delta_y};
+            self.current = Point {
+                x: self.current.x + self.delta_x,
+                y: self.current.y + self.delta_y,
+            };
         }
         Some(result)
     }
 }
 
-fn parse(contents:&str) -> Vec<Line> {
-    contents.lines().into_iter().map(|x| x.parse().expect("invalid input")).collect()
+fn parse(contents: &str) -> Vec<Line> {
+    contents
+        .lines()
+        .into_iter()
+        .map(|x| x.parse().expect("invalid input"))
+        .collect()
 }
 
 fn part1(lines: &Vec<Line>) -> String {
