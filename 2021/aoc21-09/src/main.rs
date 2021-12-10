@@ -1,102 +1,59 @@
 use aoc_common::run;
+use aoc_common::{Grid2D,Point2D};
 
 fn main() {
     run(&parse, &part1, &part2);
 }
 
-fn parse(contents:&str) -> Vec<Vec<u32>> {
+fn parse(contents:&str) -> Grid2D<u32> {
     contents.lines().into_iter().map(|x| x.chars().into_iter().map(|x| {
         let result:u32 = x.to_string().parse().unwrap();
         result
-    }).collect()).collect()
+    })).collect()
 }
 
-fn part1(contents:&Vec<Vec<u32>>) -> String {
+fn low_points(grid:&Grid2D<u32>) -> impl Iterator<Item=(Point2D, &u32)> {
+    let bounds = grid.bounds;
+    grid.iter_horizontal().filter(move |(pt, height)| {
+        !pt.neighbors(bounds).any(|pt| {
+            grid[pt] <= **height
+        })
+    })
+}
 
-    let mut risk = 0;
-    for i in 0..contents.len() {
-        let row = &contents[i];
-        for j in 0..row.len() {
-            let height = row[j];
-            if i > 0 && contents[i-1][j] <= height {
-                continue;
-            }
-            if i < contents.len() - 1 && contents[i+1][j] <= height {
-                continue;
-            }
-            if j > 0 && row[j-1] <= height {
-                continue;
-            }
-            if j < row.len() - 1 && row[j+1] <= height {
-                continue;
-            }
-            risk += height + 1;
-        }
-    }
+fn part1(grid: &Grid2D<u32>) -> String {
+    let risk = low_points(grid).fold(0, |acc, (_, height)| acc + *height + 1);
 
     format!("{}", risk)
 }
 
-fn calculate_basin_size(contents:&Vec<Vec<u32>>, low_point_i: usize, low_point_j:usize) -> usize {
-    let mut basin = vec![(low_point_i,low_point_j)];
+fn calculate_basin_size(grid:&Grid2D<u32>, low_point: Point2D) -> usize {
+    let mut basin = vec![low_point];
     let mut last_size = 0;
+    let bounds = grid.bounds;
 
     while basin.len() > last_size {
         last_size = basin.len();
         let basin_copy = basin.clone();
-        for (i, j) in basin_copy {
-            let row = &contents[i];
-            let height = row[j];
-            if i > 0 && contents[i-1][j] >= height && contents[i-1][j] < 9 &&
-                !basin.contains(&(i-1,j)) {
-                basin.push((i-1, j));
-            }
-            if i < contents.len() - 1 && contents[i+1][j] >= height && contents[i+1][j] < 9 &&
-                !basin.contains(&(i+1,j))  {
-                basin.push((i+1, j));
-            }
-            if j > 0 && row[j-1] >= height && row[j-1] < 9 &&
-                !basin.contains(&(i,j-1))  {
-                basin.push((i, j-1));
-            }
-            if j < row.len() - 1 && row[j+1] >= height && row[j+1] < 9 &&
-                !basin.contains(&(i,j+1))  {
-                basin.push((i, j+1));
-            }
+        for pt in basin_copy {
+            let height = grid[pt];
+            let mut flood: Vec<Point2D> = pt.neighbors(bounds).filter(|pt| {
+                !basin.contains(pt) && grid[*pt] < 9 && grid[*pt] >= height
+            }).collect();
+            basin.append(&mut flood);
         }
     }
 
     basin.len()
 }
 
-fn part2(contents:&Vec<Vec<u32>>) -> String {
-    let mut low_points = vec![];
-
-    for i in 0..contents.len() {
-        let row = &contents[i];
-        for j in 0..row.len() {
-            let height = row[j];
-            if i > 0 && contents[i-1][j] <= height {
-                continue;
-            }
-            if i < contents.len() - 1 && contents[i+1][j] <= height {
-                continue;
-            }
-            if j > 0 && row[j-1] <= height {
-                continue;
-            }
-            if j < row.len() - 1 && row[j+1] <= height {
-                continue;
-            }
-            // found a low point, save for later
-            low_points.push((i, j));
-        }
-    }
+fn part2(grid:&Grid2D<u32>) -> String {
+    let low_points:Vec<Point2D> = low_points(grid).map(|(pt, _)| pt).collect();
 
     let mut basin_sizes = vec![];
 
-    for (i, j) in low_points {
-        basin_sizes.push(calculate_basin_size(contents, i, j));
+    for pt in low_points {
+        basin_sizes.push(calculate_basin_size(grid, pt));
     }
 
     basin_sizes.sort();
