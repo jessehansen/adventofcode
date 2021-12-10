@@ -6,9 +6,9 @@ mod grid;
 pub use grid::*;
 
 pub fn run<T>(
-    parse: &dyn Fn(&str) -> T,
-    part1: &dyn Fn(&T) -> String,
-    part2: &dyn Fn(&T) -> String,
+    parse: fn(&str) -> T,
+    part1: fn(&T) -> String,
+    part2: fn(&T) -> String,
 ) {
     let sample = fs::read_to_string("./sample.txt")
         .expect("Something went wrong reading sample.txt");

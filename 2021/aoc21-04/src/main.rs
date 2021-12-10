@@ -4,7 +4,7 @@ use aoc_common::run;
 use std::fmt;
 
 fn main() {
-    run(&parse, &part1, &part2);
+    run(parse, part1, part2);
 }
 
 struct Game {

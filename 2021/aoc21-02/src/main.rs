@@ -2,7 +2,7 @@ use aoc_common::run;
 use std::str::FromStr;
 
 fn main() {
-    run(&parse, &part1, &part2);
+    run(parse, part1, part2);
 }
 
 enum Cmd {
