@@ -21,7 +21,7 @@ fn parse(contents: &str) -> Grid2D<u32> {
 fn low_points(grid: &Grid2D<u32>) -> impl Iterator<Item = (Point2D, &u32)> {
     let bounds = grid.bounds;
     grid.iter_horizontal()
-        .filter(move |(pt, height)| !pt.neighbors(bounds).any(|pt| grid[pt] <= **height))
+        .filter(move |(pt, height)| !pt.cardinal_neighbors(bounds).any(|pt| grid[pt] <= **height))
 }
 
 fn part1(grid: &Grid2D<u32>) -> String {
@@ -41,7 +41,7 @@ fn calculate_basin_size(grid: &Grid2D<u32>, low_point: Point2D) -> usize {
         for pt in basin_copy {
             let height = grid[pt];
             let mut flood: Vec<Point2D> = pt
-                .neighbors(bounds)
+                .cardinal_neighbors(bounds)
                 .filter(|pt| !basin.contains(pt) && grid[*pt] < 9 && grid[*pt] >= height)
                 .collect();
             basin.append(&mut flood);
