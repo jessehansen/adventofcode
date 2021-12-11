@@ -1,21 +1,8 @@
 use aoc_common::run;
-use aoc_common::{Bounds2D, Grid2D, Point2D};
+use aoc_common::Grid2D;
 
 fn main() {
-    run(parse, part1, part2);
-}
-
-fn parse(contents: &str) -> Grid2D<u32> {
-    contents
-        .lines()
-        .into_iter()
-        .map(|x| {
-            x.chars().into_iter().map(|x| {
-                let result: u32 = x.to_string().parse().unwrap();
-                result
-            })
-        })
-        .collect()
+    run(Grid2D::<u32>::from_char_str, part1, part2);
 }
 
 fn step(grid: &mut Grid2D<u32>) -> usize {
@@ -32,7 +19,7 @@ fn step(grid: &mut Grid2D<u32>) -> usize {
         bounds.iter_horizontal().for_each(|pt| {
             if grid[pt] > 9 && grid[pt] < 100 {
                 flashing = true;
-                flash(grid, bounds, pt);
+                grid.transform_neighbors(pt, |(_, value)| value + 1);
                 // don't flash this location again this step
                 grid[pt] += 100;
             }
@@ -49,12 +36,6 @@ fn step(grid: &mut Grid2D<u32>) -> usize {
     });
 
     flashes
-}
-
-fn flash(grid: &mut Grid2D<u32>, bounds: Bounds2D, pt: Point2D) {
-    pt.neighbors(bounds).for_each(|pt| {
-        grid[pt] += 1;
-    });
 }
 
 fn part1(grid: &Grid2D<u32>) -> String {

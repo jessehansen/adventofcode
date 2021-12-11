@@ -2,7 +2,7 @@ use itertools::Itertools;
 use std::fmt;
 use std::ops::{Index, IndexMut};
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Point2D {
     pub x: usize,
     pub y: usize,
@@ -108,11 +108,25 @@ impl<T> Grid2D<T> {
     }
 
     pub fn iter_vertical(&self) -> impl Iterator<Item = (Point2D, &T)> {
-        self.bounds.iter_vertical().map(|pt| (pt, &self[pt]))
+        self.bounds
+            .iter_vertical()
+            .map(|pt| (pt, &self.data[pt.y][pt.x]))
     }
 
     pub fn iter_horizontal(&self) -> impl Iterator<Item = (Point2D, &T)> {
-        self.bounds.iter_horizontal().map(|pt| (pt, &self[pt]))
+        self.bounds
+            .iter_horizontal()
+            .map(|pt| (pt, &self.data[pt.y][pt.x]))
+    }
+
+    pub fn cardinal_neighbors(&self, pt: Point2D) -> impl Iterator<Item = (Point2D, &T)> {
+        pt.cardinal_neighbors(self.bounds)
+            .map(|pt| (pt, &self.data[pt.y][pt.x]))
+    }
+
+    pub fn neighbors(&self, pt: Point2D) -> impl Iterator<Item = (Point2D, &T)> {
+        pt.neighbors(self.bounds)
+            .map(|pt| (pt, &self.data[pt.y][pt.x]))
     }
 
     pub fn transform<F>(&mut self, mut f: F)
@@ -122,6 +136,14 @@ impl<T> Grid2D<T> {
         self.bounds.iter_horizontal().for_each(|pt| {
             self[pt] = f((pt, &self[pt]));
         });
+    }
+
+    pub fn transform_neighbors<F>(&mut self, pt: Point2D, mut f: F)
+    where
+        F: FnMut((Point2D, &T)) -> T,
+    {
+        pt.neighbors(self.bounds)
+            .for_each(|pt| self[pt] = f((pt, &self.data[pt.y][pt.x])));
     }
 }
 
@@ -192,6 +214,38 @@ where
     }
 }
 
+impl<T> Grid2D<T>
+where
+    T: std::str::FromStr + Default,
+{
+    // this is a special case where each grid item is only represented by a single character
+    pub fn from_char_str(input: &str) -> Grid2D<T> {
+        input
+            .lines()
+            .into_iter()
+            .map(|x| {
+                x.chars().into_iter().map(|x| {
+                    let result: T = x.to_string().parse().unwrap_or_default();
+                    result
+                })
+            })
+            .collect()
+    }
+
+    pub fn from_delimited_str(input: &str, delimiter: &str) -> Grid2D<T> {
+        input
+            .lines()
+            .into_iter()
+            .map(|x| {
+                x.split(delimiter).map(|x| {
+                    let result: T = x.to_string().parse().unwrap_or_default();
+                    result
+                })
+            })
+            .collect()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -203,7 +257,7 @@ mod tests {
             width: 5,
             height: 10,
         };
-        let points: Vec<Point2D> = point.neighbors(bounds).collect();
+        let points: Vec<Point2D> = point.cardinal_neighbors(bounds).collect();
         assert_eq!(
             points,
             vec![
@@ -222,7 +276,7 @@ mod tests {
             width: 5,
             height: 10,
         };
-        let points: Vec<Point2D> = point.neighbors(bounds).collect();
+        let points: Vec<Point2D> = point.cardinal_neighbors(bounds).collect();
         assert_eq!(
             points,
             vec![
@@ -233,7 +287,7 @@ mod tests {
         );
 
         let point = Point2D { x: 4, y: 3 };
-        let points: Vec<Point2D> = point.neighbors(bounds).collect();
+        let points: Vec<Point2D> = point.cardinal_neighbors(bounds).collect();
         assert_eq!(
             points,
             vec![
@@ -244,7 +298,7 @@ mod tests {
         );
 
         let point = Point2D { x: 2, y: 0 };
-        let points: Vec<Point2D> = point.neighbors(bounds).collect();
+        let points: Vec<Point2D> = point.cardinal_neighbors(bounds).collect();
         assert_eq!(
             points,
             vec![
@@ -255,7 +309,7 @@ mod tests {
         );
 
         let point = Point2D { x: 2, y: 9 };
-        let points: Vec<Point2D> = point.neighbors(bounds).collect();
+        let points: Vec<Point2D> = point.cardinal_neighbors(bounds).collect();
         assert_eq!(
             points,
             vec![
@@ -266,7 +320,7 @@ mod tests {
         );
 
         let point = Point2D { x: 0, y: 0 };
-        let points: Vec<Point2D> = point.neighbors(bounds).collect();
+        let points: Vec<Point2D> = point.cardinal_neighbors(bounds).collect();
         assert_eq!(points, vec![Point2D { x: 1, y: 0 }, Point2D { x: 0, y: 1 }]);
     }
 
