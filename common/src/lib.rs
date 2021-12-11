@@ -1,19 +1,14 @@
 use std::fs;
-use std::time::{Instant, Duration};
+use std::time::{Duration, Instant};
 
 mod grid;
 
 pub use grid::*;
 
-pub fn run<T>(
-    parse: fn(&str) -> T,
-    part1: fn(&T) -> String,
-    part2: fn(&T) -> String,
-) {
-    let sample = fs::read_to_string("./sample.txt")
-        .expect("Something went wrong reading sample.txt");
-    let input = fs::read_to_string("./input.txt")
-        .expect("Something went wrong reading input.txt");
+pub fn run<T>(parse: fn(&str) -> T, part1: fn(&T) -> String, part2: fn(&T) -> String) {
+    let sample =
+        fs::read_to_string("./sample.txt").expect("Something went wrong reading sample.txt");
+    let input = fs::read_to_string("./input.txt").expect("Something went wrong reading input.txt");
 
     let start = Instant::now();
     let parsed_sample = parse(&sample);
@@ -32,23 +27,43 @@ pub fn run<T>(
 
     println!("");
     println!("Stats (sample):");
-    println!("Parse: {}ms ({}µs)", sample_parse_time.as_millis(), sample_parse_time.as_micros());
-    println!("Part 1: {}ms ({}µs)", part1_sample_time.as_millis(), part1_sample_time.as_micros());
-    println!("Part 2: {}ms ({}µs)", part2_sample_time.as_millis(), part2_sample_time.as_micros());
+    println!(
+        "Parse: {}ms ({}µs)",
+        sample_parse_time.as_millis(),
+        sample_parse_time.as_micros()
+    );
+    println!(
+        "Part 1: {}ms ({}µs)",
+        part1_sample_time.as_millis(),
+        part1_sample_time.as_micros()
+    );
+    println!(
+        "Part 2: {}ms ({}µs)",
+        part2_sample_time.as_millis(),
+        part2_sample_time.as_micros()
+    );
     println!("");
     println!("Stats (input):");
-    println!("Parse: {}ms ({}µs)", input_parse_time.as_millis(), input_parse_time.as_micros());
-    println!("Part 1: {}ms ({}µs)", part1_input_time.as_millis(), part1_input_time.as_micros());
-    println!("Part 2: {}ms ({}µs)", part2_input_time.as_millis(), part2_input_time.as_micros());
+    println!(
+        "Parse: {}ms ({}µs)",
+        input_parse_time.as_millis(),
+        input_parse_time.as_micros()
+    );
+    println!(
+        "Part 1: {}ms ({}µs)",
+        part1_input_time.as_millis(),
+        part1_input_time.as_micros()
+    );
+    println!(
+        "Part 2: {}ms ({}µs)",
+        part2_input_time.as_millis(),
+        part2_input_time.as_micros()
+    );
 }
 
-pub fn run_sample<T>(
-    parse: &dyn Fn(&str) -> T,
-    part1: &dyn Fn(&T) -> String,
-    part2: &dyn Fn(&T) -> String,
-) {
-    let sample = fs::read_to_string("./sample.txt")
-        .expect("Something went wrong reading sample.txt");
+pub fn run_sample<T>(parse: fn(&str) -> T, part1: fn(&T) -> String, part2: fn(&T) -> String) {
+    let sample =
+        fs::read_to_string("./sample.txt").expect("Something went wrong reading sample.txt");
 
     let parsed_sample: T = parse(&sample);
 
@@ -63,4 +78,3 @@ fn print_result(description: &str, runner: &dyn Fn() -> String) -> Duration {
     println!("{} - {}", description, result);
     start.elapsed()
 }
-
