@@ -17,7 +17,7 @@ impl FromStr for Point {
     type Err = ();
 
     fn from_str(input: &str) -> Result<Point, Self::Err> {
-        let parts: Vec<i32> = input.split(",").map(|x| x.parse().unwrap()).collect();
+        let parts: Vec<i32> = input.split(',').map(|x| x.parse().unwrap()).collect();
 
         if parts.len() != 2 {
             return Err(());

@@ -69,7 +69,7 @@ impl Board {
             }
         }
 
-        return false;
+        false
     }
 
     fn score(&self, draw: u32) -> u32 {
@@ -81,7 +81,7 @@ impl Board {
                 }
             }
         }
-        return score * draw;
+        score * draw
     }
 }
 
@@ -158,7 +158,11 @@ fn bool_star(a: bool) -> &'static str {
 }
 
 fn lines_to_board(lines: &str) -> Result<Board, ()> {
-    let lines: Vec<&str> = lines.lines().into_iter().filter(|x| x.len() != 0).collect();
+    let lines: Vec<&str> = lines
+        .lines()
+        .into_iter()
+        .filter(|x| !x.is_empty())
+        .collect();
     if lines.len() < 5 {
         return Err(());
     }
@@ -175,7 +179,7 @@ fn lines_to_board(lines: &str) -> Result<Board, ()> {
             board.cells[x][y] = cell;
         }
     }
-    return Ok(board);
+    Ok(board)
 }
 
 fn parse(contents: &str) -> Game {
@@ -184,8 +188,8 @@ fn parse(contents: &str) -> Game {
     let boards = parts.split_off(1);
 
     let draws: Vec<u32> = parts[0]
-        .split(",")
-        .filter(|x| x.len() != 0)
+        .split(',')
+        .filter(|x| !x.is_empty())
         .map(|x| x.parse().unwrap())
         .collect();
 
@@ -194,7 +198,7 @@ fn parse(contents: &str) -> Game {
         .map(|x| lines_to_board(x).unwrap())
         .collect();
 
-    return Game { draws, boards };
+    Game { draws, boards }
 }
 
 fn part1(game: &Game) -> String {
@@ -208,7 +212,7 @@ fn part1(game: &Game) -> String {
         }
     }
 
-    return "No winner".to_string();
+    "No winner".to_string()
 }
 
 fn part2(game: &Game) -> String {
@@ -221,12 +225,12 @@ fn part2(game: &Game) -> String {
                 last_win = Some(x.score(*draw));
                 return true;
             }
-            return false;
+            false
         });
-        if boards.len() == 0 {
+        if boards.is_empty() {
             return format!("{}", last_win.unwrap());
         }
     }
 
-    return "No last winner".to_string();
+    "No last winner".to_string()
 }

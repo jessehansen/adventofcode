@@ -1,6 +1,7 @@
 use itertools::Itertools;
 use std::fmt;
 use std::ops::{Index, IndexMut};
+use std::str::FromStr;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Point2D {
@@ -27,7 +28,7 @@ impl Point2D {
         deltas
             .into_iter()
             .map(move |(dx, dy)| (x + dx, y + dy))
-            .filter(move |(x, y)| *x >= 0 && *x <= width - 1 && *y >= 0 && *y <= height - 1)
+            .filter(move |(x, y)| *x >= 0 && *x < width && *y >= 0 && *y < height)
             .map(|(x, y)| Point2D {
                 x: x as usize,
                 y: y as usize,
@@ -145,6 +146,14 @@ impl<T> Grid2D<T> {
         pt.neighbors(self.bounds)
             .for_each(|pt| self[pt] = f((pt, &self.data[pt.y][pt.x])));
     }
+
+    pub fn transform_cardinal_neighbors<F>(&mut self, pt: Point2D, mut f: F)
+    where
+        F: FnMut((Point2D, &T)) -> T,
+    {
+        pt.cardinal_neighbors(self.bounds)
+            .for_each(|pt| self[pt] = f((pt, &self.data[pt.y][pt.x])));
+    }
 }
 
 impl<T> Index<Point2D> for Grid2D<T> {
@@ -188,7 +197,7 @@ where
     fn clone(&self) -> Self {
         Grid2D {
             data: self.data.clone(),
-            bounds: self.bounds.clone(),
+            bounds: self.bounds,
         }
     }
 }
@@ -216,7 +225,8 @@ where
 
 impl<T> Grid2D<T>
 where
-    T: std::str::FromStr + Default,
+    T: FromStr + Default,
+    <T as FromStr>::Err: std::fmt::Debug,
 {
     // this is a special case where each grid item is only represented by a single character
     pub fn from_char_str(input: &str) -> Grid2D<T> {
@@ -225,7 +235,7 @@ where
             .into_iter()
             .map(|x| {
                 x.chars().into_iter().map(|x| {
-                    let result: T = x.to_string().parse().unwrap_or_default();
+                    let result: T = x.to_string().parse().unwrap();
                     result
                 })
             })
@@ -238,7 +248,7 @@ where
             .into_iter()
             .map(|x| {
                 x.split(delimiter).map(|x| {
-                    let result: T = x.to_string().parse().unwrap_or_default();
+                    let result: T = x.to_string().parse().unwrap();
                     result
                 })
             })

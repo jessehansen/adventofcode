@@ -19,7 +19,7 @@ fn part1(contents: &Vec<String>) -> String {
     for bit_string in contents {
         for (pos, mcb) in mcbs.iter_mut().enumerate() {
             if bit_string.chars().nth(pos).unwrap() == '1' {
-                *mcb = *mcb + 1;
+                *mcb += 1;
             }
         }
     }
@@ -95,8 +95,8 @@ fn get_mcb_at_pos(lines: &Vec<String>, pos: usize) -> char {
         .count() as f64;
 
     if line_count >= half_line_count {
-        return '1';
+        '1'
+    } else {
+        '0'
     }
-
-    return '0';
 }

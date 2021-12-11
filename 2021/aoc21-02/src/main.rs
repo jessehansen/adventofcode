@@ -39,7 +39,7 @@ impl FromStr for CmdVec {
             return Err(());
         }
 
-        return match Cmd::from_str(parts[0]) {
+        match Cmd::from_str(parts[0]) {
             Ok(cmd) => match parts[1].parse() {
                 Ok(mag) => Ok(CmdVec {
                     command: cmd,
@@ -48,7 +48,7 @@ impl FromStr for CmdVec {
                 Err(_) => Err(()),
             },
             Err(_) => Err(()),
-        };
+        }
     }
 }
 

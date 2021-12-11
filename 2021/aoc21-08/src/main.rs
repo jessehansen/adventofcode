@@ -15,21 +15,21 @@ fn parse(contents: &str) -> Vec<DisplayLine> {
         .lines()
         .into_iter()
         .map(|x| {
-            let mut parts = x.split("|");
+            let mut parts = x.split('|');
 
             DisplayLine {
                 signal: parts
                     .next()
                     .unwrap()
                     .trim()
-                    .split(" ")
+                    .split(' ')
                     .map(|x| x.to_string())
                     .collect(),
                 output: parts
                     .next()
                     .unwrap()
                     .trim()
-                    .split(" ")
+                    .split(' ')
                     .map(|x| x.to_string())
                     .collect(),
             }
@@ -43,13 +43,7 @@ fn part1(contents: &Vec<DisplayLine>) -> String {
         .map(|x| {
             x.output
                 .iter()
-                .filter(|y| match y.len() {
-                    2 => true,
-                    4 => true,
-                    3 => true,
-                    7 => true,
-                    _ => false,
-                })
+                .filter(|y| matches!(y.len(), 2 | 4 | 3 | 7))
                 .count()
         })
         .sum();
@@ -57,7 +51,7 @@ fn part1(contents: &Vec<DisplayLine>) -> String {
     format!("{}", count)
 }
 
-fn get_codes(signal: &Vec<String>) -> [String; 10] {
+fn get_codes(signal: &[String]) -> [String; 10] {
     let mut result: [String; 10] = Default::default();
     let mut five_segment: Vec<&str> = vec![];
     let mut six_segment: Vec<&str> = vec![];
@@ -138,7 +132,7 @@ fn get_codes(signal: &Vec<String>) -> [String; 10] {
     result
 }
 
-fn decode_output(codes: [String; 10], output: &Vec<String>) -> u32 {
+fn decode_output(codes: [String; 10], output: &[String]) -> u32 {
     let mut result = "".to_string();
     for data in output {
         let sorted = data.chars().sorted().collect::<String>();

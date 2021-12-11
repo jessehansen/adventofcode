@@ -20,29 +20,32 @@ pub fn run<T>(parse: fn(&str) -> T, part1: fn(&T) -> String, part2: fn(&T) -> St
 
     let part1_sample_time = print_result("Part 1 (sample)", &|| part1(&parsed_sample));
     let part2_sample_time = print_result("Part 2 (sample)", &|| part2(&parsed_sample));
-    println!("");
+    println!();
 
     let part1_input_time = print_result("Part 1  (input)", &|| part1(&parsed_input));
     let part2_input_time = print_result("Part 2  (input)", &|| part2(&parsed_input));
 
-    println!("");
-    println!("Stats (sample):");
-    println!(
-        "Parse: {}ms ({}µs)",
-        sample_parse_time.as_millis(),
-        sample_parse_time.as_micros()
-    );
-    println!(
-        "Part 1: {}ms ({}µs)",
-        part1_sample_time.as_millis(),
-        part1_sample_time.as_micros()
-    );
-    println!(
-        "Part 2: {}ms ({}µs)",
-        part2_sample_time.as_millis(),
-        part2_sample_time.as_micros()
-    );
-    println!("");
+    println!();
+
+    if std::env::var("PRINT_SAMPLE_STATS").is_ok() {
+        println!("Stats (sample):");
+        println!(
+            "Parse: {}ms ({}µs)",
+            sample_parse_time.as_millis(),
+            sample_parse_time.as_micros()
+        );
+        println!(
+            "Part 1: {}ms ({}µs)",
+            part1_sample_time.as_millis(),
+            part1_sample_time.as_micros()
+        );
+        println!(
+            "Part 2: {}ms ({}µs)",
+            part2_sample_time.as_millis(),
+            part2_sample_time.as_micros()
+        );
+        println!();
+    }
     println!("Stats (input):");
     println!(
         "Parse: {}ms ({}µs)",

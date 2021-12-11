@@ -49,9 +49,9 @@ fn part2(grid: &Grid2D<u32>) -> String {
         basin_sizes.push(calculate_basin_size(grid, pt));
     }
 
-    basin_sizes.sort();
+    basin_sizes.sort_unstable();
 
-    let result = basin_sizes.iter().rev().take(3).fold(1, |acc, x| acc * x);
+    let result: usize = basin_sizes.iter().rev().take(3).product();
 
     format!("{}", result)
 }

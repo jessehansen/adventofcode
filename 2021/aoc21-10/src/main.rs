@@ -105,7 +105,7 @@ fn part2(contents: &Vec<String>) -> String {
             line_scores.push(line_score);
         }
     }
-    line_scores.sort();
+    line_scores.sort_unstable();
 
     format!("{}", line_scores[line_scores.len() / 2])
 }
