@@ -10,7 +10,7 @@ fn parse(contents: &str) -> Vec<i32> {
         .into_iter()
         .next()
         .unwrap()
-        .split(",")
+        .split(',')
         .map(|x| x.parse().expect("invalid input"))
         .collect()
 }
@@ -22,7 +22,7 @@ fn part1(contents: &Vec<i32>) -> String {
     let mut least_fuel = std::i32::MAX;
 
     for i in *min..*max {
-        let fuel = contents.into_iter().map(|x| (x - i).abs()).sum();
+        let fuel = contents.iter().map(|x| (x - i).abs()).sum();
         if fuel < least_fuel {
             least_fuel = fuel
         }
@@ -45,7 +45,7 @@ fn part2(contents: &Vec<i32>) -> String {
 
     for i in *min..*max {
         let fuel = contents
-            .into_iter()
+            .iter()
             .map(|x| triangle_number((x - i).abs()))
             .sum();
         if fuel < least_fuel {

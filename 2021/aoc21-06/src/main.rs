@@ -7,14 +7,10 @@ fn main() {
 fn parse(contents: &str) -> Vec<i32> {
     contents
         .trim()
-        .split(",")
+        .split(',')
         .into_iter()
         .map(|x| x.parse().expect("invalid input"))
         .collect()
-}
-
-fn times(n: usize) -> impl Iterator {
-    std::iter::repeat(()).take(n)
 }
 
 // this can be solved in the same way as part 2, but I thought it was interesting to leave in a
@@ -22,7 +18,7 @@ fn times(n: usize) -> impl Iterator {
 fn part1(fishes: &Vec<i32>) -> String {
     let mut fishes = fishes.clone();
 
-    for _ in times(80) {
+    for _ in 0..80 {
         let mut new_fish = 0;
         for fish in &mut fishes {
             *fish -= 1;
@@ -32,9 +28,7 @@ fn part1(fishes: &Vec<i32>) -> String {
             }
         }
 
-        for _ in times(new_fish) {
-            fishes.push(8);
-        }
+        fishes.resize(fishes.len() + new_fish, 8);
     }
 
     format!("{}", fishes.len())
@@ -49,8 +43,7 @@ fn part2(fishes: &Vec<i32>) -> String {
         breeders[*fish as usize] += 1;
     }
 
-    let mut day = 0;
-    for _ in times(256) {
+    for day in 0..256 {
         let day_of_week = day % 7;
         let baby_day = (day + 2) % 7;
 
@@ -58,8 +51,6 @@ fn part2(fishes: &Vec<i32>) -> String {
         breeders[baby_day] += babies[day_of_week];
         // new babies are born today
         babies[day_of_week] = breeders[day_of_week];
-
-        day += 1;
     }
 
     let pop: usize = breeders.iter().sum::<usize>() + babies.iter().sum::<usize>();
