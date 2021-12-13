@@ -56,6 +56,19 @@ impl Point2D {
     }
 }
 
+impl FromStr for Point2D {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<Point2D, Self::Err> {
+        let mut parts = input.split(',').map(|x| x.parse().unwrap());
+
+        Ok(Point2D {
+            x: parts.next().unwrap(),
+            y: parts.next().unwrap(),
+        })
+    }
+}
+
 impl Bounds2D {
     pub fn iter_vertical(&self) -> impl Iterator<Item = Point2D> {
         (0..self.width)
