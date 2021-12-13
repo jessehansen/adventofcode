@@ -1,53 +1,12 @@
 use aoc_common::run;
+use std::collections::HashMap;
 
 fn main() {
     run(parse, part1, part2);
 }
 
-fn parse(contents: &str) -> Vec<[String; 2]> {
-    contents
-        .lines()
-        .into_iter()
-        .map(|x| {
-            let mut edge = x.split('-');
-            [
-                edge.next().unwrap().to_string(),
-                edge.next().unwrap().to_string(),
-            ]
-        })
-        .collect()
-}
-
-fn traverse<'a>(
-    edges: &'a [[String; 2]],
-    at: &'a str,
-    path_so_far: Vec<&'a str>,
-) -> Vec<Vec<&'a str>> {
-    let mut paths = vec![];
-    for edge in edges.iter().filter(|x| x[0] == at || x[1] == at) {
-        let other_node = if edge[0] == at { &edge[1] } else { &edge[0] };
-        if other_node.chars().next().unwrap().is_lowercase()
-            && path_so_far.iter().any(|x| x == other_node)
-        {
-            continue;
-        }
-        let mut path = path_so_far.clone();
-        path.push(other_node);
-        if other_node == "end" {
-            paths.push(path);
-        } else {
-            for other_path in traverse(edges, other_node, path) {
-                paths.push(other_path);
-            }
-        }
-    }
-    paths
-}
-
-fn part1(edges: &Vec<[String; 2]>) -> String {
-    let paths = traverse(edges, "start", vec!["start"]);
-
-    format!("{}", paths.len())
+struct Map {
+    nodes: HashMap<String, Node>,
 }
 
 fn calc_max_small_cave_visits(path_so_far: &[&str]) -> usize {
@@ -63,38 +22,91 @@ fn calc_max_small_cave_visits(path_so_far: &[&str]) -> usize {
     2
 }
 
-fn traverse2<'a>(
-    edges: &'a [[String; 2]],
-    at: &'a str,
-    path_so_far: Vec<&'a str>,
-) -> Vec<Vec<&'a str>> {
-    let mut paths = vec![];
+impl Map {
+    fn add_edge(&mut self, edge: [String; 2]) {
+        for (node_name, other) in [(&edge[0], &edge[1]), (&edge[1], &edge[0])] {
+            let node = self.nodes.entry(node_name.to_string()).or_insert(Node {
+                edges: vec![],
+                is_small: node_name.chars().next().unwrap().is_lowercase(),
+            });
 
-    let max_small_cave_visits = calc_max_small_cave_visits(&path_so_far);
-    for edge in edges.iter().filter(|x| x[0] == at || x[1] == at) {
-        let other_node = if edge[0] == at { &edge[1] } else { &edge[0] };
-        if other_node == "start" {
-            continue;
-        }
-        if other_node.chars().next().unwrap().is_lowercase()
-            && path_so_far.iter().filter(|x| x == &other_node).count() >= max_small_cave_visits
-        {
-            continue;
-        }
-        let mut path = path_so_far.clone();
-        path.push(other_node);
-        if other_node == "end" {
-            paths.push(path);
-        } else {
-            for other_path in traverse2(edges, other_node, path) {
-                paths.push(other_path);
+            if other != "start" {
+                // don't care who is connected to start
+                node.edges.push(other.to_string());
             }
         }
     }
-    paths
+
+    fn traverse<'a>(&'a self, at: String, path_so_far: Vec<&'a str>) -> Vec<Vec<&'a str>> {
+        let mut paths = vec![];
+        for next in &self.nodes[&at].edges {
+            let next_node = &self.nodes[next];
+            if next_node.is_small && path_so_far.iter().any(|x| x == &next) {
+                continue;
+            }
+            let mut path = path_so_far.clone();
+            path.push(&next);
+            if next == "end" {
+                paths.push(path);
+            } else {
+                for other_path in self.traverse(next.to_string(), path) {
+                    paths.push(other_path);
+                }
+            }
+        }
+        paths
+    }
+
+    fn traverse2<'a>(&'a self, at: String, path_so_far: Vec<&'a str>) -> Vec<Vec<&'a str>> {
+        let max_small_cave_visits = calc_max_small_cave_visits(&path_so_far);
+        let mut paths = vec![];
+        for next in &self.nodes[&at].edges {
+            let next_node = &self.nodes[next];
+            if next_node.is_small
+                && path_so_far.iter().filter(|x| x == &next).count() >= max_small_cave_visits
+            {
+                continue;
+            }
+            let mut path = path_so_far.clone();
+            path.push(&next);
+            if next == "end" {
+                paths.push(path);
+            } else {
+                for other_path in self.traverse2(next.to_string(), path) {
+                    paths.push(other_path);
+                }
+            }
+        }
+        paths
+    }
 }
 
-fn part2(edges: &Vec<[String; 2]>) -> String {
-    let paths = traverse2(edges, "start", vec!["start"]);
+struct Node {
+    edges: Vec<String>,
+    is_small: bool,
+}
+
+fn parse(contents: &str) -> Map {
+    let mut map = Map {
+        nodes: HashMap::new(),
+    };
+    for line in contents.lines() {
+        let mut edge = line.split('-');
+        map.add_edge([
+            edge.next().unwrap().to_string(),
+            edge.next().unwrap().to_string(),
+        ]);
+    }
+    map
+}
+
+fn part1(map: &Map) -> String {
+    let paths = map.traverse("start".to_string(), vec!["start"]);
+
+    format!("{}", paths.len())
+}
+
+fn part2(map: &Map) -> String {
+    let paths = map.traverse2("start".to_string(), vec!["start"]);
     format!("{}", paths.len())
 }
