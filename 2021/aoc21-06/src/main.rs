@@ -15,7 +15,7 @@ fn parse(contents: &str) -> Vec<i32> {
 
 // this can be solved in the same way as part 2, but I thought it was interesting to leave in a
 // naive solution
-fn part1(fishes: &Vec<i32>) -> String {
+fn part1(fishes: &Vec<i32>) -> usize {
     let mut fishes = fishes.clone();
 
     for _ in 0..80 {
@@ -31,10 +31,10 @@ fn part1(fishes: &Vec<i32>) -> String {
         fishes.resize(fishes.len() + new_fish, 8);
     }
 
-    format!("{}", fishes.len())
+    fishes.len()
 }
 
-fn part2(fishes: &Vec<i32>) -> String {
+fn part2(fishes: &Vec<i32>) -> usize {
     // breeders by day of week
     let mut breeders: Vec<usize> = vec![0, 0, 0, 0, 0, 0, 0];
     // new babies by day of week
@@ -53,7 +53,5 @@ fn part2(fishes: &Vec<i32>) -> String {
         babies[day_of_week] = breeders[day_of_week];
     }
 
-    let pop: usize = breeders.iter().sum::<usize>() + babies.iter().sum::<usize>();
-
-    format!("{}", pop)
+    breeders.iter().sum::<usize>() + babies.iter().sum::<usize>()
 }

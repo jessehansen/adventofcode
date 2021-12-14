@@ -12,7 +12,7 @@ fn parse(contents: &str) -> Vec<String> {
         .collect()
 }
 
-fn part1(contents: &Vec<String>) -> String {
+fn part1(contents: &Vec<String>) -> u32 {
     let item_length = contents[0].len();
     let half_line_count = contents.len() / 2;
     let mut mcbs = vec![0; item_length];
@@ -36,15 +36,10 @@ fn part1(contents: &Vec<String>) -> String {
         }
     }
 
-    format!(
-        "gamma={:b}, epsilon={:b}, consumption={}",
-        gamma,
-        epsilon,
-        gamma * epsilon
-    )
+    gamma * epsilon
 }
 
-fn part2(contents: &Vec<String>) -> String {
+fn part2(contents: &Vec<String>) -> u32 {
     let item_length = contents[0].len();
 
     let mut oxygen_lines = contents.clone();
@@ -79,12 +74,7 @@ fn part2(contents: &Vec<String>) -> String {
     let oxygen_rating = u32::from_str_radix(oxygen_lines[0].as_str(), 2).unwrap();
     let scrubber_rating = u32::from_str_radix(scrubber_lines[0].as_str(), 2).unwrap();
 
-    format!(
-        "oxygen={}, scrubber={}, life_support={}",
-        oxygen_rating,
-        scrubber_rating,
-        oxygen_rating * scrubber_rating
-    )
+    oxygen_rating * scrubber_rating
 }
 
 fn get_mcb_at_pos(lines: &Vec<String>, pos: usize) -> char {

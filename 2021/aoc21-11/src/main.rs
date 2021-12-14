@@ -38,17 +38,17 @@ fn step(grid: &mut Grid2D<u32>) -> usize {
     flashes
 }
 
-fn part1(grid: &Grid2D<u32>) -> String {
+fn part1(grid: &Grid2D<u32>) -> usize {
     let mut grid = grid.clone();
     let mut flashes = 0;
     for _ in 0..100 {
         flashes += step(&mut grid);
     }
 
-    format!("{}", flashes)
+    flashes
 }
 
-fn part2(contents: &Grid2D<u32>) -> String {
+fn part2(contents: &Grid2D<u32>) -> usize {
     let mut grid = contents.clone();
     let mut steps = 1;
     loop {
@@ -59,5 +59,5 @@ fn part2(contents: &Grid2D<u32>) -> String {
         steps += 1;
     }
 
-    format!("{}", steps)
+    steps
 }

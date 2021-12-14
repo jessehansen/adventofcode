@@ -14,10 +14,8 @@ fn low_points(grid: &Grid2D<u32>) -> impl Iterator<Item = (Point2D, &u32)> {
     })
 }
 
-fn part1(grid: &Grid2D<u32>) -> String {
-    let risk = low_points(grid).fold(0, |acc, (_, height)| acc + *height + 1);
-
-    format!("{}", risk)
+fn part1(grid: &Grid2D<u32>) -> u32 {
+    low_points(grid).fold(0, |acc, (_, height)| acc + *height + 1)
 }
 
 fn calculate_basin_size(grid: &Grid2D<u32>, low_point: Point2D) -> usize {
@@ -40,7 +38,7 @@ fn calculate_basin_size(grid: &Grid2D<u32>, low_point: Point2D) -> usize {
     basin.len()
 }
 
-fn part2(grid: &Grid2D<u32>) -> String {
+fn part2(grid: &Grid2D<u32>) -> usize {
     let low_points: Vec<Point2D> = low_points(grid).map(|(pt, _)| pt).collect();
 
     let mut basin_sizes = vec![];
@@ -51,7 +49,5 @@ fn part2(grid: &Grid2D<u32>) -> String {
 
     basin_sizes.sort_unstable();
 
-    let result: usize = basin_sizes.iter().rev().take(3).product();
-
-    format!("{}", result)
+    basin_sizes.iter().rev().take(3).product()
 }

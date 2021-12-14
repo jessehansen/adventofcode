@@ -12,15 +12,12 @@ fn parse(contents: &str) -> Vec<u32> {
         .collect()
 }
 
-fn part1(contents: &Vec<u32>) -> String {
-    let count = contents.windows(2).filter(|x| x[1] > x[0]).count();
-
-    format!("{}", count)
+fn part1(contents: &Vec<u32>) -> usize {
+    contents.windows(2).filter(|x| x[1] > x[0]).count()
 }
 
-fn part2(contents: &Vec<u32>) -> String {
+fn part2(contents: &Vec<u32>) -> usize {
     let windows_of_3: Vec<u32> = contents.windows(3).map(|x| x.iter().sum()).collect();
 
-    let count = windows_of_3.windows(2).filter(|x| x[1] > x[0]).count();
-    format!("{}", count)
+    windows_of_3.windows(2).filter(|x| x[1] > x[0]).count()
 }

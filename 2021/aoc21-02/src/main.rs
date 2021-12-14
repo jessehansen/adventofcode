@@ -60,7 +60,7 @@ fn parse(contents: &str) -> Vec<CmdVec> {
         .collect()
 }
 
-fn part1(contents: &Vec<CmdVec>) -> String {
+fn part1(contents: &Vec<CmdVec>) -> u32 {
     let mut x = 0;
     let mut depth = 0;
 
@@ -72,10 +72,10 @@ fn part1(contents: &Vec<CmdVec>) -> String {
         }
     }
 
-    format!("x={}, depth={}, mult={}", x, depth, x * depth)
+    x * depth
 }
 
-fn part2(contents: &Vec<CmdVec>) -> String {
+fn part2(contents: &Vec<CmdVec>) -> u32 {
     let mut x = 0;
     let mut aim = 0;
     let mut depth = 0;
@@ -91,5 +91,5 @@ fn part2(contents: &Vec<CmdVec>) -> String {
         }
     }
 
-    format!("x={}, depth={}, mult={}", x, depth, x * depth)
+    x * depth
 }

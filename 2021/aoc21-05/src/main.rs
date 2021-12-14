@@ -125,7 +125,7 @@ fn parse(contents: &str) -> Vec<Line> {
         .collect()
 }
 
-fn part1(lines: &Vec<Line>) -> String {
+fn part1(lines: &Vec<Line>) -> usize {
     let mut grid = HashMap::new();
     for line in lines {
         if line.a.x != line.b.x && line.a.y != line.b.y {
@@ -137,12 +137,10 @@ fn part1(lines: &Vec<Line>) -> String {
         }
     }
 
-    let hot_spots = grid.into_values().filter(|x| *x > 1).count();
-
-    format!("{}", hot_spots)
+    grid.into_values().filter(|x| *x > 1).count()
 }
 
-fn part2(lines: &Vec<Line>) -> String {
+fn part2(lines: &Vec<Line>) -> usize {
     let mut grid = HashMap::new();
     for line in lines {
         for point in line.iter() {
@@ -151,7 +149,5 @@ fn part2(lines: &Vec<Line>) -> String {
         }
     }
 
-    let hot_spots = grid.into_values().filter(|x| *x > 1).count();
-
-    format!("{}", hot_spots)
+    grid.into_values().filter(|x| *x > 1).count()
 }
