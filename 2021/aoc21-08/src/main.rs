@@ -37,8 +37,8 @@ fn parse(contents: &str) -> Vec<DisplayLine> {
         .collect()
 }
 
-fn part1(contents: &Vec<DisplayLine>) -> String {
-    let count: usize = contents
+fn part1(contents: &Vec<DisplayLine>) -> usize {
+    contents
         .iter()
         .map(|x| {
             x.output
@@ -46,9 +46,7 @@ fn part1(contents: &Vec<DisplayLine>) -> String {
                 .filter(|y| matches!(y.len(), 2 | 4 | 3 | 7))
                 .count()
         })
-        .sum();
-
-    format!("{}", count)
+        .sum()
 }
 
 fn get_codes(signal: &[String]) -> [String; 10] {
@@ -147,14 +145,12 @@ fn decode_output(codes: [String; 10], output: &[String]) -> u32 {
     result.parse().unwrap()
 }
 
-fn part2(contents: &Vec<DisplayLine>) -> String {
-    let sum: u32 = contents
+fn part2(contents: &Vec<DisplayLine>) -> u32 {
+    contents
         .iter()
         .map(|x| {
             let codes = get_codes(&x.signal);
             decode_output(codes, &x.output)
         })
-        .sum();
-
-    format!("{}", sum)
+        .sum()
 }

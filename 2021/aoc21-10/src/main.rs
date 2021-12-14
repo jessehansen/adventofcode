@@ -12,7 +12,7 @@ fn parse(contents: &str) -> Vec<String> {
         .collect()
 }
 
-fn part1(contents: &Vec<String>) -> String {
+fn part1(contents: &Vec<String>) -> u32 {
     let mut score = 0;
 
     for line in contents {
@@ -50,10 +50,10 @@ fn part1(contents: &Vec<String>) -> String {
         }
     }
 
-    format!("{}", score)
+    score
 }
 
-fn part2(contents: &Vec<String>) -> String {
+fn part2(contents: &Vec<String>) -> u64 {
     let mut line_scores = vec![];
 
     for line in contents {
@@ -107,5 +107,5 @@ fn part2(contents: &Vec<String>) -> String {
     }
     line_scores.sort_unstable();
 
-    format!("{}", line_scores[line_scores.len() / 2])
+    line_scores[line_scores.len() / 2]
 }

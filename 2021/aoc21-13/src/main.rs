@@ -120,20 +120,20 @@ impl FromStr for Fold {
     }
 }
 
-fn part1((marks, folds): &(Vec<Point2D>, Vec<Fold>)) -> String {
+fn part1((marks, folds): &(Vec<Point2D>, Vec<Fold>)) -> usize {
     let mut sheet = OrigamiSheet::new(marks);
 
     sheet.fold(folds[0]);
 
-    format!("{}", sheet.marks.len())
+    sheet.marks.len()
 }
 
-fn part2((marks, folds): &(Vec<Point2D>, Vec<Fold>)) -> String {
+fn part2((marks, folds): &(Vec<Point2D>, Vec<Fold>)) -> OrigamiSheet {
     let mut sheet = OrigamiSheet::new(marks);
 
     for fold in folds {
         sheet.fold(*fold);
     }
 
-    format!("\n{}\n", sheet)
+    sheet
 }

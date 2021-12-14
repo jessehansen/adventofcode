@@ -15,7 +15,7 @@ fn parse(contents: &str) -> Vec<i32> {
         .collect()
 }
 
-fn part1(contents: &Vec<i32>) -> String {
+fn part1(contents: &Vec<i32>) -> i32 {
     let min = contents.iter().min().unwrap();
     let max = contents.iter().max().unwrap();
 
@@ -28,7 +28,7 @@ fn part1(contents: &Vec<i32>) -> String {
         }
     }
 
-    format!("{}", least_fuel)
+    least_fuel
 }
 
 // returns the value for the nth triangle number
@@ -37,7 +37,7 @@ fn triangle_number(n: i32) -> i32 {
     (n * n + n) / 2
 }
 
-fn part2(contents: &Vec<i32>) -> String {
+fn part2(contents: &Vec<i32>) -> i32 {
     let min = contents.iter().min().unwrap();
     let max = contents.iter().max().unwrap();
 
@@ -53,5 +53,5 @@ fn part2(contents: &Vec<i32>) -> String {
         }
     }
 
-    format!("{}", least_fuel)
+    least_fuel
 }

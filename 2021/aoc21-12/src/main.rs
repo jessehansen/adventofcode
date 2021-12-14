@@ -100,13 +100,13 @@ fn parse(contents: &str) -> Map {
     map
 }
 
-fn part1(map: &Map) -> String {
+fn part1(map: &Map) -> usize {
     let paths = map.traverse("start".to_string(), vec!["start"]);
 
-    format!("{}", paths.len())
+    paths.len()
 }
 
-fn part2(map: &Map) -> String {
+fn part2(map: &Map) -> usize {
     let paths = map.traverse2("start".to_string(), vec!["start"]);
-    format!("{}", paths.len())
+    paths.len()
 }

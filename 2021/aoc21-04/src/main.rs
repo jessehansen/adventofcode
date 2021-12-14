@@ -201,21 +201,21 @@ fn parse(contents: &str) -> Game {
     Game { draws, boards }
 }
 
-fn part1(game: &Game) -> String {
+fn part1(game: &Game) -> u32 {
     let mut boards = game.boards.clone();
 
     for draw in &game.draws {
         for board in &mut boards {
             if board.mark(*draw) {
-                return format!("{}", board.score(*draw));
+                return board.score(*draw);
             }
         }
     }
 
-    "No winner".to_string()
+    0
 }
 
-fn part2(game: &Game) -> String {
+fn part2(game: &Game) -> u32 {
     let mut boards = game.boards.clone();
 
     for draw in &game.draws {
@@ -228,9 +228,9 @@ fn part2(game: &Game) -> String {
             false
         });
         if boards.is_empty() {
-            return format!("{}", last_win.unwrap());
+            return last_win.unwrap();
         }
     }
 
-    "No last winner".to_string()
+    0
 }
