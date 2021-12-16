@@ -119,3 +119,47 @@ fn part2(instructions: &FormulaInstructions) -> u64 {
 
     chars.values().max().unwrap() - chars.values().min().unwrap()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sample_part1() {
+        let parsed = parse(SAMPLE);
+
+        let result = part1(&parsed);
+
+        assert_eq!(result, 1588);
+    }
+
+    #[test]
+    fn sample_part2() {
+        let parsed = parse(SAMPLE);
+
+        let result = part2(&parsed);
+
+        assert_eq!(result, 2188189693529);
+    }
+
+    const SAMPLE: &str = "\
+NNCB
+
+CH -> B
+HH -> N
+CB -> H
+NH -> C
+HB -> C
+HC -> B
+HN -> C
+NN -> C
+BH -> H
+NC -> B
+NB -> B
+BN -> B
+BB -> N
+BC -> B
+CC -> N
+CN -> C
+";
+}

@@ -93,3 +93,35 @@ fn part2(contents: &Vec<CmdVec>) -> u32 {
 
     x * depth
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sample_part1() {
+        let parsed = parse(SAMPLE);
+
+        let result = part1(&parsed);
+
+        assert_eq!(result, 150);
+    }
+
+    #[test]
+    fn sample_part2() {
+        let parsed = parse(SAMPLE);
+
+        let result = part2(&parsed);
+
+        assert_eq!(result, 900);
+    }
+
+    const SAMPLE: &str = "\
+forward 5
+down 5
+forward 8
+up 3
+down 8
+forward 2
+";
+}

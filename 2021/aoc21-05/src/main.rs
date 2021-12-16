@@ -151,3 +151,39 @@ fn part2(lines: &Vec<Line>) -> usize {
 
     grid.into_values().filter(|x| *x > 1).count()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sample_part1() {
+        let parsed = parse(SAMPLE);
+
+        let result = part1(&parsed);
+
+        assert_eq!(result, 5);
+    }
+
+    #[test]
+    fn sample_part2() {
+        let parsed = parse(SAMPLE);
+
+        let result = part2(&parsed);
+
+        assert_eq!(result, 12);
+    }
+
+    const SAMPLE: &str = "\
+0,9 -> 5,9
+8,0 -> 0,8
+9,4 -> 3,4
+2,2 -> 2,1
+7,0 -> 7,4
+6,4 -> 2,0
+0,9 -> 2,9
+3,4 -> 1,4
+0,0 -> 8,8
+5,5 -> 8,2
+";
+}

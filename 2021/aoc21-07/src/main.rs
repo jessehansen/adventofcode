@@ -55,3 +55,30 @@ fn part2(contents: &Vec<i32>) -> i32 {
 
     least_fuel
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sample_part1() {
+        let parsed = parse(SAMPLE);
+
+        let result = part1(&parsed);
+
+        assert_eq!(result, 37);
+    }
+
+    #[test]
+    fn sample_part2() {
+        let parsed = parse(SAMPLE);
+
+        let result = part2(&parsed);
+
+        assert_eq!(result, 168);
+    }
+
+    const SAMPLE: &str = "\
+16,1,2,0,4,2,7,1,2,14
+";
+}

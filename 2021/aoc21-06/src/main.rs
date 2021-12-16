@@ -55,3 +55,30 @@ fn part2(fishes: &Vec<i32>) -> usize {
 
     breeders.iter().sum::<usize>() + babies.iter().sum::<usize>()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sample_part1() {
+        let parsed = parse(SAMPLE);
+
+        let result = part1(&parsed);
+
+        assert_eq!(result, 5934);
+    }
+
+    #[test]
+    fn sample_part2() {
+        let parsed = parse(SAMPLE);
+
+        let result = part2(&parsed);
+
+        assert_eq!(result, 26984457539);
+    }
+
+    const SAMPLE: &str = "\
+3,4,3,1,2
+";
+}

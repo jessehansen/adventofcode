@@ -51,3 +51,34 @@ fn part2(grid: &Grid2D<u32>) -> usize {
 
     basin_sizes.iter().rev().take(3).product()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sample_part1() {
+        let parsed = Grid2D::<u32>::from_char_str(SAMPLE);
+
+        let result = part1(&parsed);
+
+        assert_eq!(result, 15);
+    }
+
+    #[test]
+    fn sample_part2() {
+        let parsed = Grid2D::<u32>::from_char_str(SAMPLE);
+
+        let result = part2(&parsed);
+
+        assert_eq!(result, 1134);
+    }
+
+    const SAMPLE: &str = "\
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+";
+}

@@ -137,3 +137,59 @@ fn part2((marks, folds): &(Vec<Point2D>, Vec<Fold>)) -> OrigamiSheet {
 
     sheet
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sample_part1() {
+        let parsed = parse(SAMPLE);
+
+        let result = part1(&parsed);
+
+        assert_eq!(result, 17);
+    }
+
+    #[test]
+    fn sample_part2() {
+        let parsed = parse(SAMPLE);
+
+        let result = part2(&parsed);
+
+        assert_eq!(
+            result.to_string(),
+            "\
+##########
+##      ##
+##      ##
+##      ##
+##########
+"
+        );
+    }
+
+    const SAMPLE: &str = "\
+6,10
+0,14
+9,10
+0,3
+10,4
+4,11
+6,0
+6,12
+4,1
+0,13
+10,12
+3,4
+3,0
+8,4
+1,10
+2,14
+8,10
+9,0
+
+fold along y=7
+fold along x=5
+";
+}

@@ -110,3 +110,106 @@ fn part2(map: &Map) -> usize {
     let paths = map.traverse2("start".to_string(), vec!["start"]);
     paths.len()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sample_part1() {
+        let parsed = parse(SAMPLE);
+
+        let result = part1(&parsed);
+
+        assert_eq!(result, 10);
+    }
+
+    #[test]
+    fn sample_part2() {
+        let parsed = parse(SAMPLE);
+
+        let result = part2(&parsed);
+
+        assert_eq!(result, 36);
+    }
+
+    #[test]
+    fn sample_med_part1() {
+        let parsed = parse(SAMPLE_MED);
+
+        let result = part1(&parsed);
+
+        assert_eq!(result, 19);
+    }
+
+    #[test]
+    fn sample_med_part2() {
+        let parsed = parse(SAMPLE_MED);
+
+        let result = part2(&parsed);
+
+        assert_eq!(result, 103);
+    }
+
+    #[test]
+    fn sample_lrg_part1() {
+        let parsed = parse(SAMPLE_LRG);
+
+        let result = part1(&parsed);
+
+        assert_eq!(result, 226);
+    }
+
+    #[test]
+    fn sample_lrg_part2() {
+        let parsed = parse(SAMPLE_LRG);
+
+        let result = part2(&parsed);
+
+        assert_eq!(result, 3509);
+    }
+
+    const SAMPLE: &str = "\
+start-A
+start-b
+A-c
+A-b
+b-d
+A-end
+b-end
+";
+
+    const SAMPLE_MED: &str = "\
+dc-end
+HN-start
+start-kj
+dc-start
+dc-HN
+LN-dc
+HN-end
+kj-sa
+kj-HN
+kj-dc
+";
+
+    const SAMPLE_LRG: &str = "\
+fs-end
+he-DX
+fs-he
+start-DX
+pj-DX
+end-zg
+zg-sl
+zg-pj
+pj-he
+RW-he
+fs-DX
+pj-RW
+zg-RW
+start-pj
+he-WI
+zg-he
+pj-fs
+start-RW
+";
+}
