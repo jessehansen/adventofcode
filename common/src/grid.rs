@@ -11,6 +11,11 @@ pub struct Point2D {
     pub y: usize,
 }
 
+#[inline]
+pub fn pt(x: usize, y: usize) -> Point2D {
+    Point2D { x, y }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Bounds2D {
     pub width: usize,
@@ -33,10 +38,7 @@ impl Point2D {
             .into_iter()
             .map(move |(dx, dy)| (x + dx, y + dy))
             .filter(move |(x, y)| *x >= 0 && *x < width && *y >= 0 && *y < height)
-            .map(|(x, y)| Point2D {
-                x: x as usize,
-                y: y as usize,
-            })
+            .map(|(x, y)| pt(x as usize, y as usize))
     }
 
     pub fn cardinal_neighbors(&self, bounds: Bounds2D) -> impl Iterator<Item = Point2D> {
@@ -61,10 +63,15 @@ impl Point2D {
 
     pub fn left(&self) -> Option<Point2D> {
         if self.x > 0 {
-            Some(Point2D {
-                x: self.x - 1,
-                y: self.y,
-            })
+            Some(pt(self.x - 1, self.y))
+        } else {
+            None
+        }
+    }
+
+    pub fn right(&self, width: usize) -> Option<Point2D> {
+        if self.x < width - 1 {
+            Some(pt(self.x + 1, self.y))
         } else {
             None
         }
@@ -72,10 +79,15 @@ impl Point2D {
 
     pub fn up(&self) -> Option<Point2D> {
         if self.y > 0 {
-            Some(Point2D {
-                x: self.x,
-                y: self.y - 1,
-            })
+            Some(pt(self.x, self.y - 1))
+        } else {
+            None
+        }
+    }
+
+    pub fn down(&self, height: usize) -> Option<Point2D> {
+        if self.y < height - 1 {
+            Some(pt(self.x, self.y + 1))
         } else {
             None
         }
@@ -88,10 +100,7 @@ impl FromStr for Point2D {
     fn from_str(input: &str) -> Result<Point2D, Self::Err> {
         let mut parts = input.split(',').map(|x| x.parse().unwrap());
 
-        Ok(Point2D {
-            x: parts.next().unwrap(),
-            y: parts.next().unwrap(),
-        })
+        Ok(pt(parts.next().unwrap(), parts.next().unwrap()))
     }
 }
 
@@ -105,26 +114,23 @@ impl Bounds2D {
     pub fn iter_vertical(&self) -> impl Iterator<Item = Point2D> {
         (0..self.width)
             .cartesian_product(0..self.height)
-            .map(|(x, y)| Point2D { x, y })
+            .map(|(x, y)| pt(x, y))
     }
 
     pub fn iter_horizontal(&self) -> impl Iterator<Item = Point2D> {
         (0..self.height)
             .cartesian_product(0..self.width)
-            .map(|(y, x)| Point2D { x, y })
+            .map(|(y, x)| pt(x, y))
     }
 
     pub fn iter_horizontal_rev(&self) -> impl Iterator<Item = Point2D> {
         (0..self.height)
             .rev()
             .cartesian_product((0..self.width).rev())
-            .map(move |(y, x)| Point2D { x, y })
+            .map(move |(y, x)| pt(x, y))
     }
     pub fn bottom_right(&self) -> Point2D {
-        Point2D {
-            x: self.width - 1,
-            y: self.height - 1,
-        }
+        pt(self.width - 1, self.height - 1)
     }
 }
 
@@ -299,7 +305,7 @@ where
 
 impl<T> Grid2D<T>
 where
-    T: Clone,
+    T: Copy,
 {
     pub fn new_constant(bounds: Bounds2D, value: T) -> Grid2D<T> {
         let data: Vec<Vec<T>> = vec![vec![value; bounds.width]; bounds.height];
@@ -429,76 +435,40 @@ mod tests {
 
     #[test]
     fn point_neighbors_middle_of_grid() {
-        let point = Point2D { x: 2, y: 3 };
+        let point = pt(2, 3);
         let bounds = Bounds2D {
             width: 5,
             height: 10,
         };
         let points: Vec<Point2D> = point.cardinal_neighbors(bounds).collect();
-        assert_eq!(
-            points,
-            vec![
-                Point2D { x: 1, y: 3 },
-                Point2D { x: 3, y: 3 },
-                Point2D { x: 2, y: 2 },
-                Point2D { x: 2, y: 4 }
-            ]
-        );
+        assert_eq!(points, vec![pt(1, 3), pt(3, 3), pt(2, 2), pt(2, 4)]);
     }
 
     #[test]
     fn point_neighbors_edge_of_grid() {
-        let point = Point2D { x: 0, y: 3 };
+        let point = pt(0, 3);
         let bounds = Bounds2D {
             width: 5,
             height: 10,
         };
         let points: Vec<Point2D> = point.cardinal_neighbors(bounds).collect();
-        assert_eq!(
-            points,
-            vec![
-                Point2D { x: 1, y: 3 },
-                Point2D { x: 0, y: 2 },
-                Point2D { x: 0, y: 4 }
-            ]
-        );
+        assert_eq!(points, vec![pt(1, 3), pt(0, 2), pt(0, 4)]);
 
-        let point = Point2D { x: 4, y: 3 };
+        let point = pt(4, 3);
         let points: Vec<Point2D> = point.cardinal_neighbors(bounds).collect();
-        assert_eq!(
-            points,
-            vec![
-                Point2D { x: 3, y: 3 },
-                Point2D { x: 4, y: 2 },
-                Point2D { x: 4, y: 4 }
-            ]
-        );
+        assert_eq!(points, vec![pt(3, 3), pt(4, 2), pt(4, 4)]);
 
-        let point = Point2D { x: 2, y: 0 };
+        let point = pt(2, 0);
         let points: Vec<Point2D> = point.cardinal_neighbors(bounds).collect();
-        assert_eq!(
-            points,
-            vec![
-                Point2D { x: 1, y: 0 },
-                Point2D { x: 3, y: 0 },
-                Point2D { x: 2, y: 1 }
-            ]
-        );
+        assert_eq!(points, vec![pt(1, 0), pt(3, 0), pt(2, 1)]);
 
-        let point = Point2D { x: 2, y: 9 };
+        let point = pt(2, 9);
         let points: Vec<Point2D> = point.cardinal_neighbors(bounds).collect();
-        assert_eq!(
-            points,
-            vec![
-                Point2D { x: 1, y: 9 },
-                Point2D { x: 3, y: 9 },
-                Point2D { x: 2, y: 8 }
-            ]
-        );
+        assert_eq!(points, vec![pt(1, 9), pt(3, 9), pt(2, 8)]);
 
-        let point = Point2D { x: 0, y: 0 };
+        let point = pt(0, 0);
         let points: Vec<Point2D> = point.cardinal_neighbors(bounds).collect();
-        assert_eq!(points, vec![Point2D { x: 1, y: 0 }, Point2D { x: 0, y: 1 }]);
+        assert_eq!(points, vec![pt(1, 0), pt(0, 1)]);
     }
 
     #[test]
@@ -511,14 +481,7 @@ mod tests {
         let points: Vec<Point2D> = bounds.iter_vertical().collect();
         assert_eq!(
             points,
-            vec![
-                Point2D { x: 0, y: 0 },
-                Point2D { x: 0, y: 1 },
-                Point2D { x: 0, y: 2 },
-                Point2D { x: 1, y: 0 },
-                Point2D { x: 1, y: 1 },
-                Point2D { x: 1, y: 2 }
-            ]
+            vec![pt(0, 0), pt(0, 1), pt(0, 2), pt(1, 0), pt(1, 1), pt(1, 2)]
         );
     }
 
@@ -532,14 +495,7 @@ mod tests {
         let points: Vec<Point2D> = bounds.iter_horizontal().collect();
         assert_eq!(
             points,
-            vec![
-                Point2D { x: 0, y: 0 },
-                Point2D { x: 1, y: 0 },
-                Point2D { x: 0, y: 1 },
-                Point2D { x: 1, y: 1 },
-                Point2D { x: 0, y: 2 },
-                Point2D { x: 1, y: 2 }
-            ]
+            vec![pt(0, 0), pt(1, 0), pt(0, 1), pt(1, 1), pt(0, 2), pt(1, 2)]
         );
     }
 
@@ -551,7 +507,7 @@ mod tests {
     fn grid_index() {
         let grid = sample_grid();
 
-        let value: u32 = grid[Point2D { x: 2, y: 1 }];
+        let value: u32 = grid[pt(2, 1)];
         assert_eq!(value, 6_u32);
     }
 
@@ -591,12 +547,12 @@ mod tests {
         assert_eq!(
             result,
             vec![
-                (Point2D { x: 0, y: 0 }, &1),
-                (Point2D { x: 1, y: 0 }, &2),
-                (Point2D { x: 2, y: 0 }, &3),
-                (Point2D { x: 0, y: 1 }, &4),
-                (Point2D { x: 1, y: 1 }, &5),
-                (Point2D { x: 2, y: 1 }, &6),
+                (pt(0, 0), &1),
+                (pt(1, 0), &2),
+                (pt(2, 0), &3),
+                (pt(0, 1), &4),
+                (pt(1, 1), &5),
+                (pt(2, 1), &6),
             ]
         );
     }
@@ -610,12 +566,12 @@ mod tests {
         assert_eq!(
             result,
             vec![
-                (Point2D { x: 0, y: 0 }, &1),
-                (Point2D { x: 0, y: 1 }, &4),
-                (Point2D { x: 1, y: 0 }, &2),
-                (Point2D { x: 1, y: 1 }, &5),
-                (Point2D { x: 2, y: 0 }, &3),
-                (Point2D { x: 2, y: 1 }, &6),
+                (pt(0, 0), &1),
+                (pt(0, 1), &4),
+                (pt(1, 0), &2),
+                (pt(1, 1), &5),
+                (pt(2, 0), &3),
+                (pt(2, 1), &6),
             ]
         );
     }
