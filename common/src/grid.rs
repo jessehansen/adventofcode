@@ -1,9 +1,11 @@
 use itertools::Itertools;
+use std::cmp::Ordering;
+use std::collections::BinaryHeap;
 use std::fmt;
 use std::ops::{Index, IndexMut};
 use std::str::FromStr;
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct Point2D {
     pub x: usize,
     pub y: usize,
@@ -16,6 +18,8 @@ pub struct Bounds2D {
 }
 
 impl Point2D {
+    pub const ORIGIN: Point2D = Point2D { x: 0, y: 0 };
+
     fn bounded_relatives<T>(&self, bounds: Bounds2D, deltas: T) -> impl Iterator<Item = Point2D>
     where
         T: IntoIterator<Item = (i32, i32)>,
@@ -54,6 +58,28 @@ impl Point2D {
             ],
         )
     }
+
+    pub fn left(&self) -> Option<Point2D> {
+        if self.x > 0 {
+            Some(Point2D {
+                x: self.x - 1,
+                y: self.y,
+            })
+        } else {
+            None
+        }
+    }
+
+    pub fn up(&self) -> Option<Point2D> {
+        if self.y > 0 {
+            Some(Point2D {
+                x: self.x,
+                y: self.y - 1,
+            })
+        } else {
+            None
+        }
+    }
 }
 
 impl FromStr for Point2D {
@@ -69,6 +95,12 @@ impl FromStr for Point2D {
     }
 }
 
+impl fmt::Display for Point2D {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{},{}", self.x, self.y,)
+    }
+}
+
 impl Bounds2D {
     pub fn iter_vertical(&self) -> impl Iterator<Item = Point2D> {
         (0..self.width)
@@ -80,6 +112,19 @@ impl Bounds2D {
         (0..self.height)
             .cartesian_product(0..self.width)
             .map(|(y, x)| Point2D { x, y })
+    }
+
+    pub fn iter_horizontal_rev(&self) -> impl Iterator<Item = Point2D> {
+        (0..self.height)
+            .rev()
+            .cartesian_product((0..self.width).rev())
+            .map(move |(y, x)| Point2D { x, y })
+    }
+    pub fn bottom_right(&self) -> Point2D {
+        Point2D {
+            x: self.width - 1,
+            y: self.height - 1,
+        }
     }
 }
 
@@ -167,6 +212,99 @@ impl<T> Grid2D<T> {
         pt.cardinal_neighbors(self.bounds)
             .for_each(|pt| self[pt] = f((pt, &self.data[pt.y][pt.x])));
     }
+
+    pub fn bottom_right(&self) -> &T {
+        let pt = self.bounds.bottom_right();
+        &self.data[pt.y][pt.x]
+    }
+}
+
+// basically a reverse sorter for T, with the location along for the ride
+#[derive(Copy, Clone, Eq, PartialEq)]
+struct ShortestPathState<T> {
+    distance: T,
+    pt: Point2D,
+}
+
+impl<T> Ord for ShortestPathState<T>
+where
+    T: Ord,
+{
+    fn cmp(&self, other: &Self) -> Ordering {
+        other
+            .distance
+            .cmp(&self.distance)
+            .then_with(|| self.pt.cmp(&other.pt))
+    }
+}
+
+impl<T> PartialOrd for ShortestPathState<T>
+where
+    T: Ord,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<T> Grid2D<T>
+where
+    T: Default + Ord + Copy + std::ops::Add<Output = T>,
+{
+    // Dijkstra’s algorithm
+    pub fn shortest_path(&self) -> T {
+        let mut dist = Grid2D::<Option<T>>::new_constant(self.bounds, None);
+        dist[Point2D::ORIGIN] = Default::default();
+
+        let mut heap = BinaryHeap::new();
+        heap.push(ShortestPathState {
+            distance: Default::default(),
+            pt: Point2D::ORIGIN,
+        });
+
+        // using a binary heap means we're always looking at the next best unvisited node
+        while let Some(ShortestPathState { distance, pt }) = heap.pop() {
+            if pt == self.bounds.bottom_right() {
+                return distance;
+            }
+
+            // if we're already above the previous best to this point, don't bother continuing
+            match dist[pt] {
+                Some(prev_dist) if distance > prev_dist => {
+                    continue;
+                }
+                _ => (),
+            }
+
+            for (pt, dist_there) in self.cardinal_neighbors(pt) {
+                let dist_next = distance + *dist_there;
+
+                // if this is the best distance calculated so far, push it on the heap
+                match dist[pt] {
+                    Some(prev_dist) if dist_next >= prev_dist => (),
+                    _ => {
+                        heap.push(ShortestPathState {
+                            distance: dist_next,
+                            pt,
+                        });
+                        dist[pt] = Some(dist_next);
+                    }
+                }
+            }
+        }
+
+        Default::default()
+    }
+}
+
+impl<T> Grid2D<T>
+where
+    T: Clone,
+{
+    pub fn new_constant(bounds: Bounds2D, value: T) -> Grid2D<T> {
+        let data: Vec<Vec<T>> = vec![vec![value; bounds.width]; bounds.height];
+        Grid2D { data, bounds }
+    }
 }
 
 impl<T> Index<Point2D> for Grid2D<T> {
@@ -233,6 +371,22 @@ where
                 .collect::<Vec<String>>()
                 .join("\n")
         )
+    }
+}
+
+impl<T> Grid2D<T>
+where
+    T: fmt::Display,
+{
+    pub fn to_string_format_cell<F>(&self, formatter: F) -> String
+    where
+        F: Copy + FnMut(&T) -> String,
+    {
+        self.data
+            .iter()
+            .map(move |row| row.iter().map(formatter).collect::<Vec<String>>().join(""))
+            .collect::<Vec<String>>()
+            .join("\n")
     }
 }
 

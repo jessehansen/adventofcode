@@ -8,6 +8,5 @@ done
 cargo new $project_name
 cd $project_name
 touch input.txt
-touch sample.txt
-cp -fr ../aoc21-01/src/main.rs src/main.rs
+cp -fr template.rs src/main.rs
 echo "aoc_common = { path =\"../../common\" }" >> Cargo.toml
