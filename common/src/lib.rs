@@ -1,3 +1,4 @@
+use console::{style, Term};
 use std::fmt::Display;
 use std::fs;
 use std::time::{Duration, Instant};
@@ -23,24 +24,12 @@ where
     let part1_time = print_and_time("Part 1", || part1(&input));
     let part2_time = print_and_time("Part 2", || part2(&input));
 
-    println!();
-
-    println!("Stats:");
-    println!(
-        "Parse: {}ms ({}µs)",
-        parse_time.as_millis(),
-        parse_time.as_micros()
-    );
-    println!(
-        "Part 1: {}ms ({}µs)",
-        part1_time.as_millis(),
-        part1_time.as_micros()
-    );
-    println!(
-        "Part 2: {}ms ({}µs)",
-        part2_time.as_millis(),
-        part2_time.as_micros()
-    );
+    let term = &Term::stderr();
+    term.write_line("").unwrap();
+    term.write_line("Stats:").unwrap();
+    print_time(term, "Parse", parse_time);
+    print_time(term, "Part 1", part1_time);
+    print_time(term, "Part 2", part2_time);
 }
 
 fn print_and_time<F, T>(description: &str, runner: F) -> Duration
@@ -57,9 +46,19 @@ where
     if result.len() > 20 || result.contains('\n') {
         println!();
     }
-    println!("{}", result);
+    println!("{}", style(result).bold());
 
     elapsed
+}
+
+fn print_time(term: &Term, description: &str, time: Duration) {
+    term.write_line(&format!(
+        "{}: {}ms ({}µs)",
+        description,
+        time.as_millis(),
+        time.as_micros()
+    ))
+    .unwrap();
 }
 
 pub fn hex_to_binary_string(hex: &str) -> String {
