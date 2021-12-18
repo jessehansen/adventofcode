@@ -82,8 +82,6 @@ fn calc_max_y_when_hits(x_velocity: i32, y_velocity: i32, target: &TargetArea) -
 }
 
 fn part1(target: &TargetArea) -> i32 {
-    // brute force this bitch
-
     let mut result = 0;
     // any time initial x_velocity is greater than the max, we will miss the target
     for x_velocity in 1..=(target.x_max + 1) {
@@ -100,8 +98,6 @@ fn part1(target: &TargetArea) -> i32 {
 }
 
 fn part2(target: &TargetArea) -> usize {
-    // brute force this bitch
-
     let mut result = 0;
     // any time initial x_velocity is greater than the max, we will miss the target
     for x_velocity in 1..=(target.x_max + 1) {

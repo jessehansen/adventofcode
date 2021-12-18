@@ -4,8 +4,10 @@ use std::fs;
 use std::time::{Duration, Instant};
 
 mod grid;
-
 pub use grid::*;
+
+mod tree;
+pub use tree::*;
 
 pub fn run<T, U, V, FParse, F1, F2>(parse: FParse, part1: F1, part2: F2)
 where
