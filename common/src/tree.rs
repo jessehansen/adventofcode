@@ -24,7 +24,7 @@ impl<T> Node<T> {
     }
 
     pub fn is_leaf(&self) -> bool {
-        self.children.len() == 0
+        self.children.is_empty()
     }
 
     fn traverse<F: FnMut(&Node<T>) -> bool>(&self, visit: &mut F) -> bool {
