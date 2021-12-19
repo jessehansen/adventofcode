@@ -1,7 +1,7 @@
-use aoc_common::run;
+use aoc_common::*;
 
 fn main() {
-    run(parse, part1, part2);
+    run_vec(parse, part1, part2);
 }
 
 fn parse(contents: &str) -> Vec<String> {
@@ -12,7 +12,7 @@ fn parse(contents: &str) -> Vec<String> {
         .collect()
 }
 
-fn part1(contents: &Vec<String>) -> u32 {
+fn part1(contents: &[String]) -> u32 {
     let item_length = contents[0].len();
     let half_line_count = contents.len() / 2;
     let mut mcbs = vec![0; item_length];
@@ -39,11 +39,11 @@ fn part1(contents: &Vec<String>) -> u32 {
     gamma * epsilon
 }
 
-fn part2(contents: &Vec<String>) -> u32 {
+fn part2(contents: &[String]) -> u32 {
     let item_length = contents[0].len();
 
-    let mut oxygen_lines = contents.clone();
-    let mut scrubber_lines = contents.clone();
+    let mut oxygen_lines = contents.to_owned();
+    let mut scrubber_lines = contents.to_owned();
 
     let pos_vec = vec![0; item_length];
 
@@ -53,7 +53,7 @@ fn part2(contents: &Vec<String>) -> u32 {
             oxygen_lines = oxygen_lines
                 .into_iter()
                 .filter(|x| x.chars().nth(pos).unwrap() == oxygen_mcb)
-                .collect();
+                .collect::<Vec<String>>();
         }
         if scrubber_lines.len() > 1 {
             let scrubber_lcb = if get_mcb_at_pos(&scrubber_lines, pos) == '1' {
@@ -64,7 +64,7 @@ fn part2(contents: &Vec<String>) -> u32 {
             scrubber_lines = scrubber_lines
                 .into_iter()
                 .filter(|x| x.chars().nth(pos).unwrap() == scrubber_lcb)
-                .collect();
+                .collect::<Vec<String>>();
         }
         if oxygen_lines.len() == 1 && scrubber_lines.len() == 1 {
             break;
@@ -77,7 +77,7 @@ fn part2(contents: &Vec<String>) -> u32 {
     oxygen_rating * scrubber_rating
 }
 
-fn get_mcb_at_pos(lines: &Vec<String>, pos: usize) -> char {
+fn get_mcb_at_pos(lines: &[String], pos: usize) -> char {
     let half_line_count = lines.len() as f64 / 2.0;
     let line_count = lines
         .iter()

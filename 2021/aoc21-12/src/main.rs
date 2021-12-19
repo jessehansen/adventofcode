@@ -41,11 +41,11 @@ impl Map {
         let mut paths = vec![];
         for next in &self.nodes[&at].edges {
             let next_node = &self.nodes[next];
-            if next_node.is_small && path_so_far.iter().any(|x| x == &next) {
+            if next_node.is_small && path_so_far.iter().any(|x| *x == next) {
                 continue;
             }
             let mut path = path_so_far.clone();
-            path.push(&next);
+            path.push(next);
             if next == "end" {
                 paths.push(path);
             } else {
@@ -68,7 +68,7 @@ impl Map {
                 continue;
             }
             let mut path = path_so_far.clone();
-            path.push(&next);
+            path.push(next);
             if next == "end" {
                 paths.push(path);
             } else {

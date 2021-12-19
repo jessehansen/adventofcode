@@ -1,4 +1,5 @@
 use console::{style, Term};
+use std::fmt;
 use std::fmt::Display;
 use std::fs;
 use std::time::{Duration, Instant};
@@ -17,21 +18,12 @@ where
     F1: Fn(&T) -> U,
     F2: Fn(&T) -> V,
 {
-    let input = fs::read_to_string("./input.txt").expect("Something went wrong reading input.txt");
-
-    let start = Instant::now();
-    let input = parse(&input);
-    let parse_time = start.elapsed();
+    let (input, parse_time) = read_and_parse(parse);
 
     let part1_time = print_and_time("Part 1", || part1(&input));
     let part2_time = print_and_time("Part 2", || part2(&input));
 
-    let term = &Term::stderr();
-    term.write_line("").unwrap();
-    term.write_line("Stats:").unwrap();
-    print_time(term, "Parse", parse_time);
-    print_time(term, "Part 1", part1_time);
-    print_time(term, "Part 2", part2_time);
+    print_stats(parse_time, part1_time, part2_time);
 }
 
 // because I'm tired of clippy warnings
@@ -43,21 +35,25 @@ where
     F1: Fn(&[T]) -> U,
     F2: Fn(&[T]) -> V,
 {
+    let (input, parse_time) = read_and_parse(parse);
+
+    let part1_time = print_and_time("Part 1", || part1(&input));
+    let part2_time = print_and_time("Part 2", || part2(&input));
+
+    print_stats(parse_time, part1_time, part2_time);
+}
+
+fn read_and_parse<T, F>(parse: F) -> (T, Duration)
+where
+    F: Fn(&str) -> T,
+{
     let input = fs::read_to_string("./input.txt").expect("Something went wrong reading input.txt");
 
     let start = Instant::now();
     let input = parse(&input);
     let parse_time = start.elapsed();
 
-    let part1_time = print_and_time("Part 1", || part1(&input));
-    let part2_time = print_and_time("Part 2", || part2(&input));
-
-    let term = &Term::stderr();
-    term.write_line("").unwrap();
-    term.write_line("Stats:").unwrap();
-    print_time(term, "Parse", parse_time);
-    print_time(term, "Part 1", part1_time);
-    print_time(term, "Part 2", part2_time);
+    (input, parse_time)
 }
 
 fn print_and_time<F, T>(description: &str, runner: F) -> Duration
@@ -79,14 +75,18 @@ where
     elapsed
 }
 
+fn print_stats(parse_time: Duration, part1_time: Duration, part2_time: Duration) {
+    let term = &Term::stderr();
+    term.write_line("").unwrap();
+    term.write_line("Stats:").unwrap();
+    print_time(term, "Parse", parse_time);
+    print_time(term, "Part 1", part1_time);
+    print_time(term, "Part 2", part2_time);
+}
+
 fn print_time(term: &Term, description: &str, time: Duration) {
-    term.write_line(&format!(
-        "{}: {}ms ({}µs)",
-        description,
-        time.as_millis(),
-        time.as_micros()
-    ))
-    .unwrap();
+    term.write_line(&format!("{}: {}", description, HumanDuration(time)))
+        .unwrap();
 }
 
 pub fn hex_to_binary_string(hex: &str) -> String {
@@ -168,5 +168,18 @@ pub fn pad_right_for_multiple(some_str: &mut String, padding: char, multiple: us
                 .map(|_| padding.to_string())
                 .collect::<String>(),
         );
+    }
+}
+
+struct HumanDuration(Duration);
+impl fmt::Display for HumanDuration {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.0.as_secs_f32() > 1.0 {
+            write!(f, "{:.3}s ({}ms)", self.0.as_secs_f32(), self.0.as_millis())
+        } else if self.0.as_millis() > 1 {
+            write!(f, "{}ms ({}µs)", self.0.as_millis(), self.0.as_micros())
+        } else {
+            write!(f, "{}µs ({}ns)", self.0.as_micros(), self.0.as_nanos())
+        }
     }
 }

@@ -1,7 +1,7 @@
-use aoc_common::run;
+use aoc_common::*;
 
 fn main() {
-    run(parse, part1, part2);
+    run_vec(parse, part1, part2);
 }
 
 fn parse(contents: &str) -> Vec<i32> {
@@ -15,7 +15,7 @@ fn parse(contents: &str) -> Vec<i32> {
         .collect()
 }
 
-fn part1(contents: &Vec<i32>) -> i32 {
+fn part1(contents: &[i32]) -> i32 {
     let min = contents.iter().min().unwrap();
     let max = contents.iter().max().unwrap();
 
@@ -37,7 +37,7 @@ fn triangle_number(n: i32) -> i32 {
     (n * n + n) / 2
 }
 
-fn part2(contents: &Vec<i32>) -> i32 {
+fn part2(contents: &[i32]) -> i32 {
     let min = contents.iter().min().unwrap();
     let max = contents.iter().max().unwrap();
 

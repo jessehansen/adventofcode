@@ -1,7 +1,7 @@
-use aoc_common::run;
+use aoc_common::*;
 
 fn main() {
-    run(parse, part1, part2);
+    run_vec(parse, part1, part2);
 }
 
 fn parse(contents: &str) -> Vec<String> {
@@ -12,7 +12,7 @@ fn parse(contents: &str) -> Vec<String> {
         .collect()
 }
 
-fn part1(contents: &Vec<String>) -> u32 {
+fn part1(contents: &[String]) -> u32 {
     let mut score = 0;
 
     for line in contents {
@@ -53,7 +53,7 @@ fn part1(contents: &Vec<String>) -> u32 {
     score
 }
 
-fn part2(contents: &Vec<String>) -> u64 {
+fn part2(contents: &[String]) -> u64 {
     let mut line_scores = vec![];
 
     for line in contents {
