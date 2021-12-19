@@ -1,10 +1,10 @@
-use aoc_common::run;
+use aoc_common::*;
 use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
 fn main() {
-    run(parse, part1, part2);
+    run_vec(parse, part1, part2);
 }
 
 #[derive(Copy, Clone)]
@@ -125,7 +125,7 @@ fn parse(contents: &str) -> Vec<Line> {
         .collect()
 }
 
-fn part1(lines: &Vec<Line>) -> usize {
+fn part1(lines: &[Line]) -> usize {
     let mut grid = HashMap::new();
     for line in lines {
         if line.a.x != line.b.x && line.a.y != line.b.y {
@@ -140,7 +140,7 @@ fn part1(lines: &Vec<Line>) -> usize {
     grid.into_values().filter(|x| *x > 1).count()
 }
 
-fn part2(lines: &Vec<Line>) -> usize {
+fn part2(lines: &[Line]) -> usize {
     let mut grid = HashMap::new();
     for line in lines {
         for point in line.iter() {

@@ -1,5 +1,6 @@
 use aoc_common::*;
 use regex::Regex;
+use std::cmp::Ordering;
 use std::mem::swap;
 use std::str::FromStr;
 
@@ -62,12 +63,10 @@ fn calc_max_y_when_hits(x_velocity: i32, y_velocity: i32, target: &TargetArea) -
     while x <= target.x_max && y >= target.y_min {
         x += dx;
         y += dy;
-        dx = if dx > 0 {
-            dx - 1
-        } else if dx == 0 {
-            0
-        } else {
-            dx + 1
+        dx = match dx.cmp(&0) {
+            Ordering::Greater => dx - 1,
+            Ordering::Equal => 0,
+            Ordering::Less => dx + 1,
         };
         dy -= 1;
         if y > max_y {
@@ -102,7 +101,7 @@ fn part2(target: &TargetArea) -> usize {
     // any time initial x_velocity is greater than the max, we will miss the target
     for x_velocity in 1..=(target.x_max + 1) {
         for y_velocity in -1000..1000 {
-            if let Some(_) = calc_max_y_when_hits(x_velocity, y_velocity, target) {
+            if calc_max_y_when_hits(x_velocity, y_velocity, target).is_some() {
                 result += 1;
             }
         }

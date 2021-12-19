@@ -1,8 +1,8 @@
-use aoc_common::run;
+use aoc_common::*;
 use itertools::Itertools;
 
 fn main() {
-    run(parse, part1, part2);
+    run_vec(parse, part1, part2);
 }
 
 struct DisplayLine {
@@ -37,7 +37,7 @@ fn parse(contents: &str) -> Vec<DisplayLine> {
         .collect()
 }
 
-fn part1(contents: &Vec<DisplayLine>) -> usize {
+fn part1(contents: &[DisplayLine]) -> usize {
     contents
         .iter()
         .map(|x| {
@@ -145,7 +145,7 @@ fn decode_output(codes: [String; 10], output: &[String]) -> u32 {
     result.parse().unwrap()
 }
 
-fn part2(contents: &Vec<DisplayLine>) -> u32 {
+fn part2(contents: &[DisplayLine]) -> u32 {
     contents
         .iter()
         .map(|x| {

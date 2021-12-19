@@ -1,8 +1,8 @@
-use aoc_common::run;
+use aoc_common::*;
 use std::str::FromStr;
 
 fn main() {
-    run(parse, part1, part2);
+    run_vec(parse, part1, part2);
 }
 
 enum Cmd {
@@ -60,7 +60,7 @@ fn parse(contents: &str) -> Vec<CmdVec> {
         .collect()
 }
 
-fn part1(contents: &Vec<CmdVec>) -> u32 {
+fn part1(contents: &[CmdVec]) -> u32 {
     let mut x = 0;
     let mut depth = 0;
 
@@ -75,7 +75,7 @@ fn part1(contents: &Vec<CmdVec>) -> u32 {
     x * depth
 }
 
-fn part2(contents: &Vec<CmdVec>) -> u32 {
+fn part2(contents: &[CmdVec]) -> u32 {
     let mut x = 0;
     let mut aim = 0;
     let mut depth = 0;
