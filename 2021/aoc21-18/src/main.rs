@@ -6,7 +6,7 @@ use std::ops::Add;
 use std::str::FromStr;
 
 fn main() {
-    run(parse, part1, part2);
+    run_vec(parse, part1, part2);
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -72,7 +72,9 @@ impl FishNum {
     }
 
     fn explode(&mut self, pos: usize) {
-        // pos is the position of the opening bracket, find the closing bracket
+        // pos is the position of the opening bracket, get the left & right numbers.  If we've
+        // correctly reduced previous to the last operation, there shouldn't be a way to nest
+        // deeper than 4
         let left;
         if let Token::Number(l) = self.contents[pos + 1] {
             left = l;
@@ -176,6 +178,8 @@ impl<'a> std::iter::Sum<&'a FishNum> for FishNum {
     where
         I: Iterator<Item = &'a FishNum>,
     {
+        // have to clone here even though we're going to replace it
+        // in just a second
         let mut acc = iter.next().unwrap().clone();
         for x in iter {
             acc = acc + x;
@@ -227,7 +231,7 @@ impl Token {
             '[' => Some(Token::Open),
             ']' => Some(Token::Close),
             ',' => Some(Token::Separator),
-            '0'..='9' => Some(Token::Number(c.to_string().parse::<u32>().unwrap())),
+            '0'..='9' => Some(Token::Number(c.to_string().parse().unwrap())),
             ' ' => None,
             _ => panic!(),
         }
@@ -249,24 +253,23 @@ fn parse(contents: &str) -> Vec<FishNum> {
     contents.lines().map(|x| x.parse().unwrap()).collect()
 }
 
-fn part1(contents: &Vec<FishNum>) -> u32 {
+fn part1(contents: &[FishNum]) -> u32 {
     let sum: FishNum = contents.iter().sum();
     sum.magnitude()
 }
 
-fn part2(contents: &Vec<FishNum>) -> u32 {
-    let mut max = 0;
-    for x in contents.iter() {
-        for y in contents.iter() {
-            if x != y {
-                let mag = x.plus(y).magnitude();
-                if mag > max {
-                    max = mag;
-                }
-            }
-        }
-    }
-    max
+fn part2(contents: &[FishNum]) -> u32 {
+    contents
+        .iter()
+        .map(|x| {
+            contents
+                .iter()
+                .map(|y| if x == y { 0 } else { x.plus(y).magnitude() })
+                .max()
+                .unwrap()
+        })
+        .max()
+        .unwrap()
 }
 
 #[cfg(test)]

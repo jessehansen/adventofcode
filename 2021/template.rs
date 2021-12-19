@@ -1,4 +1,4 @@
-use aoc_common::run;
+use aoc_common::*;
 
 fn main() {
     run(parse, part1, part2);
