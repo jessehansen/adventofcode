@@ -43,6 +43,32 @@ where
     print_stats(parse_time, part1_time, part2_time);
 }
 
+pub fn run_progressive_vec<T, T2, U, V, FParse, F1, F2>(parse: FParse, part1: F1, part2: F2)
+where
+    U: Display,
+    V: Display,
+    FParse: Fn(&str) -> Vec<T>,
+    F1: Fn(&[T]) -> (U, T2),
+    F2: Fn(&T2) -> V,
+{
+    let (input, parse_time) = read_and_parse(parse);
+
+    let start = Instant::now();
+    let (result, data_for_next) = part1(&input);
+    let part1_time = start.elapsed();
+
+    print!("Part 1 - ");
+    let result = format!("{}", result);
+    if result.len() > 20 || result.contains('\n') {
+        println!();
+    }
+    println!("{}", style(result).bold());
+
+    let part2_time = print_and_time("Part 2", || part2(&data_for_next));
+
+    print_stats(parse_time, part1_time, part2_time);
+}
+
 fn read_and_parse<T, F>(parse: F) -> (T, Duration)
 where
     F: Fn(&str) -> T,
