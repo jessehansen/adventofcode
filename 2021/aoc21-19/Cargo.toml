@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 aoc_common = { path ="../../common" }
+nalgebra = "0.29.0"
+
+[features]

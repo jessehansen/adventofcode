@@ -1,10 +1,38 @@
 use aoc_common::*;
+use nalgebra::{vector, Matrix3, Vector3};
 use std::fmt;
 use std::str::FromStr;
 
 fn main() {
-    run_vec(parse, part1, part2);
+    run_progressive_vec(parse, part1, part2);
 }
+
+static ROTATION_MATRICES: [Matrix3<i32>; 24] = [
+    Matrix3::new(1, 0, 0, 0, 1, 0, 0, 0, 1),
+    Matrix3::new(1, 0, 0, 0, 0, 1, 0, -1, 0),
+    Matrix3::new(1, 0, 0, 0, -1, 0, 0, 0, -1),
+    Matrix3::new(1, 0, 0, 0, 0, -1, 0, 1, 0),
+    Matrix3::new(0, 1, 0, 0, 0, 1, 1, 0, 0),
+    Matrix3::new(0, 1, 0, 1, 0, 0, 0, 0, -1),
+    Matrix3::new(0, 1, 0, 0, 0, -1, -1, 0, 0),
+    Matrix3::new(0, 1, 0, -1, 0, 0, 0, 0, 1),
+    Matrix3::new(0, 0, 1, 1, 0, 0, 0, 1, 0),
+    Matrix3::new(0, 0, 1, 0, 1, 0, -1, 0, 0),
+    Matrix3::new(0, 0, 1, -1, 0, 0, 0, -1, 0),
+    Matrix3::new(0, 0, 1, 0, -1, 0, 1, 0, 0),
+    Matrix3::new(-1, 0, 0, 0, -1, 0, 0, 0, 1),
+    Matrix3::new(-1, 0, 0, 0, 0, 1, 0, 1, 0),
+    Matrix3::new(-1, 0, 0, 0, 1, 0, 0, 0, -1),
+    Matrix3::new(-1, 0, 0, 0, 0, -1, 0, -1, 0),
+    Matrix3::new(0, -1, 0, 0, 0, -1, 1, 0, 0),
+    Matrix3::new(0, -1, 0, 1, 0, 0, 0, 0, 1),
+    Matrix3::new(0, -1, 0, 0, 0, 1, -1, 0, 0),
+    Matrix3::new(0, -1, 0, -1, 0, 0, 0, 0, -1),
+    Matrix3::new(0, 0, -1, -1, 0, 0, 0, 1, 0),
+    Matrix3::new(0, 0, -1, 0, 1, 0, 1, 0, 0),
+    Matrix3::new(0, 0, -1, 1, 0, 0, 0, -1, 0),
+    Matrix3::new(0, 0, -1, 0, -1, 0, -1, 0, 0),
+];
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 struct Point3D {
@@ -13,50 +41,17 @@ struct Point3D {
     z: i32,
 }
 
-struct Rotation3D {
-    matrix: [[i32; 3]; 3],
-}
+impl FromStr for Point3D {
+    type Err = ();
 
-impl Rotation3D {
-    fn execute(&self, pt: Point3D) -> Point3D {
-        let pt = [pt.x, pt.y, pt.z];
-        let mx = self.matrix;
-        let mut res = [0; 3];
-        for i in 0..3 {
-            res[i] = pt[0] * mx[i][0] + pt[1] * mx[i][1] + pt[2] * mx[i][2];
-        }
+    fn from_str(point: &str) -> Result<Self, Self::Err> {
+        let parsed: Vec<i32> = point.split(',').map(|x| x.parse().unwrap()).collect();
 
-        Point3D {
-            x: res[0],
-            y: res[1],
-            z: res[2],
-        }
-    }
-
-    fn execute_times(&self, pt: Point3D, times: usize) -> Point3D {
-        let mut res = pt;
-        for _ in 0..times {
-            res = self.execute(res);
-        }
-        res
-    }
-
-    fn x90() -> Rotation3D {
-        Rotation3D {
-            matrix: [[1, 0, 0], [0, 0, -1], [0, 1, 0]],
-        }
-    }
-
-    fn y90() -> Rotation3D {
-        Rotation3D {
-            matrix: [[0, 0, 1], [0, 1, 0], [-1, 0, 0]],
-        }
-    }
-
-    fn z90() -> Rotation3D {
-        Rotation3D {
-            matrix: [[0, -1, 0], [1, 0, 0], [0, 0, 1]],
-        }
+        Ok(Point3D {
+            x: parsed[0],
+            y: parsed[1],
+            z: parsed[2],
+        })
     }
 }
 
@@ -77,31 +72,17 @@ impl Point3D {
 
         self_abs == other_abs
     }
-}
 
-impl std::ops::Sub for Point3D {
-    type Output = Point3D;
-
-    fn sub(self, other: Self) -> Self::Output {
-        Point3D {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z,
-        }
+    fn as_vector(&self) -> Vector3<i32> {
+        vector![self.x, self.y, self.z]
     }
-}
 
-impl FromStr for Point3D {
-    type Err = ();
-
-    fn from_str(point: &str) -> Result<Self, Self::Err> {
-        let parsed: Vec<i32> = point.split(',').map(|x| x.parse().unwrap()).collect();
-
-        Ok(Point3D {
-            x: parsed[0],
-            y: parsed[1],
-            z: parsed[2],
-        })
+    fn from_vector(v: &Vector3<i32>) -> Point3D {
+        Point3D {
+            x: v[0],
+            y: v[1],
+            z: v[2],
+        }
     }
 }
 
@@ -121,115 +102,134 @@ impl fmt::Debug for Point3D {
 struct Scanner {
     beacons: Vec<Point3D>,
     dist_matrix: Vec<Vec<Point3D>>,
+    other_scanners: Vec<Point3D>,
+}
+
+struct OverlappingBeacons {
+    ref_beacon: usize,
+    other_ref_beacon: usize,
+    overlapping_beacon_indices: Vec<(usize, usize)>,
 }
 
 impl Scanner {
     fn new(beacons: Vec<Point3D>) -> Scanner {
-        let mut dist_matrix =
-            vec![vec![Point3D { x: 0, y: 0, z: 0 }; beacons.len()]; beacons.len()];
+        let mut result = Scanner {
+            beacons,
+            dist_matrix: vec![],
+            other_scanners: vec![],
+        };
 
-        for i in 0..beacons.len() {
-            for j in 0..beacons.len() {
+        result.calc_dist_matrix();
+
+        result
+    }
+
+    fn calc_dist_matrix(&mut self) {
+        self.dist_matrix =
+            vec![vec![Point3D { x: 0, y: 0, z: 0 }; self.beacons.len()]; self.beacons.len()];
+
+        for i in 0..self.beacons.len() {
+            for j in 0..self.beacons.len() {
                 if i == j {
                     continue;
                 }
 
-                dist_matrix[i][j] = beacons[i].relative_to(beacons[j]);
+                self.dist_matrix[i][j] = self.beacons[i].relative_to(self.beacons[j]);
             }
-        }
-
-        Scanner {
-            beacons,
-            dist_matrix,
         }
     }
 
-    fn overlapping_beacons(&self, other: &Scanner) -> Option<(usize, usize, Vec<Point3D>)> {
-        println!("finding overlapping beacons");
+    fn overlapping_beacons(&self, other: &Scanner) -> Option<OverlappingBeacons> {
         for i in 0..self.beacons.len() {
             let distances = &self.dist_matrix[i];
             // see if we have 12 overlapping distances
             for j in 0..other.beacons.len() {
                 let other_distances = &other.dist_matrix[j];
 
-                let overlapping: Vec<Point3D> = distances
-                    .iter()
-                    .filter(|x| {
-                        other_distances
-                            .iter()
-                            .any(|y| x.equal_distance_from_origin(*y))
+                let overlapping: Vec<(usize, usize)> = (0..(self.beacons.len()))
+                    .filter_map(|my_beacon_ix| {
+                        let maybe_other_ix = (0..(other.beacons.len())).find(|other_beacon_ix| {
+                            distances[my_beacon_ix]
+                                .equal_distance_from_origin(other_distances[*other_beacon_ix])
+                        });
+
+                        if let Some(other_beacon_ix) = maybe_other_ix {
+                            return Some((my_beacon_ix, other_beacon_ix));
+                        }
+                        None
                     })
-                    .cloned()
                     .collect();
 
                 if overlapping.len() >= 12 {
-                    return Some((i, j, overlapping));
+                    return Some(OverlappingBeacons {
+                        ref_beacon: i,
+                        other_ref_beacon: j,
+                        overlapping_beacon_indices: overlapping,
+                    });
                 }
             }
         }
         None
     }
 
-    fn find_rotation(
-        &self,
-        other: &Scanner,
-        ref_beacon: usize,
-        other_ref_beacon: usize,
-    ) -> Option<(usize, usize, usize)> {
-        let ref_beacon = &self.dist_matrix[ref_beacon];
-        let other_ref_beacon = &other.dist_matrix[other_ref_beacon];
-
-        // find rotation
-        for x in 0..4 {
-            for y in 0..4 {
-                for z in 0..4 {
-                    if ref_beacon.iter().all(|my_beacon_dist| {
-                        if my_beacon_dist.x == 0 && my_beacon_dist.y == 0 && my_beacon_dist.z == 0 {
-                            return true;
-                        }
-
-                        other_ref_beacon.iter().any(|other_beacon_dist| {
-                            let mut rotated =
-                                Rotation3D::x90().execute_times(*other_beacon_dist, x);
-                            rotated = Rotation3D::y90().execute_times(rotated, y);
-                            rotated = Rotation3D::z90().execute_times(rotated, z);
-                            *my_beacon_dist == rotated
-                        })
-                    }) {
-                        return Some((x, y, z));
-                    }
-                }
+    fn find_rotation(&self, other: &Scanner, overlap: &OverlappingBeacons) -> Option<Matrix3<i32>> {
+        let my_distances = &self.dist_matrix[overlap.ref_beacon];
+        let other_distances = &other.dist_matrix[overlap.other_ref_beacon];
+        for rot in ROTATION_MATRICES {
+            if overlap
+                .overlapping_beacon_indices
+                .iter()
+                .all(|(my_beacon_ix, other_beacon_ix)| {
+                    let rotated = rot * other_distances[*other_beacon_ix].as_vector();
+                    my_distances[*my_beacon_ix].as_vector() == rotated
+                })
+            {
+                return Some(rot);
             }
         }
         None
     }
 
     fn plot_beacons(&mut self, other: &Scanner) -> bool {
-        if let Some((ref_beacon, other_ref_beacon, _overlapping)) = self.overlapping_beacons(other)
-        {
-            println!(
-                "found overlapping beacons: self.beacons[{}] = other.beacons[{}]",
-                ref_beacon, other_ref_beacon
-            );
-            if let Some((x, y, z)) = self.find_rotation(other, ref_beacon, other_ref_beacon) {
-                println!("found rotation: ({}, {}, {})", x, y, z);
-                let mut rotated_other_beacon =
-                    Rotation3D::x90().execute_times(other.beacons[other_ref_beacon], x);
-                rotated_other_beacon = Rotation3D::y90().execute_times(rotated_other_beacon, y);
-                rotated_other_beacon = Rotation3D::z90().execute_times(rotated_other_beacon, z);
+        if let Some(overlap) = self.overlapping_beacons(other) {
+            if let Some(rot) = self.find_rotation(other, &overlap) {
+                let rotated_other_beacon =
+                    rot * other.beacons[overlap.other_ref_beacon].as_vector();
 
-                let translation = self.beacons[ref_beacon] - rotated_other_beacon;
-                println!("found other scanner at ({})", translation);
+                let translation =
+                    self.beacons[overlap.ref_beacon].as_vector() - rotated_other_beacon;
+                self.other_scanners.push(Point3D::from_vector(&translation));
 
                 for beacon in &other.beacons {
-                    if !self.beacons.contains(&beacon) {
-                        self.beacons.push(*beacon);
+                    let normalized =
+                        Point3D::from_vector(&(rot * beacon.as_vector() + translation));
+                    if !self.beacons.contains(&normalized) {
+                        self.beacons.push(normalized);
                     }
                 }
+                self.calc_dist_matrix();
+
                 return true;
             }
         }
         false
+    }
+
+    fn max_manhattan_distance(&self) -> i32 {
+        let mut max = 0;
+
+        for i in 0..self.other_scanners.len() {
+            for j in 0..self.other_scanners.len() {
+                let a = self.other_scanners[i];
+                let b = self.other_scanners[j];
+                let dist = (a.x - b.x).abs() + (a.y - b.y).abs() + (a.z - b.z).abs();
+                if dist > max {
+                    max = dist
+                }
+            }
+        }
+
+        max
     }
 }
 
@@ -251,15 +251,24 @@ fn parse(contents: &str) -> Vec<Scanner> {
     contents.split("\n\n").map(|x| x.parse().unwrap()).collect()
 }
 
-fn part1(scanners: &[Scanner]) -> usize {
-    let mut reference_scanner = scanners[0].clone();
-    reference_scanner.plot_beacons(&scanners[1]);
+fn part1(scanners: &[Scanner]) -> (usize, Scanner) {
+    let mut scanners = scanners.to_owned();
+    let mut reference_scanner = scanners.remove(0);
 
-    reference_scanner.beacons.len()
+    while !scanners.is_empty() {
+        for i in 0..scanners.len() {
+            if reference_scanner.plot_beacons(&scanners[i]) {
+                scanners.remove(i);
+                break;
+            }
+        }
+    }
+
+    (reference_scanner.beacons.len(), reference_scanner)
 }
 
-fn part2(contents: &[Scanner]) -> usize {
-    contents.len()
+fn part2(scanner: &Scanner) -> i32 {
+    scanner.max_manhattan_distance()
 }
 
 #[cfg(test)]
@@ -270,65 +279,39 @@ mod tests {
     fn overlapping_beacons() {
         let scanners = parse(SAMPLE);
 
-        let (_, _, result) = scanners[0].overlapping_beacons(&scanners[1]).unwrap();
+        let result = scanners[0].overlapping_beacons(&scanners[1]).unwrap();
 
-        assert_eq!(result.len(), 12);
-
-        // for i in 1..scanners.len() {
-        // dbg!(scanners[0].overlapping_beacons(&scanners[i]));
-        // }
-        // panic!("show me output");
+        assert_eq!(result.overlapping_beacon_indices.len(), 12);
     }
 
     #[test]
-    fn point_rotation() {
-        let initial = Point3D { x: 1, y: 2, z: 3 };
+    fn single_plot() {
+        let scanners = parse(SAMPLE);
 
-        assert_eq!(
-            Rotation3D::x90().execute(initial),
-            Point3D { x: 1, y: -3, z: 2 }
-        );
+        let mut origin = scanners[0].clone();
 
-        assert_eq!(
-            Rotation3D::y90().execute(initial),
-            Point3D { x: 3, y: 2, z: -1 }
-        );
-
-        assert_eq!(
-            Rotation3D::z90().execute(initial),
-            Point3D { x: -2, y: 1, z: 3 }
-        );
-
-        assert_eq!(
-            Rotation3D::z90().execute_times(initial, 2),
-            Point3D { x: -1, y: -2, z: 3 }
-        );
-
-        assert_eq!(
-            Rotation3D::z90().execute_times(initial, 3),
-            Point3D { x: 2, y: -1, z: 3 }
-        );
-
-        assert_eq!(Rotation3D::z90().execute_times(initial, 4), initial);
+        assert!(origin.plot_beacons(&scanners[1]));
+        assert_eq!(origin.beacons.len(), 38);
     }
 
     #[test]
     fn sample_part1() {
         let parsed = parse(SAMPLE);
 
-        let result = part1(&parsed);
+        let (result, _) = part1(&parsed);
 
         assert_eq!(result, 79);
     }
 
     #[test]
-    #[ignore]
     fn sample_part2() {
         let parsed = parse(SAMPLE);
 
-        let result = part2(&parsed);
+        let (_, scanner) = part1(&parsed);
 
-        assert_eq!(result, 0);
+        let result = part2(&scanner);
+
+        assert_eq!(result, 3621);
     }
 
     const SAMPLE: &str = "\
