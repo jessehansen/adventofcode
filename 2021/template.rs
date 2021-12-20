@@ -1,18 +1,18 @@
 use aoc_common::*;
 
 fn main() {
-    run(parse, part1, part2);
+    run_vec(parse, part1, part2);
 }
 
 fn parse(contents: &str) -> Vec<String> {
     contents.lines().map(|x| x.to_string()).collect()
 }
 
-fn part1(contents: &Vec<String>) -> usize {
+fn part1(contents: &[String]) -> usize {
     contents.len()
 }
 
-fn part2(contents: &Vec<String>) -> usize {
+fn part2(contents: &[String]) -> usize {
     contents.len()
 }
 

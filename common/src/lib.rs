@@ -200,7 +200,19 @@ pub fn pad_right_for_multiple(some_str: &mut String, padding: char, multiple: us
 struct HumanDuration(Duration);
 impl fmt::Display for HumanDuration {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.0.as_secs_f32() > 1.0 {
+        let secs = self.0.as_secs();
+
+        if secs > 3600 {
+            write!(
+                f,
+                "{}:{:02}:{:02}",
+                secs / 3600,
+                (secs % 3600) / 60,
+                secs % 60
+            )
+        } else if secs > 60 {
+            write!(f, "{}:{:02}", secs / 60, secs % 60)
+        } else if secs >= 1 {
             write!(f, "{:.3}s ({}ms)", self.0.as_secs_f32(), self.0.as_millis())
         } else if self.0.as_millis() > 1 {
             write!(f, "{}ms ({}µs)", self.0.as_millis(), self.0.as_micros())
