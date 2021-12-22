@@ -24,20 +24,9 @@ impl ReactorCore {
     }
 
     fn turn_on(&mut self, cuboid: &Cuboid) {
-        let mut turning_on = vec![*cuboid];
-        'outer: while !turning_on.is_empty() {
-            for already_on in &self.on {
-                for i in 0..turning_on.len() {
-                    let c = turning_on[i];
-                    if already_on.overlaps(&c) {
-                        turning_on.splice(i..=i, already_on.difference(&c));
-                        continue 'outer;
-                    }
-                }
-            }
-
-            self.on.append(&mut turning_on);
-        }
+        // turn this cuboid off first, then we can simply add this cuboid to the on list
+        self.turn_off(cuboid);
+        self.on.push(*cuboid);
     }
 
     fn turn_off(&mut self, cuboid: &Cuboid) {
