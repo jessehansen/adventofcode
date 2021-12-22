@@ -1,6 +1,4 @@
 use aoc_common::*;
-use itertools::Itertools;
-use std::collections::HashSet;
 use std::fmt;
 use std::str::FromStr;
 
@@ -10,23 +8,54 @@ fn main() {
 
 #[derive(Clone, Debug)]
 struct ReactorCore {
-    on: HashSet<Point3D>,
+    on: Vec<Cuboid>,
 }
 
 impl ReactorCore {
     fn new() -> ReactorCore {
-        ReactorCore { on: HashSet::new() }
+        ReactorCore { on: Vec::new() }
     }
 
     fn process(&mut self, instruction: &Instruction) {
         match instruction {
-            On(cuboid) => cuboid.contained_points().for_each(|x| {
-                self.on.insert(x);
-            }),
-            Off(cuboid) => cuboid.contained_points().for_each(|x| {
-                self.on.remove(&x);
-            }),
+            On(cuboid) => self.turn_on(cuboid),
+            Off(cuboid) => self.turn_off(cuboid),
         }
+    }
+
+    fn turn_on(&mut self, cuboid: &Cuboid) {
+        let mut turning_on = vec![*cuboid];
+        'outer: while !turning_on.is_empty() {
+            for already_on in &self.on {
+                for i in 0..turning_on.len() {
+                    let c = turning_on[i];
+                    if already_on.overlaps(&c) {
+                        turning_on.splice(i..=i, already_on.difference(&c));
+                        continue 'outer;
+                    }
+                }
+            }
+
+            self.on.append(&mut turning_on);
+        }
+    }
+
+    fn turn_off(&mut self, cuboid: &Cuboid) {
+        'outer: loop {
+            for i in 0..self.on.len() {
+                let already_on = self.on[i];
+                if cuboid.overlaps(&already_on) {
+                    self.on.splice(i..=i, cuboid.difference(&already_on));
+                    // need to start over since we changed "on"
+                    continue 'outer;
+                }
+            }
+            break;
+        }
+    }
+
+    fn volume_on(&self) -> u64 {
+        self.on.iter().map(|x| x.volume()).sum()
     }
 }
 
@@ -63,18 +92,162 @@ impl fmt::Debug for Point3D {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 struct Cuboid {
     origin: Point3D,
     terminex: Point3D,
 }
 
 impl Cuboid {
-    fn contained_points(&self) -> impl Iterator<Item = Point3D> {
-        (self.origin.x..=self.terminex.x)
-            .cartesian_product(self.origin.y..=self.terminex.y)
-            .cartesian_product(self.origin.z..=self.terminex.z)
-            .map(|((x, y), z)| Point3D { x, y, z })
+    fn overlaps(&self, rhs: &Cuboid) -> bool {
+        !(self.terminex.x < rhs.origin.x
+            || rhs.terminex.x < self.origin.x
+            || self.terminex.y < rhs.origin.y
+            || rhs.terminex.y < self.origin.y
+            || self.terminex.z < rhs.origin.z
+            || rhs.terminex.z < self.origin.z)
+    }
+
+    // splits the cuboid in two at the x-coordinate
+    fn split_x(&self, x: i32) -> (Cuboid, Cuboid) {
+        if x < self.origin.x || x > self.terminex.x {
+            panic!(
+                "cannot split_x when x is not inside cuboid, x={}, origin={}, terminex={}",
+                x, self.origin, self.terminex
+            );
+        }
+
+        (
+            Cuboid {
+                origin: self.origin,
+                terminex: Point3D {
+                    x: x - 1,
+                    y: self.terminex.y,
+                    z: self.terminex.z,
+                },
+            },
+            Cuboid {
+                origin: Point3D {
+                    x,
+                    y: self.origin.y,
+                    z: self.origin.z,
+                },
+                terminex: self.terminex,
+            },
+        )
+    }
+
+    // splits the cuboid in two at the y-coordinate
+    fn split_y(&self, y: i32) -> (Cuboid, Cuboid) {
+        if y < self.origin.y || y > self.terminex.y {
+            panic!(
+                "cannot split_y when y is not inside cuboid, y={}, origin={}, terminex={}",
+                y, self.origin, self.terminex
+            );
+        }
+
+        (
+            Cuboid {
+                origin: self.origin,
+                terminex: Point3D {
+                    x: self.terminex.x,
+                    y: y - 1,
+                    z: self.terminex.z,
+                },
+            },
+            Cuboid {
+                origin: Point3D {
+                    x: self.origin.x,
+                    y,
+                    z: self.origin.z,
+                },
+                terminex: self.terminex,
+            },
+        )
+    }
+
+    // splits the cuboid in two at the y-coordinate
+    fn split_z(&self, z: i32) -> (Cuboid, Cuboid) {
+        if z < self.origin.z || z > self.terminex.z {
+            panic!(
+                "cannot split_z when z is not inside cuboid, z={}, origin={}, terminex={}",
+                z, self.origin, self.terminex
+            );
+        }
+
+        (
+            Cuboid {
+                origin: self.origin,
+                terminex: Point3D {
+                    x: self.terminex.x,
+                    y: self.terminex.y,
+                    z: z - 1,
+                },
+            },
+            Cuboid {
+                origin: Point3D {
+                    x: self.origin.x,
+                    y: self.origin.y,
+                    z,
+                },
+                terminex: self.terminex,
+            },
+        )
+    }
+
+    // returns the portion of rhs that is not contained by self as a set of cuboids
+    fn difference(&self, rhs: &Cuboid) -> Vec<Cuboid> {
+        let mut result = vec![];
+        let mut remainder = *rhs;
+
+        if remainder.origin.x < self.origin.x {
+            let (c1, c2) = remainder.split_x(self.origin.x);
+            result.push(c1);
+            remainder = c2;
+        }
+
+        if remainder.origin.y < self.origin.y {
+            let (c1, c2) = remainder.split_y(self.origin.y);
+            result.push(c1);
+            remainder = c2;
+        }
+
+        if remainder.origin.z < self.origin.z {
+            let (c1, c2) = remainder.split_z(self.origin.z);
+            result.push(c1);
+            remainder = c2;
+        }
+
+        if remainder.terminex.x > self.terminex.x {
+            let (c1, c2) = remainder.split_x(self.terminex.x + 1);
+            remainder = c1;
+            result.push(c2);
+        }
+
+        if remainder.terminex.y > self.terminex.y {
+            let (c1, c2) = remainder.split_y(self.terminex.y + 1);
+            remainder = c1;
+            result.push(c2);
+        }
+
+        if remainder.terminex.z > self.terminex.z {
+            let (c1, c2) = remainder.split_z(self.terminex.z + 1);
+            remainder = c1;
+            result.push(c2);
+        }
+
+        assert!(self.overlaps(&remainder));
+
+        result
+    }
+
+    // since reactor cores are discrete, volume is the number of contained points
+    fn volume(&self) -> u64 {
+        let width = self.terminex.x - self.origin.x + 1;
+        let depth = self.terminex.y - self.origin.y + 1;
+        let height = self.terminex.z - self.origin.z + 1;
+
+        width as u64 * depth as u64 * height as u64
     }
 }
 
@@ -146,22 +319,22 @@ fn parse(contents: &str) -> Vec<Instruction> {
     contents.lines().map(|x| x.parse().unwrap()).collect()
 }
 
-fn part1(instructions: &[Instruction]) -> usize {
+fn part1(instructions: &[Instruction]) -> u64 {
     let mut core = ReactorCore::new();
     for instruction in instructions {
         if instruction.is_initialization() {
             core.process(instruction);
         }
     }
-    core.on.len()
+    core.volume_on()
 }
 
-fn part2(instructions: &[Instruction]) -> usize {
+fn part2(instructions: &[Instruction]) -> u64 {
     let mut core = ReactorCore::new();
     for instruction in instructions {
         core.process(instruction);
     }
-    core.on.len()
+    core.volume_on()
 }
 
 #[cfg(test)]
