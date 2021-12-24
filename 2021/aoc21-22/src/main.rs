@@ -23,6 +23,8 @@ impl ReactorCore {
         }
     }
 
+    // a general purpose solution of this should probably combine adjacent cubes that are the same
+    // size in 2 dimensions
     fn turn_on(&mut self, cuboid: &Cuboid) {
         // turn this cuboid off first, then we can simply add this cuboid to the on list
         self.turn_off(cuboid);

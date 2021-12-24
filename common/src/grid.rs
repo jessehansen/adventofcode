@@ -1,7 +1,8 @@
 use itertools::Itertools;
-use std::cmp::Ordering;
+use std::cmp::{max, min, Eq, Ord, Ordering, PartialEq};
 use std::collections::BinaryHeap;
 use std::fmt;
+use std::hash::{Hash, Hasher};
 use std::ops::{Index, IndexMut};
 use std::str::FromStr;
 
@@ -91,6 +92,10 @@ impl Point2D {
         } else {
             None
         }
+    }
+
+    pub fn manhattan_distance(&self, other: Point2D) -> usize {
+        max(self.x, other.x) - min(self.x, other.x) + max(self.y, other.y) - min(self.y, other.y)
     }
 }
 
@@ -428,6 +433,26 @@ where
             .collect()
     }
 }
+
+impl<T> Hash for Grid2D<T>
+where
+    T: Hash,
+{
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.data.hash(state);
+    }
+}
+
+impl<T> PartialEq for Grid2D<T>
+where
+    T: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.data == other.data
+    }
+}
+
+impl<T> Eq for Grid2D<T> where T: Eq {}
 
 #[cfg(test)]
 mod tests {
