@@ -26,6 +26,21 @@ where
     print_stats(parse_time, part1_time, part2_time);
 }
 
+pub fn run_raw<U, V, F1, F2>(part1: F1, part2: F2)
+where
+    U: Display,
+    V: Display,
+    F1: Fn(&str) -> U,
+    F2: Fn(&str) -> V,
+{
+    let (input, parse_time) = read_and_parse(trim);
+
+    let part1_time = print_and_time("Part 1", || part1(&input));
+    let part2_time = print_and_time("Part 2", || part2(&input));
+
+    print_stats(parse_time, part1_time, part2_time);
+}
+
 // because I'm tired of clippy warnings
 pub fn run_vec<T, U, V, FParse, F1, F2>(parse: FParse, part1: F1, part2: F2)
 where
@@ -172,6 +187,10 @@ pub fn binary_string_to_hex(binary: &str) -> String {
             .to_string()
         })
         .collect()
+}
+
+pub fn trim(contents: &str) -> String {
+    contents.trim().to_string()
 }
 
 pub fn pad_left_for_multiple(some_str: &mut String, padding: char, multiple: usize) {
