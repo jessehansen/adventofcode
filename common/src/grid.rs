@@ -6,6 +6,17 @@ use std::hash::{Hash, Hasher};
 use std::ops::{Index, IndexMut};
 use std::str::FromStr;
 
+// contains helpers for grids and unsigned points
+// coordinates are laid out like this
+// +------------------------  y = 0
+// |
+// |
+// |    *
+// |
+// |
+// x = 0
+// The * is at (x=4, y=3)
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct Point2D {
     pub x: usize,

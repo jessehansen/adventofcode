@@ -7,6 +7,9 @@ use std::time::{Duration, Instant};
 mod grid;
 pub use grid::*;
 
+mod graph;
+pub use graph::*;
+
 mod tree;
 pub use tree::*;
 
@@ -130,6 +133,32 @@ fn print_time(term: &Term, description: &str, time: Duration) {
         .unwrap();
 }
 
+// common parsing helpers
+
+pub fn trim(contents: &str) -> String {
+    contents.trim().to_string()
+}
+
+pub fn parse_lines<T>(contents: &str) -> Vec<T>
+where
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Debug,
+{
+    contents.lines().map(|x| x.parse().unwrap()).collect()
+}
+
+pub fn parse_chars<T>(contents: &str) -> Vec<T>
+where
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Debug,
+{
+    contents
+        .trim()
+        .chars()
+        .map(|x| x.to_string().parse().unwrap())
+        .collect()
+}
+
 pub fn hex_to_binary_string(hex: &str) -> String {
     hex.trim()
         .chars()
@@ -187,10 +216,6 @@ pub fn binary_string_to_hex(binary: &str) -> String {
             .to_string()
         })
         .collect()
-}
-
-pub fn trim(contents: &str) -> String {
-    contents.trim().to_string()
 }
 
 pub fn pad_left_for_multiple(some_str: &mut String, padding: char, multiple: usize) {

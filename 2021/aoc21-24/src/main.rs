@@ -284,19 +284,6 @@ mod tests {
         assert_eq!(alu.z, 1);
     }
 
-    #[test]
-    fn first_chunk() {
-        let program = parse(FIRST_CHUNK);
-
-        for digit in 1..=9 {
-            let mut alu = ArithmeticLogicUnit::new();
-            alu.run(&program, [digit]);
-            println!("{}={}", digit, alu.z);
-        }
-
-        panic!();
-    }
-
     const NEG: &str = "\
 inp x
 mul x -1
@@ -321,26 +308,5 @@ add x w
 mod x 2
 div w 2
 mod w 2
-";
-
-    const FIRST_CHUNK: &str = "\
-inp w
-mul x 0
-add x z
-mod x 26
-div z 1
-add x 13
-eql x w
-eql x 0
-mul y 0
-add y 25
-mul y x
-add y 1
-mul z y
-mul y 0
-add y w
-add y 14
-mul y x
-add z y
 ";
 }

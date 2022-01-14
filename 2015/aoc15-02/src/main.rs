@@ -3,7 +3,7 @@ use std::cmp::min;
 use std::str::FromStr;
 
 fn main() {
-    run_vec(parse, part1, part2);
+    run_vec(parse_lines, part1, part2);
 }
 
 struct Present {
@@ -59,10 +59,6 @@ impl FromStr for Present {
     }
 }
 
-fn parse(contents: &str) -> Vec<Present> {
-    contents.lines().map(|x| x.parse().unwrap()).collect()
-}
-
 fn part1(contents: &[Present]) -> u32 {
     contents.iter().map(|x| x.paper_required()).sum()
 }
@@ -77,7 +73,7 @@ mod tests {
 
     #[test]
     fn sample_part1() {
-        let parsed = parse(SAMPLE);
+        let parsed = parse_lines(SAMPLE);
 
         let result = part1(&parsed);
 
@@ -86,7 +82,7 @@ mod tests {
 
     #[test]
     fn sample_part2() {
-        let parsed = parse(SAMPLE);
+        let parsed = parse_lines(SAMPLE);
 
         let result = part2(&parsed);
 
