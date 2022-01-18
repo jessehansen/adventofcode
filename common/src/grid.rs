@@ -108,6 +108,16 @@ impl Point2D {
     pub fn manhattan_distance(&self, other: Point2D) -> usize {
         max(self.x, other.x) - min(self.x, other.x) + max(self.y, other.y) - min(self.y, other.y)
     }
+
+    pub fn to(&self, other: Point2D) -> impl Iterator<Item = Point2D> {
+        let min_x = min(self.x, other.x);
+        let min_y = min(self.y, other.y);
+        let max_x = max(self.x, other.x);
+        let max_y = max(self.y, other.y);
+        (min_x..=max_x)
+            .cartesian_product(min_y..=max_y)
+            .map(|(y, x)| pt(x, y))
+    }
 }
 
 impl FromStr for Point2D {
