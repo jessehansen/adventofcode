@@ -44,7 +44,6 @@ where
     print_stats(parse_time, part1_time, part2_time);
 }
 
-// because I'm tired of clippy warnings
 pub fn run_vec<T, U, V, FParse, F1, F2>(parse: FParse, part1: F1, part2: F2)
 where
     U: Display,
@@ -61,28 +60,34 @@ where
     print_stats(parse_time, part1_time, part2_time);
 }
 
+pub fn run_progressive<T, T2, U, V, FParse, F1, F2>(parse: FParse, part1: F1, part2: F2)
+where
+    U: Display,
+    V: Display,
+    FParse: Fn(&str) -> T,
+    F1: Fn(&T) -> (U, T2),
+    F2: Fn(&T, &T2) -> V,
+{
+    let (input, parse_time) = read_and_parse(parse);
+
+    let (part1_time, data_for_next) = print_and_time_and_return("Part 1", || part1(&input));
+    let part2_time = print_and_time("Part 2", || part2(&input, &data_for_next));
+
+    print_stats(parse_time, part1_time, part2_time);
+}
+
 pub fn run_progressive_vec<T, T2, U, V, FParse, F1, F2>(parse: FParse, part1: F1, part2: F2)
 where
     U: Display,
     V: Display,
     FParse: Fn(&str) -> Vec<T>,
     F1: Fn(&[T]) -> (U, T2),
-    F2: Fn(&T2) -> V,
+    F2: Fn(&[T], &T2) -> V,
 {
     let (input, parse_time) = read_and_parse(parse);
 
-    let start = Instant::now();
-    let (result, data_for_next) = part1(&input);
-    let part1_time = start.elapsed();
-
-    print!("Part 1 - ");
-    let result = format!("{}", result);
-    if result.len() > 20 || result.contains('\n') {
-        println!();
-    }
-    println!("{}", style(result).bold());
-
-    let part2_time = print_and_time("Part 2", || part2(&data_for_next));
+    let (part1_time, data_for_next) = print_and_time_and_return("Part 1", || part1(&input));
+    let part2_time = print_and_time("Part 2", || part2(&input, &data_for_next));
 
     print_stats(parse_time, part1_time, part2_time);
 }
@@ -119,6 +124,25 @@ where
     elapsed
 }
 
+fn print_and_time_and_return<F, T, T2>(description: &str, runner: F) -> (Duration, T2)
+where
+    T: Display,
+    F: Fn() -> (T, T2),
+{
+    let start = Instant::now();
+    let (result, more_data) = runner();
+    let elapsed = start.elapsed();
+
+    print!("{} - ", description);
+    let result = format!("{}", result);
+    if result.len() > 20 || result.contains('\n') {
+        println!();
+    }
+    println!("{}", style(result).bold());
+
+    (elapsed, more_data)
+}
+
 fn print_stats(parse_time: Duration, part1_time: Duration, part2_time: Duration) {
     let term = &Term::stderr();
     term.write_line("").unwrap();
@@ -137,6 +161,14 @@ fn print_time(term: &Term, description: &str, time: Duration) {
 
 pub fn trim(contents: &str) -> String {
     contents.trim().to_string()
+}
+
+pub fn parse_all<T>(contents: &str) -> T
+where
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Debug,
+{
+    contents.trim().parse().unwrap()
 }
 
 pub fn parse_lines<T>(contents: &str) -> Vec<T>
@@ -247,15 +279,9 @@ impl fmt::Display for HumanDuration {
         let secs = self.0.as_secs();
 
         if secs > 3600 {
-            write!(
-                f,
-                "{}:{:02}:{:02}",
-                secs / 3600,
-                (secs % 3600) / 60,
-                secs % 60
-            )
+            write!(f, "{}h {}m {}s", secs / 3600, (secs % 3600) / 60, secs % 60)
         } else if secs > 60 {
-            write!(f, "{}:{:02}", secs / 60, secs % 60)
+            write!(f, "{}m {}s", secs / 60, secs % 60)
         } else if secs >= 1 {
             write!(f, "{:.3}s ({}ms)", self.0.as_secs_f32(), self.0.as_millis())
         } else if self.0.as_millis() > 1 {

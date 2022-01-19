@@ -267,7 +267,7 @@ fn part1(scanners: &[Scanner]) -> (usize, Scanner) {
     (reference_scanner.beacons.len(), reference_scanner)
 }
 
-fn part2(scanner: &Scanner) -> i32 {
+fn part2(_: &[Scanner], scanner: &Scanner) -> i32 {
     scanner.max_manhattan_distance()
 }
 
