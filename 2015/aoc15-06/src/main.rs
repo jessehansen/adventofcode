@@ -116,16 +116,6 @@ mod tests {
         assert_eq!(result, 998_996);
     }
 
-    #[test]
-    #[ignore]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
-
-        let result = part2(&parsed);
-
-        assert_eq!(result, 0);
-    }
-
     const SAMPLE: &str = "\
 turn on 0,0 through 999,999
 toggle 0,0 through 999,0

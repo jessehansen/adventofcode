@@ -46,7 +46,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn sample_part2() {
         assert_eq!(part2(")"), 1);
         assert_eq!(part2("()())"), 5);

@@ -1,4 +1,5 @@
 use aoc_common::*;
+use itertools::Itertools;
 use std::collections::HashMap;
 
 fn main() {
@@ -57,37 +58,21 @@ fn parse(contents: &str) -> Map {
     }
 }
 
-fn calculate_paths(start_id: usize, unvisited: Vec<&usize>, map: &Map) -> Vec<u32> {
-    let mut result = vec![];
-    for next_step_id in &unvisited {
-        let future_steps: Vec<&usize> = unvisited
-            .iter()
-            .filter(|id| id != &next_step_id)
-            .cloned()
-            .collect();
-        let step_distance = map.distances[start_id][**next_step_id];
-        if !future_steps.is_empty() {
-            let future_paths = calculate_paths(**next_step_id, future_steps, map);
-            future_paths
-                .into_iter()
-                .for_each(|x| result.push(step_distance + x))
-        } else {
-            result.push(step_distance);
-        }
-    }
-    result
+fn calculate_path(path: Vec<usize>, distances: &[Vec<u32>]) -> u32 {
+    path.windows(2)
+        .map(|step| {
+            let from = step[0];
+            let to = step[1];
+            distances[from][to]
+        })
+        .sum()
 }
 
 fn all_paths(map: &Map) -> Vec<u32> {
-    let mut result = vec![];
-    for id in map.destinations.values() {
-        result.append(&mut calculate_paths(
-            *id,
-            map.destinations.values().filter(|x| **x != *id).collect(),
-            map,
-        ));
-    }
-    result
+    (0..map.destinations.len())
+        .permutations(map.destinations.len())
+        .map(|x| calculate_path(x, &map.distances))
+        .collect()
 }
 
 fn part1(map: &Map) -> u32 {

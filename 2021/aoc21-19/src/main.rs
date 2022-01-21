@@ -309,7 +309,7 @@ mod tests {
 
         let (_, scanner) = part1(&parsed);
 
-        let result = part2(&scanner);
+        let result = part2(&parsed, &scanner);
 
         assert_eq!(result, 3621);
     }
