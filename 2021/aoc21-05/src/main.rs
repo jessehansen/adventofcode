@@ -1,10 +1,11 @@
+use anyhow::*;
 use aoc_common::*;
 use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
-fn main() {
-    run_vec(parse, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse, part1, part2)
 }
 
 #[derive(Copy, Clone)]
@@ -14,13 +15,16 @@ struct Point {
 }
 
 impl FromStr for Point {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(input: &str) -> Result<Point, Self::Err> {
-        let parts: Vec<i32> = input.split(',').map(|x| x.parse().unwrap()).collect();
+    fn from_str(input: &str) -> Result<Point> {
+        let parts = input
+            .split(',')
+            .map(|x| Ok(x.parse()?))
+            .collect::<Result<Vec<i32>>>()?;
 
         if parts.len() != 2 {
-            return Err(());
+            bail!("expected comma-separated ints");
         }
 
         Ok(Point {
@@ -43,13 +47,13 @@ struct Line {
 }
 
 impl FromStr for Line {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(input: &str) -> Result<Line, Self::Err> {
+    fn from_str(input: &str) -> Result<Line> {
         let parts: Vec<&str> = input.split_whitespace().collect();
 
         if parts.len() != 3 {
-            return Err(());
+            bail!("expected 2 points separated by arrow")
         }
 
         Ok(Line {
@@ -117,15 +121,15 @@ impl Iterator for LineIter {
     }
 }
 
-fn parse(contents: &str) -> Vec<Line> {
+fn parse(contents: &str) -> Result<Vec<Line>> {
     contents
         .lines()
         .into_iter()
-        .map(|x| x.parse().expect("invalid input"))
+        .map(|x| x.parse().context("invalid input"))
         .collect()
 }
 
-fn part1(lines: &[Line]) -> usize {
+fn part1(lines: &[Line]) -> Result<usize> {
     let mut grid = HashMap::new();
     for line in lines {
         if line.a.x != line.b.x && line.a.y != line.b.y {
@@ -137,10 +141,10 @@ fn part1(lines: &[Line]) -> usize {
         }
     }
 
-    grid.into_values().filter(|x| *x > 1).count()
+    Ok(grid.into_values().filter(|x| *x > 1).count())
 }
 
-fn part2(lines: &[Line]) -> usize {
+fn part2(lines: &[Line]) -> Result<usize> {
     let mut grid = HashMap::new();
     for line in lines {
         for point in line.iter() {
@@ -149,7 +153,7 @@ fn part2(lines: &[Line]) -> usize {
         }
     }
 
-    grid.into_values().filter(|x| *x > 1).count()
+    Ok(grid.into_values().filter(|x| *x > 1).count())
 }
 
 #[cfg(test)]
@@ -157,21 +161,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 5);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 12);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

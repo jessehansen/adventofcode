@@ -1,10 +1,11 @@
+use anyhow::*;
 use aoc_common::*;
 use std::cmp::{Ord, Ordering, PartialEq};
 use std::collections::{BinaryHeap, HashMap};
 use std::fmt;
 
-fn main() {
-    run(parse, part1, part2);
+fn main() -> Result<()> {
+    run(parse, part1, part2)
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
@@ -314,7 +315,7 @@ impl PartialEq for BurrowMap {
 
 impl Eq for BurrowMap {}
 
-fn parse(contents: &str) -> (BurrowMap, Grid2D<Cell>) {
+fn parse(contents: &str) -> Result<(BurrowMap, Grid2D<Cell>)> {
     let lines: Vec<&str> = contents.lines().collect();
     let mut map = Grid2D::new_constant(
         Bounds2D {
@@ -344,16 +345,16 @@ fn parse(contents: &str) -> (BurrowMap, Grid2D<Cell>) {
         }
     }
 
-    (
+    Ok((
         BurrowMap {
             pop,
             energy_used: 0,
         },
         map,
-    )
+    ))
 }
 
-fn easiest_sort(start: &BurrowMap, map: &Grid2D<Cell>) -> u32 {
+fn easiest_sort(start: &BurrowMap, map: &Grid2D<Cell>) -> Result<u32> {
     let mut dist = HashMap::<String, u32>::new();
     let mut heap = BinaryHeap::new();
     heap.push(start.clone());
@@ -362,7 +363,7 @@ fn easiest_sort(start: &BurrowMap, map: &Grid2D<Cell>) -> u32 {
     while let Some(state) = heap.pop() {
         if state.is_sorted(map) {
             // state.print_debug(map);
-            return state.energy_used;
+            return Ok(state.energy_used);
         }
 
         // if we're already above the previous best to this point, don't bother continuing
@@ -384,14 +385,14 @@ fn easiest_sort(start: &BurrowMap, map: &Grid2D<Cell>) -> u32 {
         }
     }
 
-    panic!();
+    bail!("couldn't reach success state");
 }
 
-fn part1((start, map): &(BurrowMap, Grid2D<Cell>)) -> u32 {
+fn part1((start, map): &(BurrowMap, Grid2D<Cell>)) -> Result<u32> {
     easiest_sort(start, map)
 }
 
-fn part2((start, _): &(BurrowMap, Grid2D<Cell>)) -> u32 {
+fn part2((start, _): &(BurrowMap, Grid2D<Cell>)) -> Result<u32> {
     let (_, big_map) = parse(
         "\
 #############
@@ -402,7 +403,7 @@ fn part2((start, _): &(BurrowMap, Grid2D<Cell>)) -> u32 {
   #A#D#C#A#
   #########
 ",
-    );
+    )?;
     let start = start.insert_fold();
     // start.print_debug(&big_map);
     easiest_sort(&start, &big_map)
@@ -413,21 +414,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 12521);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 44169);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

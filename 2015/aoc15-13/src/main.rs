@@ -1,10 +1,11 @@
+use anyhow::*;
 use aoc_common::*;
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::str::FromStr;
 
-fn main() {
-    run(parse_all, part1, part2);
+fn main() -> Result<()> {
+    run(parse_all, part1, part2)
 }
 
 struct SeatingHappiness {
@@ -13,9 +14,9 @@ struct SeatingHappiness {
 }
 
 impl FromStr for SeatingHappiness {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(contents: &str) -> Result<Self, Self::Err> {
+    fn from_str(contents: &str) -> Result<Self> {
         let mut attendees = HashMap::new();
         let mut happiness = vec![vec![0; 100]; 100];
 
@@ -98,12 +99,18 @@ fn calculate_happiness(seating: Vec<usize>, happiness: &[Vec<i32>]) -> i32 {
         + happiness[foot][head]
 }
 
-fn part1(contents: &SeatingHappiness) -> i32 {
-    all_happiness(contents).into_iter().max().unwrap()
+fn part1(contents: &SeatingHappiness) -> Result<i32> {
+    all_happiness(contents)
+        .into_iter()
+        .max()
+        .ok_or(anyhow!("no happiness"))
 }
 
-fn part2(contents: &SeatingHappiness) -> i32 {
-    all_happiness(&contents.add_me()).into_iter().max().unwrap()
+fn part2(contents: &SeatingHappiness) -> Result<i32> {
+    all_happiness(&contents.add_me())
+        .into_iter()
+        .max()
+        .ok_or(anyhow!("no happiness"))
 }
 
 #[cfg(test)]
@@ -111,12 +118,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse_all(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse_all(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 330);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

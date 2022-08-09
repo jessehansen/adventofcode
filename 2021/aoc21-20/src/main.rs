@@ -1,8 +1,9 @@
+use anyhow::*;
 use aoc_common::*;
 use std::fmt;
 
-fn main() {
-    run(parse, part1, part2);
+fn main() -> Result<()> {
+    run(parse, part1, part2)
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -18,19 +19,26 @@ impl fmt::Display for Image {
 }
 
 impl Image {
-    fn process(&self, alg: &str) -> Image {
+    fn process(&self, alg: &str) -> Result<Image> {
         let mut lines: Vec<String> = vec![];
         for y in -1..(self.lines.len() as i32 + 1) {
             let mut line = String::new();
             for x in -1..(self.lines[0].len() as i32 + 1) {
-                line.push(alg.chars().nth(self.pixel_num(x, y)).unwrap());
+                line.push(
+                    alg.chars()
+                        .nth(self.pixel_num(x, y))
+                        .ok_or(anyhow!("missing character in alg"))?,
+                );
             }
             lines.push(line);
         }
 
-        let outliers = alg.chars().nth(self.pixel_num(-3000, -3000)).unwrap();
+        let outliers = alg
+            .chars()
+            .nth(self.pixel_num(-3000, -3000))
+            .ok_or(anyhow!("missing charagcter in alg"))?;
 
-        Image { lines, outliers }
+        Ok(Image { lines, outliers })
     }
 
     fn pixel_num(&self, x: i32, y: i32) -> usize {
@@ -67,37 +75,37 @@ impl Image {
     }
 }
 
-fn parse(contents: &str) -> (String, Image) {
+fn parse(contents: &str) -> Result<(String, Image)> {
     let mut parts = contents.split("\n\n");
 
-    (
-        parts.next().unwrap().to_string(),
+    Ok((
+        parts.next().ok_or(anyhow!("missing alg"))?.to_string(),
         Image {
             lines: parts
                 .next()
-                .unwrap()
+                .ok_or(anyhow!("missing image"))?
                 .lines()
                 .map(|x| x.to_string())
                 .collect(),
             outliers: '.',
         },
-    )
+    ))
 }
 
-fn part1((alg, img): &(String, Image)) -> usize {
+fn part1((alg, img): &(String, Image)) -> Result<usize> {
     let mut img = img.clone();
     for _ in 0..2 {
-        img = img.process(alg);
+        img = img.process(alg)?;
     }
-    img.lit()
+    Ok(img.lit())
 }
 
-fn part2((alg, img): &(String, Image)) -> usize {
+fn part2((alg, img): &(String, Image)) -> Result<usize> {
     let mut img = img.clone();
     for _ in 0..50 {
-        img = img.process(alg);
+        img = img.process(alg)?;
     }
-    img.lit()
+    Ok(img.lit())
 }
 
 #[cfg(test)]
@@ -105,28 +113,34 @@ mod tests {
     use super::*;
 
     #[test]
-    fn pixel_num() {
-        let (_, img) = parse(SAMPLE);
+    fn pixel_num() -> Result<()> {
+        let (_, img) = parse(SAMPLE)?;
 
         assert_eq!(img.pixel_num(2, 2), 34);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 35);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 3351);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

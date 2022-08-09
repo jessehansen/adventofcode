@@ -1,9 +1,10 @@
+use anyhow::*;
 use aoc_common::*;
 use std::collections::VecDeque;
 use std::str::FromStr;
 
-fn main() {
-    run_vec(parse_lines, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse_lines, part1, part2)
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -30,9 +31,9 @@ impl Reindeer {
 }
 
 impl FromStr for Reindeer {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(reindeer: &str) -> Result<Self, Self::Err> {
+    fn from_str(reindeer: &str) -> Result<Self> {
         let parts: Vec<&str> = reindeer.split_whitespace().collect();
         Ok(Reindeer {
             name: parts[0].to_string(),
@@ -87,8 +88,12 @@ impl RacingReindeer {
     }
 }
 
-fn part1(reindeer: &[Reindeer]) -> u32 {
-    reindeer.iter().map(|x| x.race(2503)).max().unwrap()
+fn part1(reindeer: &[Reindeer]) -> Result<u32> {
+    reindeer
+        .iter()
+        .map(|x| x.race(2503))
+        .max()
+        .ok_or(anyhow!("no max result"))
 }
 
 fn race_new_score(reindeer: &[Reindeer], secs: u32) -> u32 {
@@ -109,8 +114,8 @@ fn race_new_score(reindeer: &[Reindeer], secs: u32) -> u32 {
     racing_deer.iter().map(|x| x.score).max().unwrap()
 }
 
-fn part2(reindeer: &[Reindeer]) -> u32 {
-    race_new_score(reindeer, 2503)
+fn part2(reindeer: &[Reindeer]) -> Result<u32> {
+    Ok(race_new_score(reindeer, 2503))
 }
 
 #[cfg(test)]
@@ -118,7 +123,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_race() {
+    fn sample_race() -> Result<()> {
         let comet = Reindeer {
             name: "Comet".to_string(),
             speed: 14,
@@ -136,10 +141,12 @@ mod tests {
         assert_eq!(dancer.race(1), 16);
         assert_eq!(comet.race(1000), 1120);
         assert_eq!(dancer.race(1000), 1056);
+
+        Ok(())
     }
 
     #[test]
-    fn part2_test() {
+    fn part2_test() -> Result<()> {
         let comet = Reindeer {
             name: "Comet".to_string(),
             speed: 14,
@@ -154,5 +161,7 @@ mod tests {
         };
 
         assert_eq!(race_new_score(&[comet, dancer], 1000), 689);
+
+        Ok(())
     }
 }

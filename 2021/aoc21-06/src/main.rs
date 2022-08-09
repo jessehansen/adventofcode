@@ -1,21 +1,22 @@
+use anyhow::*;
 use aoc_common::*;
 
-fn main() {
-    run_vec(parse, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse, part1, part2)
 }
 
-fn parse(contents: &str) -> Vec<i32> {
+fn parse(contents: &str) -> Result<Vec<i32>> {
     contents
         .trim()
         .split(',')
         .into_iter()
-        .map(|x| x.parse().expect("invalid input"))
+        .map(|x| x.parse().context("invalid input"))
         .collect()
 }
 
 // this can be solved in the same way as part 2, but I thought it was interesting to leave in a
 // naive solution
-fn part1(fishes: &[i32]) -> usize {
+fn part1(fishes: &[i32]) -> Result<usize> {
     let mut fishes = fishes.to_owned();
 
     for _ in 0..80 {
@@ -31,10 +32,10 @@ fn part1(fishes: &[i32]) -> usize {
         fishes.resize(fishes.len() + new_fish, 8);
     }
 
-    fishes.len()
+    Ok(fishes.len())
 }
 
-fn part2(fishes: &[i32]) -> usize {
+fn part2(fishes: &[i32]) -> Result<usize> {
     // breeders by day of week
     let mut breeders: Vec<usize> = vec![0, 0, 0, 0, 0, 0, 0];
     // new babies by day of week
@@ -53,7 +54,7 @@ fn part2(fishes: &[i32]) -> usize {
         babies[day_of_week] = breeders[day_of_week];
     }
 
-    breeders.iter().sum::<usize>() + babies.iter().sum::<usize>()
+    Ok(breeders.iter().sum::<usize>() + babies.iter().sum::<usize>())
 }
 
 #[cfg(test)]
@@ -61,21 +62,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 5934);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 26984457539);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

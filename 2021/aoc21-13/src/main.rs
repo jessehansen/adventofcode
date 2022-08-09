@@ -1,32 +1,39 @@
+use anyhow::*;
 use aoc_common::run;
 use aoc_common::Point2D;
 use std::collections::HashSet;
 use std::fmt::Display;
 use std::str::FromStr;
 
-fn main() {
-    run(parse, part1, part2);
+fn main() -> Result<()> {
+    run(parse, part1, part2)
 }
 
-fn parse(contents: &str) -> (Vec<Point2D>, Vec<Fold>) {
+fn parse(contents: &str) -> Result<(Vec<Point2D>, Vec<Fold>)> {
     let mut parts = contents.split("\n\n");
 
-    (
-        parts
-            .next()
-            .unwrap()
-            .lines()
-            .into_iter()
-            .map(|x| x.parse().unwrap())
-            .collect(),
-        parts
-            .next()
-            .unwrap()
-            .lines()
-            .into_iter()
-            .map(|x| x.parse().unwrap())
-            .collect(),
-    )
+    let points = parts
+        .next()
+        .ok_or(anyhow!("missing points"))?
+        .lines()
+        .into_iter()
+        .map(|x| {
+            x.parse()
+                .context(anyhow!("can't parse point from line {}", x))
+        })
+        .collect::<Result<Vec<Point2D>>>()?;
+    let folds = parts
+        .next()
+        .ok_or(anyhow!("missing folds"))?
+        .lines()
+        .into_iter()
+        .map(|x| {
+            x.parse()
+                .context(anyhow!("can't parse fold from line {}", x))
+        })
+        .collect::<Result<Vec<Fold>>>()?;
+
+    Ok((points, folds))
 }
 
 struct OrigamiSheet {
@@ -96,7 +103,7 @@ impl Display for OrigamiSheet {
             }
             writeln!(f)?;
         }
-        Ok(())
+        std::result::Result::Ok(())
     }
 }
 
@@ -107,35 +114,45 @@ enum Fold {
 }
 
 impl FromStr for Fold {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(input: &str) -> Result<Fold, Self::Err> {
+    fn from_str(input: &str) -> Result<Fold> {
         let mut parts = input.split('=');
 
-        match parts.next().unwrap() {
-            "fold along x" => Ok(Fold::Horizontal(parts.next().unwrap().parse().unwrap())),
-            "fold along y" => Ok(Fold::Vertical(parts.next().unwrap().parse().unwrap())),
-            _ => Err(()),
+        match parts.next().ok_or(anyhow!("missing fold direction"))? {
+            "fold along x" => Ok(Fold::Horizontal(
+                parts
+                    .next()
+                    .ok_or(anyhow!("missing fold location"))?
+                    .parse()?,
+            )),
+            "fold along y" => Ok(Fold::Vertical(
+                parts
+                    .next()
+                    .ok_or(anyhow!("missing fold location"))?
+                    .parse()?,
+            )),
+            fold_along => bail!("unexpected fold along text {}", fold_along),
         }
     }
 }
 
-fn part1((marks, folds): &(Vec<Point2D>, Vec<Fold>)) -> usize {
+fn part1((marks, folds): &(Vec<Point2D>, Vec<Fold>)) -> Result<usize> {
     let mut sheet = OrigamiSheet::new(marks);
 
     sheet.fold(folds[0]);
 
-    sheet.marks.len()
+    Ok(sheet.marks.len())
 }
 
-fn part2((marks, folds): &(Vec<Point2D>, Vec<Fold>)) -> OrigamiSheet {
+fn part2((marks, folds): &(Vec<Point2D>, Vec<Fold>)) -> Result<OrigamiSheet> {
     let mut sheet = OrigamiSheet::new(marks);
 
     for fold in folds {
         sheet.fold(*fold);
     }
 
-    sheet
+    Ok(sheet)
 }
 
 #[cfg(test)]
@@ -143,19 +160,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 17);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(
             result.to_string(),
@@ -167,6 +186,8 @@ mod tests {
 ##########
 "
         );
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

@@ -1,8 +1,9 @@
+use anyhow::*;
 use aoc_common::run;
 use aoc_common::Grid2D;
 
-fn main() {
-    run(Grid2D::<u32>::from_char_str, part1, part2);
+fn main() -> Result<()> {
+    run(Grid2D::<u32>::from_char_str, part1, part2)
 }
 
 fn step(grid: &mut Grid2D<u32>) -> usize {
@@ -38,17 +39,17 @@ fn step(grid: &mut Grid2D<u32>) -> usize {
     flashes
 }
 
-fn part1(grid: &Grid2D<u32>) -> usize {
+fn part1(grid: &Grid2D<u32>) -> Result<usize> {
     let mut grid = grid.clone();
     let mut flashes = 0;
     for _ in 0..100 {
         flashes += step(&mut grid);
     }
 
-    flashes
+    Ok(flashes)
 }
 
-fn part2(contents: &Grid2D<u32>) -> usize {
+fn part2(contents: &Grid2D<u32>) -> Result<usize> {
     let mut grid = contents.clone();
     let mut steps = 1;
     loop {
@@ -59,7 +60,7 @@ fn part2(contents: &Grid2D<u32>) -> usize {
         steps += 1;
     }
 
-    steps
+    Ok(steps)
 }
 
 #[cfg(test)]
@@ -67,21 +68,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = Grid2D::<u32>::from_char_str(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = Grid2D::<u32>::from_char_str(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 1656);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = Grid2D::<u32>::from_char_str(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = Grid2D::<u32>::from_char_str(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 195);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

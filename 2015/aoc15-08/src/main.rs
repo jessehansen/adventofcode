@@ -1,13 +1,14 @@
+use anyhow::*;
 use aoc_common::*;
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 
-fn main() {
-    run_vec(parse, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse, part1, part2)
 }
 
-fn parse(contents: &str) -> Vec<String> {
-    contents.lines().map(|x| x.to_string()).collect()
+fn parse(contents: &str) -> Result<Vec<String>> {
+    Ok(contents.lines().map(|x| x.to_string()).collect())
 }
 
 fn escape(line: &str) -> String {
@@ -31,18 +32,18 @@ fn unescape(line: &str) -> String {
         .to_string()
 }
 
-fn part1(contents: &[String]) -> usize {
-    contents
+fn part1(contents: &[String]) -> Result<usize> {
+    Ok(contents
         .iter()
         .map(|line| line.chars().count() - unescape(line).chars().count())
-        .sum()
+        .sum())
 }
 
-fn part2(contents: &[String]) -> usize {
-    contents
+fn part2(contents: &[String]) -> Result<usize> {
+    Ok(contents
         .iter()
         .map(|line| escape(line).chars().count() - line.chars().count())
-        .sum()
+        .sum())
 }
 
 #[cfg(test)]
@@ -50,17 +51,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let result = part1(&parse(SAMPLE));
+    fn sample_part1() -> Result<()> {
+        let result = part1(&parse(SAMPLE)?)?;
 
         assert_eq!(result, 12);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let result = part2(&parse(SAMPLE));
+    fn sample_part2() -> Result<()> {
+        let result = part2(&parse(SAMPLE)?)?;
 
         assert_eq!(result, 19);
+
+        Ok(())
     }
 
     const SAMPLE: &str = include_str!("sample.in");

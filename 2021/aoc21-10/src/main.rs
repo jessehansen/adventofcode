@@ -1,18 +1,19 @@
+use anyhow::*;
 use aoc_common::*;
 
-fn main() {
-    run_vec(parse, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse, part1, part2)
 }
 
-fn parse(contents: &str) -> Vec<String> {
-    contents
+fn parse(contents: &str) -> Result<Vec<String>> {
+    Ok(contents
         .lines()
         .into_iter()
         .map(|x| x.to_string())
-        .collect()
+        .collect())
 }
 
-fn part1(contents: &[String]) -> u32 {
+fn part1(contents: &[String]) -> Result<u32> {
     let mut score = 0;
 
     for line in contents {
@@ -45,15 +46,15 @@ fn part1(contents: &[String]) -> u32 {
                     }
                 }
 
-                _ => (),
+                c => bail!("unexpected character '{}' in input", c),
             }
         }
     }
 
-    score
+    Ok(score)
 }
 
-fn part2(contents: &[String]) -> u64 {
+fn part2(contents: &[String]) -> Result<u64> {
     let mut line_scores = vec![];
 
     for line in contents {
@@ -87,7 +88,7 @@ fn part2(contents: &[String]) -> u64 {
                     }
                 }
 
-                _ => (),
+                c => bail!("unexpected character '{}' in input", c),
             }
         }
 
@@ -99,7 +100,7 @@ fn part2(contents: &[String]) -> u64 {
                     '[' => line_score = line_score * 5 + 2,
                     '{' => line_score = line_score * 5 + 3,
                     '<' => line_score = line_score * 5 + 4,
-                    _ => (),
+                    c => bail!("unexpected character '{}' in input", c),
                 }
             }
             line_scores.push(line_score);
@@ -107,7 +108,7 @@ fn part2(contents: &[String]) -> u64 {
     }
     line_scores.sort_unstable();
 
-    line_scores[line_scores.len() / 2]
+    Ok(line_scores[line_scores.len() / 2])
 }
 
 #[cfg(test)]
@@ -115,21 +116,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 26397);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 288957);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

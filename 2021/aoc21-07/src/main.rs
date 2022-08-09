@@ -1,23 +1,30 @@
+use anyhow::*;
 use aoc_common::*;
 
-fn main() {
-    run_vec(parse, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse, part1, part2)
 }
 
-fn parse(contents: &str) -> Vec<i32> {
+fn parse(contents: &str) -> Result<Vec<i32>> {
     contents
         .lines()
         .into_iter()
         .next()
         .unwrap()
         .split(',')
-        .map(|x| x.parse().expect("invalid input"))
+        .map(|x| x.parse().context("invalid input"))
         .collect()
 }
 
-fn part1(contents: &[i32]) -> i32 {
-    let min = contents.iter().min().unwrap();
-    let max = contents.iter().max().unwrap();
+fn part1(contents: &[i32]) -> Result<i32> {
+    let min = contents
+        .iter()
+        .min()
+        .ok_or(anyhow!("contents missing values"))?;
+    let max = contents
+        .iter()
+        .max()
+        .ok_or(anyhow!("contents missing values"))?;
 
     let mut least_fuel = std::i32::MAX;
 
@@ -28,7 +35,7 @@ fn part1(contents: &[i32]) -> i32 {
         }
     }
 
-    least_fuel
+    Ok(least_fuel)
 }
 
 // returns the value for the nth triangle number
@@ -37,9 +44,15 @@ fn triangle_number(n: i32) -> i32 {
     (n * n + n) / 2
 }
 
-fn part2(contents: &[i32]) -> i32 {
-    let min = contents.iter().min().unwrap();
-    let max = contents.iter().max().unwrap();
+fn part2(contents: &[i32]) -> Result<i32> {
+    let min = contents
+        .iter()
+        .min()
+        .ok_or(anyhow!("contents missing values"))?;
+    let max = contents
+        .iter()
+        .max()
+        .ok_or(anyhow!("contents missing values"))?;
 
     let mut least_fuel = std::i32::MAX;
 
@@ -53,7 +66,7 @@ fn part2(contents: &[i32]) -> i32 {
         }
     }
 
-    least_fuel
+    Ok(least_fuel)
 }
 
 #[cfg(test)]
@@ -61,21 +74,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 37);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 168);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

@@ -1,11 +1,12 @@
 #![feature(drain_filter)]
 
+use anyhow::*;
 use aoc_common::*;
 use std::collections::HashMap;
 use std::str::FromStr;
 
-fn main() {
-    run_progressive(parse_all, part1, part2);
+fn main() -> Result<()> {
+    run_progressive(parse_all, part1, part2)
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -24,10 +25,10 @@ impl Expression {
 }
 
 impl FromStr for Expression {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(expression: &str) -> Result<Self, Self::Err> {
-        if let Ok(value) = expression.parse() {
+    fn from_str(expression: &str) -> Result<Self> {
+        if let std::result::Result::Ok(value) = expression.parse() {
             Ok(Expression::Literal(value))
         } else {
             Ok(Expression::Wire(expression.to_string()))
@@ -97,9 +98,9 @@ impl Gate {
 }
 
 impl FromStr for Gate {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(gate: &str) -> Result<Self, Self::Err> {
+    fn from_str(gate: &str) -> Result<Self> {
         let mut in_out = gate.split(" -> ");
 
         let op = in_out.next().unwrap();
@@ -125,7 +126,7 @@ impl FromStr for Gate {
                 left: parts[0].parse().unwrap(),
                 right: parts[2].parse().unwrap(),
             },
-            _ => panic!(),
+            op => bail!("unsupported operation '{}'", op),
         };
 
         Ok(Gate { op, output })
@@ -168,29 +169,29 @@ impl Circuit {
 }
 
 impl FromStr for Circuit {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(circuit: &str) -> Result<Self, Self::Err> {
-        let gates: Vec<Gate> = circuit.lines().map(|x| x.parse().unwrap()).collect();
+    fn from_str(circuit: &str) -> Result<Self> {
+        let gates = parse_lines(circuit)?;
 
         Ok(Circuit { gates })
     }
 }
 
-fn part1(circuit: &Circuit) -> (u16, u16) {
+fn part1(circuit: &Circuit) -> Result<(u16, u16)> {
     let wires = circuit.run();
 
     let a = wires["a"];
 
-    (a, a)
+    Ok((a, a))
 }
 
-fn part2(circuit: &Circuit, new_b: &u16) -> u16 {
+fn part2(circuit: &Circuit, new_b: &u16) -> Result<u16> {
     let mut circuit = circuit.clone();
     circuit.override_output("b", *new_b);
     let wires = circuit.run();
 
-    wires["a"]
+    Ok(wires["a"])
 }
 
 #[cfg(test)]
@@ -198,8 +199,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn circuit_run() {
-        let circuit: Circuit = SAMPLE.parse().unwrap();
+    fn circuit_run() -> Result<()> {
+        let circuit: Circuit = SAMPLE.parse()?;
 
         let wires = circuit.run();
 
@@ -211,6 +212,8 @@ mod tests {
         assert_eq!(wires["i"], 65079);
         assert_eq!(wires["x"], 123);
         assert_eq!(wires["y"], 456);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

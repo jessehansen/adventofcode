@@ -1,9 +1,10 @@
+use anyhow::*;
 use aoc_common::run;
 use aoc_common::{Grid2D, Point2D};
 use std::collections::HashSet;
 
-fn main() {
-    run(Grid2D::<u32>::from_char_str, part1, part2);
+fn main() -> Result<()> {
+    run(Grid2D::<u32>::from_char_str, part1, part2)
 }
 
 fn low_points(grid: &Grid2D<u32>) -> impl Iterator<Item = (Point2D, &u32)> {
@@ -14,8 +15,8 @@ fn low_points(grid: &Grid2D<u32>) -> impl Iterator<Item = (Point2D, &u32)> {
     })
 }
 
-fn part1(grid: &Grid2D<u32>) -> u32 {
-    low_points(grid).fold(0, |acc, (_, height)| acc + *height + 1)
+fn part1(grid: &Grid2D<u32>) -> Result<u32> {
+    Ok(low_points(grid).fold(0, |acc, (_, height)| acc + *height + 1))
 }
 
 fn calculate_basin_size(grid: &Grid2D<u32>, low_point: Point2D) -> usize {
@@ -38,7 +39,7 @@ fn calculate_basin_size(grid: &Grid2D<u32>, low_point: Point2D) -> usize {
     basin.len()
 }
 
-fn part2(grid: &Grid2D<u32>) -> usize {
+fn part2(grid: &Grid2D<u32>) -> Result<usize> {
     let low_points: Vec<Point2D> = low_points(grid).map(|(pt, _)| pt).collect();
 
     let mut basin_sizes = vec![];
@@ -49,7 +50,7 @@ fn part2(grid: &Grid2D<u32>) -> usize {
 
     basin_sizes.sort_unstable();
 
-    basin_sizes.iter().rev().take(3).product()
+    Ok(basin_sizes.iter().rev().take(3).product())
 }
 
 #[cfg(test)]
@@ -57,21 +58,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = Grid2D::<u32>::from_char_str(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = Grid2D::<u32>::from_char_str(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 15);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = Grid2D::<u32>::from_char_str(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = Grid2D::<u32>::from_char_str(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 1134);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

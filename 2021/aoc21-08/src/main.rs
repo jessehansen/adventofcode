@@ -1,8 +1,9 @@
+use anyhow::*;
 use aoc_common::*;
 use itertools::Itertools;
 
-fn main() {
-    run_vec(parse, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse, part1, part2)
 }
 
 struct DisplayLine {
@@ -10,8 +11,8 @@ struct DisplayLine {
     output: Vec<String>,
 }
 
-fn parse(contents: &str) -> Vec<DisplayLine> {
-    contents
+fn parse(contents: &str) -> Result<Vec<DisplayLine>> {
+    Ok(contents
         .lines()
         .into_iter()
         .map(|x| {
@@ -34,11 +35,11 @@ fn parse(contents: &str) -> Vec<DisplayLine> {
                     .collect(),
             }
         })
-        .collect()
+        .collect())
 }
 
-fn part1(contents: &[DisplayLine]) -> usize {
-    contents
+fn part1(contents: &[DisplayLine]) -> Result<usize> {
+    Ok(contents
         .iter()
         .map(|x| {
             x.output
@@ -46,7 +47,7 @@ fn part1(contents: &[DisplayLine]) -> usize {
                 .filter(|y| matches!(y.len(), 2 | 4 | 3 | 7))
                 .count()
         })
-        .sum()
+        .sum())
 }
 
 fn get_codes(signal: &[String]) -> [String; 10] {
@@ -145,14 +146,14 @@ fn decode_output(codes: [String; 10], output: &[String]) -> u32 {
     result.parse().unwrap()
 }
 
-fn part2(contents: &[DisplayLine]) -> u32 {
-    contents
+fn part2(contents: &[DisplayLine]) -> Result<u32> {
+    Ok(contents
         .iter()
         .map(|x| {
             let codes = get_codes(&x.signal);
             decode_output(codes, &x.output)
         })
-        .sum()
+        .sum())
 }
 
 #[cfg(test)]
@@ -160,21 +161,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 26);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 61229);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

@@ -1,18 +1,19 @@
+use anyhow::*;
 use aoc_common::*;
 
-fn main() {
-    run_vec(parse, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse, part1, part2)
 }
 
-fn parse(contents: &str) -> Vec<String> {
-    contents
+fn parse(contents: &str) -> Result<Vec<String>> {
+    Ok(contents
         .lines()
         .into_iter()
         .map(|x| x.to_string())
-        .collect()
+        .collect())
 }
 
-fn part1(contents: &[String]) -> u32 {
+fn part1(contents: &[String]) -> Result<u32> {
     let item_length = contents[0].len();
     let half_line_count = contents.len() / 2;
     let mut mcbs = vec![0; item_length];
@@ -36,10 +37,10 @@ fn part1(contents: &[String]) -> u32 {
         }
     }
 
-    gamma * epsilon
+    Ok(gamma * epsilon)
 }
 
-fn part2(contents: &[String]) -> u32 {
+fn part2(contents: &[String]) -> Result<u32> {
     let item_length = contents[0].len();
 
     let mut oxygen_lines = contents.to_owned();
@@ -74,7 +75,7 @@ fn part2(contents: &[String]) -> u32 {
     let oxygen_rating = u32::from_str_radix(oxygen_lines[0].as_str(), 2).unwrap();
     let scrubber_rating = u32::from_str_radix(scrubber_lines[0].as_str(), 2).unwrap();
 
-    oxygen_rating * scrubber_rating
+    Ok(oxygen_rating * scrubber_rating)
 }
 
 fn get_mcb_at_pos(lines: &[String], pos: usize) -> char {
@@ -96,21 +97,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 198);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 230);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

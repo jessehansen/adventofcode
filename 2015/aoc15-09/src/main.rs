@@ -1,9 +1,10 @@
+use anyhow::*;
 use aoc_common::*;
 use itertools::Itertools;
 use std::collections::HashMap;
 
-fn main() {
-    run(parse, part1, part2);
+fn main() -> Result<()> {
+    run(parse, part1, part2)
 }
 
 struct Map {
@@ -11,11 +12,15 @@ struct Map {
     distances: Vec<Vec<u32>>,
 }
 
-fn parse(contents: &str) -> Map {
+fn parse(contents: &str) -> Result<Map> {
     let mut id = 0;
     let mut destinations = HashMap::new();
     let mut distances = vec![vec![10_000; 10]; 10];
     contents.lines().for_each(|x| {
+        if id > 10 {
+            return;
+        }
+
         let mut parts = x.split_whitespace();
         let from = parts.next().unwrap();
         if !destinations.contains_key(from) {
@@ -31,10 +36,6 @@ fn parse(contents: &str) -> Map {
         }
         let to_id = destinations[to];
 
-        if id > 10 {
-            panic!("Too many destinations");
-        }
-
         parts.next(); // skip "="
 
         distances[from_id][from_id] = 0;
@@ -45,6 +46,10 @@ fn parse(contents: &str) -> Map {
         distances[to_id][from_id] = distance;
     });
 
+    if id > 10 {
+        bail!("too many destinations");
+    }
+
     if distances.len() < 10 {
         distances.truncate(destinations.len());
         distances
@@ -52,10 +57,10 @@ fn parse(contents: &str) -> Map {
             .for_each(|d| d.truncate(destinations.len()));
     }
 
-    Map {
+    Ok(Map {
         destinations,
         distances,
-    }
+    })
 }
 
 fn calculate_path(path: Vec<usize>, distances: &[Vec<u32>]) -> u32 {
@@ -75,12 +80,20 @@ fn all_paths(map: &Map) -> Vec<u32> {
         .collect()
 }
 
-fn part1(map: &Map) -> u32 {
-    *all_paths(map).iter().min().unwrap()
+fn part1(map: &Map) -> Result<u32> {
+    all_paths(map)
+        .iter()
+        .min()
+        .map(|x| *x)
+        .ok_or(anyhow!("no min"))
 }
 
-fn part2(map: &Map) -> u32 {
-    *all_paths(map).iter().max().unwrap()
+fn part2(map: &Map) -> Result<u32> {
+    all_paths(map)
+        .iter()
+        .max()
+        .map(|x| *x)
+        .ok_or(anyhow!("no max"))
 }
 
 #[cfg(test)]
@@ -88,21 +101,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 605);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 982);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

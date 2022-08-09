@@ -1,3 +1,4 @@
+use anyhow::*;
 use itertools::Itertools;
 use std::cmp::{max, min, Eq, Ord, Ordering, PartialEq};
 use std::collections::BinaryHeap;
@@ -121,12 +122,19 @@ impl Point2D {
 }
 
 impl FromStr for Point2D {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(input: &str) -> Result<Point2D, Self::Err> {
-        let mut parts = input.split(',').map(|x| x.parse().unwrap());
+    fn from_str(input: &str) -> Result<Point2D> {
+        let mut parts = input.split(',').map(|x| x.parse());
 
-        Ok(pt(parts.next().unwrap(), parts.next().unwrap()))
+        let x = parts.next().ok_or(anyhow!("missing x value"))??;
+        let y = parts.next().ok_or(anyhow!("missing y value"))??;
+
+        if !matches!(parts.next(), None) {
+            bail!("received extra coordinates for Point2D");
+        }
+
+        Ok(pt(x, y))
     }
 }
 
@@ -426,30 +434,39 @@ impl<T> Grid2D<T>
 where
     T: FromStr + Default,
     <T as FromStr>::Err: std::fmt::Debug,
+    <T as FromStr>::Err: Sync,
+    <T as FromStr>::Err: Send,
+    <T as FromStr>::Err: std::error::Error,
+    <T as FromStr>::Err: 'static,
 {
     // this is a special case where each grid item is only represented by a single character
-    pub fn from_char_str(input: &str) -> Grid2D<T> {
+    pub fn from_char_str(input: &str) -> Result<Grid2D<T>> {
         input
             .lines()
             .into_iter()
-            .map(|x| {
-                x.chars().into_iter().map(|x| {
-                    let result: T = x.to_string().parse().unwrap();
-                    result
-                })
+            .map(|x| -> Result<Vec<T>> {
+                x.chars()
+                    .into_iter()
+                    .map(|x| -> Result<T> {
+                        let result: T = x.to_string().parse()?;
+                        Ok(result)
+                    })
+                    .collect()
             })
             .collect()
     }
 
-    pub fn from_delimited_str(input: &str, delimiter: &str) -> Grid2D<T> {
+    pub fn from_delimited_str(input: &str, delimiter: &str) -> Result<Grid2D<T>> {
         input
             .lines()
             .into_iter()
-            .map(|x| {
-                x.split(delimiter).map(|x| {
-                    let result: T = x.to_string().parse().unwrap();
-                    result
-                })
+            .map(|x| -> Result<Vec<T>> {
+                x.split(delimiter)
+                    .map(|x| {
+                        let result: T = x.to_string().parse()?;
+                        Ok(result)
+                    })
+                    .collect()
             })
             .collect()
     }

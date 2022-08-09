@@ -1,9 +1,10 @@
+use anyhow::*;
 use aoc_common::*;
 use std::fmt;
 use std::str::FromStr;
 
-fn main() {
-    run_vec(parse, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse, part1, part2)
 }
 
 #[derive(Clone, Debug)]
@@ -58,10 +59,13 @@ struct Point3D {
 }
 
 impl FromStr for Point3D {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(point: &str) -> Result<Self, Self::Err> {
-        let parsed: Vec<i32> = point.split(',').map(|x| x.parse().unwrap()).collect();
+    fn from_str(point: &str) -> Result<Self> {
+        let parsed = point
+            .split(',')
+            .map(|x| Ok(x.parse()?))
+            .collect::<Result<Vec<i32>>>()?;
 
         Ok(Point3D {
             x: parsed[0],
@@ -243,16 +247,19 @@ impl Cuboid {
 }
 
 impl FromStr for Cuboid {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(ranges: &str) -> Result<Self, Self::Err> {
-        let bounds: Vec<(i32, i32)> = ranges
+    fn from_str(ranges: &str) -> Result<Self> {
+        let bounds = ranges
             .split(',')
             .map(|x| {
-                let bounds: Vec<i32> = x[2..].split("..").map(|y| y.parse().unwrap()).collect();
-                (bounds[0], bounds[1])
+                let bounds = x[2..]
+                    .split("..")
+                    .map(|y| Ok(y.parse()?))
+                    .collect::<Result<Vec<i32>>>()?;
+                Ok((bounds[0], bounds[1]))
             })
-            .collect();
+            .collect::<Result<Vec<(i32, i32)>>>()?;
 
         Ok(Cuboid {
             origin: Point3D {
@@ -293,11 +300,13 @@ impl Instruction {
 use Instruction::*;
 
 impl FromStr for Instruction {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(instruction: &str) -> Result<Self, Self::Err> {
-        let (on_off, cuboid) = instruction.split_once(' ').unwrap();
-        let cuboid: Cuboid = cuboid.parse().unwrap();
+    fn from_str(instruction: &str) -> Result<Self> {
+        let (on_off, cuboid) = instruction
+            .split_once(' ')
+            .ok_or(anyhow!("invalid instruction format"))?;
+        let cuboid: Cuboid = cuboid.parse()?;
         match on_off {
             "on" => Ok(On(cuboid)),
             "off" => Ok(Off(cuboid)),
@@ -306,26 +315,26 @@ impl FromStr for Instruction {
     }
 }
 
-fn parse(contents: &str) -> Vec<Instruction> {
-    contents.lines().map(|x| x.parse().unwrap()).collect()
+fn parse(contents: &str) -> Result<Vec<Instruction>> {
+    contents.lines().map(|x| Ok(x.parse()?)).collect()
 }
 
-fn part1(instructions: &[Instruction]) -> u64 {
+fn part1(instructions: &[Instruction]) -> Result<u64> {
     let mut core = ReactorCore::new();
     for instruction in instructions {
         if instruction.is_initialization() {
             core.process(instruction);
         }
     }
-    core.volume_on()
+    Ok(core.volume_on())
 }
 
-fn part2(instructions: &[Instruction]) -> u64 {
+fn part2(instructions: &[Instruction]) -> Result<u64> {
     let mut core = ReactorCore::new();
     for instruction in instructions {
         core.process(instruction);
     }
-    core.volume_on()
+    Ok(core.volume_on())
 }
 
 #[cfg(test)]
@@ -333,30 +342,36 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 39);
+
+        Ok(())
     }
 
     #[test]
-    fn large_sample_part1() {
-        let parsed = parse(LARGE_SAMPLE);
+    fn large_sample_part1() -> Result<()> {
+        let parsed = parse(LARGE_SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 590784);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(LARGER_SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(LARGER_SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 2758514936282235);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

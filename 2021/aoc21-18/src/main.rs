@@ -1,12 +1,11 @@
-#![feature(destructuring_assignment)]
-
+use anyhow::*;
 use aoc_common::*;
 use std::fmt;
 use std::ops::Add;
 use std::str::FromStr;
 
-fn main() {
-    run_vec(parse, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse, part1, part2)
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -188,9 +187,9 @@ impl<'a> std::iter::Sum<&'a FishNum> for FishNum {
     }
 }
 impl FromStr for FishNum {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(num: &str) -> Result<Self, Self::Err> {
+    fn from_str(num: &str) -> Result<Self> {
         Ok(FishNum {
             contents: num.trim().chars().filter_map(Token::from_char).collect(),
         })
@@ -249,27 +248,29 @@ impl fmt::Display for Token {
     }
 }
 
-fn parse(contents: &str) -> Vec<FishNum> {
-    contents.lines().map(|x| x.parse().unwrap()).collect()
+fn parse(contents: &str) -> Result<Vec<FishNum>> {
+    contents.lines().map(|x| x.parse()).collect()
 }
 
-fn part1(contents: &[FishNum]) -> u32 {
+fn part1(contents: &[FishNum]) -> Result<u32> {
     let sum: FishNum = contents.iter().sum();
-    sum.magnitude()
+    Ok(sum.magnitude())
 }
 
-fn part2(contents: &[FishNum]) -> u32 {
+fn part2(contents: &[FishNum]) -> Result<u32> {
     contents
         .iter()
-        .map(|x| {
-            contents
+        .map(|x| -> Result<u32> {
+            Ok(contents
                 .iter()
                 .map(|y| if x == y { 0 } else { x.plus(y).magnitude() })
                 .max()
-                .unwrap()
+                .ok_or(anyhow!("no max"))?)
         })
+        .collect::<Result<Vec<u32>>>()?
+        .into_iter()
         .max()
-        .unwrap()
+        .ok_or(anyhow!("no max"))
 }
 
 #[cfg(test)]
@@ -277,111 +278,120 @@ mod tests {
     use super::*;
 
     #[test]
-    fn simple_add() {
-        let lhs: FishNum = "[1,2]".parse().unwrap();
-        let rhs: FishNum = "[[3,4],5]".parse().unwrap();
+    fn simple_add() -> Result<()> {
+        let lhs: FishNum = "[1,2]".parse()?;
+        let rhs: FishNum = "[[3,4],5]".parse()?;
 
-        assert_eq!(lhs + rhs, "[[1,2],[[3,4],5]]".parse().unwrap());
+        assert_eq!(lhs + rhs, "[[1,2],[[3,4],5]]".parse()?);
+
+        Ok(())
     }
 
     #[test]
-    fn explode_reduce() {
-        let mut num: FishNum = "[[[[[9,8],1],2],3],4]".parse().unwrap();
+    fn explode_reduce() -> Result<()> {
+        let mut num: FishNum = "[[[[[9,8],1],2],3],4]".parse()?;
         num.reduce();
-        assert_eq!(num, "[[[[0,9],2],3],4]".parse().unwrap());
+        assert_eq!(num, "[[[[0,9],2],3],4]".parse()?);
 
-        let mut num: FishNum = "[7,[6,[5,[4,[3,2]]]]]".parse().unwrap();
+        let mut num: FishNum = "[7,[6,[5,[4,[3,2]]]]]".parse()?;
         num.reduce();
-        assert_eq!(num, "[7,[6,[5,[7,0]]]]".parse().unwrap());
+        assert_eq!(num, "[7,[6,[5,[7,0]]]]".parse()?);
 
-        let mut num: FishNum = "[[6,[5,[4,[3,2]]]],1]".parse().unwrap();
+        let mut num: FishNum = "[[6,[5,[4,[3,2]]]],1]".parse()?;
         num.reduce();
-        assert_eq!(num, "[[6,[5,[7,0]]],3]".parse().unwrap());
+        assert_eq!(num, "[[6,[5,[7,0]]],3]".parse()?);
 
-        let mut num: FishNum = "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]".parse().unwrap();
+        let mut num: FishNum = "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]".parse()?;
         num.reduce_one();
-        assert_eq!(num, "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]".parse().unwrap());
+        assert_eq!(num, "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]".parse()?);
 
-        let mut num: FishNum = "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]".parse().unwrap();
+        let mut num: FishNum = "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]".parse()?;
         num.reduce_one();
-        assert_eq!(num, "[[3,[2,[8,0]]],[9,[5,[7,0]]]]".parse().unwrap());
+        assert_eq!(num, "[[3,[2,[8,0]]],[9,[5,[7,0]]]]".parse()?);
+
+        Ok(())
     }
 
     #[test]
-    fn complicated_reduce() {
-        let lhs: FishNum = "[[[[4,3],4],4],[7,[[8,4],9]]]".parse().unwrap();
-        let rhs: FishNum = "[1,1]".parse().unwrap();
+    fn complicated_reduce() -> Result<()> {
+        let lhs: FishNum = "[[[[4,3],4],4],[7,[[8,4],9]]]".parse()?;
+        let rhs: FishNum = "[1,1]".parse()?;
 
-        assert_eq!(
-            lhs + rhs,
-            "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]".parse().unwrap()
-        );
+        assert_eq!(lhs + rhs, "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]".parse()?);
+
+        Ok(())
     }
 
     #[test]
-    fn simple_sum() {
-        let nums = parse(SIMPLE_SUM);
+    fn simple_sum() -> Result<()> {
+        let nums = parse(SIMPLE_SUM)?;
 
         assert_eq!(
             nums.into_iter().sum::<FishNum>(),
-            "[[[[5,0],[7,4]],[5,5]],[6,6]]".parse().unwrap()
+            "[[[[5,0],[7,4]],[5,5]],[6,6]]".parse()?
         );
+
+        Ok(())
     }
 
     #[test]
-    fn harder_sum() {
-        let nums = parse(HARDER_SUM);
+    fn harder_sum() -> Result<()> {
+        let nums = parse(HARDER_SUM)?;
 
         assert_eq!(
             nums.into_iter().sum::<FishNum>(),
-            "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]"
-                .parse()
-                .unwrap()
+            "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]".parse()?
         );
+
+        Ok(())
     }
 
     #[test]
-    fn magnitude() {
-        let num: FishNum = "[9,1]".parse().unwrap();
+    fn magnitude() -> Result<()> {
+        let num: FishNum = "[9,1]".parse()?;
         assert_eq!(num.magnitude(), 29);
 
-        let num: FishNum = "[[1,2],[[3,4],5]]".parse().unwrap();
+        let num: FishNum = "[[1,2],[[3,4],5]]".parse()?;
         assert_eq!(num.magnitude(), 143);
 
-        let num: FishNum = "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]".parse().unwrap();
+        let num: FishNum = "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]".parse()?;
         assert_eq!(num.magnitude(), 1384);
 
-        let num: FishNum = "[[[[1,1],[2,2]],[3,3]],[4,4]]".parse().unwrap();
+        let num: FishNum = "[[[[1,1],[2,2]],[3,3]],[4,4]]".parse()?;
         assert_eq!(num.magnitude(), 445);
 
-        let num: FishNum = "[[[[3,0],[5,3]],[4,4]],[5,5]]".parse().unwrap();
+        let num: FishNum = "[[[[3,0],[5,3]],[4,4]],[5,5]]".parse()?;
         assert_eq!(num.magnitude(), 791);
 
-        let num: FishNum = "[[[[5,0],[7,4]],[5,5]],[6,6]]".parse().unwrap();
+        let num: FishNum = "[[[[5,0],[7,4]],[5,5]],[6,6]]".parse()?;
         assert_eq!(num.magnitude(), 1137);
 
-        let num: FishNum = "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]"
-            .parse()
-            .unwrap();
+        let num: FishNum = "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]".parse()?;
         assert_eq!(num.magnitude(), 3488);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 4140);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 3993);
+
+        Ok(())
     }
 
     const SIMPLE_SUM: &str = "\

@@ -1,9 +1,10 @@
+use anyhow::*;
 use aoc_common::*;
 use std::cmp::max;
 use std::str::FromStr;
 
-fn main() {
-    run_vec(parse_lines, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse_lines, part1, part2)
 }
 
 struct Ingredient {
@@ -15,19 +16,19 @@ struct Ingredient {
 }
 
 impl FromStr for Ingredient {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(ingredient: &str) -> Result<Self, Self::Err> {
+    fn from_str(ingredient: &str) -> Result<Self> {
         let parts: Vec<&str> = ingredient
             .split(&[' ', ':', ','])
             .filter(|x| !x.is_empty())
             .collect();
         Ok(Ingredient {
-            capacity: parts[2].parse().unwrap(),
-            durability: parts[4].parse().unwrap(),
-            flavor: parts[6].parse().unwrap(),
-            texture: parts[8].parse().unwrap(),
-            calories: parts[10].parse().unwrap(),
+            capacity: parts[2].parse()?,
+            durability: parts[4].parse()?,
+            flavor: parts[6].parse()?,
+            texture: parts[8].parse()?,
+            calories: parts[10].parse()?,
         })
     }
 }
@@ -105,12 +106,12 @@ fn get_best_cookie(ingredients: &[Ingredient], set_calories: bool) -> i32 {
     max_score
 }
 
-fn part1(ingredients: &[Ingredient]) -> i32 {
-    get_best_cookie(ingredients, false)
+fn part1(ingredients: &[Ingredient]) -> Result<i32> {
+    Ok(get_best_cookie(ingredients, false))
 }
 
-fn part2(ingredients: &[Ingredient]) -> i32 {
-    get_best_cookie(ingredients, true)
+fn part2(ingredients: &[Ingredient]) -> Result<i32> {
+    Ok(get_best_cookie(ingredients, true))
 }
 
 #[cfg(test)]
@@ -118,8 +119,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn total_score_test() {
-        let sample_ingredients = parse_lines(SAMPLE);
+    fn total_score_test() -> Result<()> {
+        let sample_ingredients = parse_lines(SAMPLE)?;
         let butterscotch = &sample_ingredients[0];
         let cinnamon = &sample_ingredients[1];
 
@@ -127,16 +128,22 @@ mod tests {
             total_score([(44, butterscotch), (56, cinnamon)], false),
             62842880
         );
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part1() {
-        assert_eq!(part1(&parse_lines(SAMPLE)), 62842880);
+    fn sample_part1() -> Result<()> {
+        assert_eq!(part1(&parse_lines(SAMPLE)?)?, 62842880);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        assert_eq!(part2(&parse_lines(SAMPLE)), 57600000);
+    fn sample_part2() -> Result<()> {
+        assert_eq!(part2(&parse_lines(SAMPLE)?)?, 57600000);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

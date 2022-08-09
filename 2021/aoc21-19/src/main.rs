@@ -1,10 +1,11 @@
+use anyhow::*;
 use aoc_common::*;
 use nalgebra::{vector, Matrix3, Vector3};
 use std::fmt;
 use std::str::FromStr;
 
-fn main() {
-    run_progressive_vec(parse, part1, part2);
+fn main() -> Result<()> {
+    run_progressive_vec(parse, part1, part2)
 }
 
 static ROTATION_MATRICES: [Matrix3<i32>; 24] = [
@@ -42,10 +43,13 @@ struct Point3D {
 }
 
 impl FromStr for Point3D {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(point: &str) -> Result<Self, Self::Err> {
-        let parsed: Vec<i32> = point.split(',').map(|x| x.parse().unwrap()).collect();
+    fn from_str(point: &str) -> Result<Self> {
+        let parsed = point
+            .split(',')
+            .map(|x| Ok(x.parse()?))
+            .collect::<Result<Vec<i32>>>()?;
 
         Ok(Point3D {
             x: parsed[0],
@@ -234,24 +238,24 @@ impl Scanner {
 }
 
 impl FromStr for Scanner {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(scanner: &str) -> Result<Self, Self::Err> {
+    fn from_str(scanner: &str) -> Result<Self> {
         Ok(Scanner::new(
             scanner
                 .lines()
                 .skip(1)
-                .map(|x| x.parse().unwrap())
-                .collect(),
+                .map(|x| x.parse())
+                .collect::<Result<Vec<Point3D>>>()?,
         ))
     }
 }
 
-fn parse(contents: &str) -> Vec<Scanner> {
-    contents.split("\n\n").map(|x| x.parse().unwrap()).collect()
+fn parse(contents: &str) -> Result<Vec<Scanner>> {
+    contents.split("\n\n").map(|x| x.parse()).collect()
 }
 
-fn part1(scanners: &[Scanner]) -> (usize, Scanner) {
+fn part1(scanners: &[Scanner]) -> Result<(usize, Scanner)> {
     let mut scanners = scanners.to_owned();
     let mut reference_scanner = scanners.remove(0);
 
@@ -264,11 +268,11 @@ fn part1(scanners: &[Scanner]) -> (usize, Scanner) {
         }
     }
 
-    (reference_scanner.beacons.len(), reference_scanner)
+    Ok((reference_scanner.beacons.len(), reference_scanner))
 }
 
-fn part2(_: &[Scanner], scanner: &Scanner) -> i32 {
-    scanner.max_manhattan_distance()
+fn part2(_: &[Scanner], scanner: &Scanner) -> Result<i32> {
+    Ok(scanner.max_manhattan_distance())
 }
 
 #[cfg(test)]
@@ -276,42 +280,52 @@ mod tests {
     use super::*;
 
     #[test]
-    fn overlapping_beacons() {
-        let scanners = parse(SAMPLE);
+    fn overlapping_beacons() -> Result<()> {
+        let scanners = parse(SAMPLE)?;
 
-        let result = scanners[0].overlapping_beacons(&scanners[1]).unwrap();
+        let result = scanners[0]
+            .overlapping_beacons(&scanners[1])
+            .ok_or(anyhow!("overlapping_beacons failed"))?;
 
         assert_eq!(result.overlapping_beacon_indices.len(), 12);
+
+        Ok(())
     }
 
     #[test]
-    fn single_plot() {
-        let scanners = parse(SAMPLE);
+    fn single_plot() -> Result<()> {
+        let scanners = parse(SAMPLE)?;
 
         let mut origin = scanners[0].clone();
 
         assert!(origin.plot_beacons(&scanners[1]));
         assert_eq!(origin.beacons.len(), 38);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let (result, _) = part1(&parsed);
+        let (result, _) = part1(&parsed)?;
 
         assert_eq!(result, 79);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let (_, scanner) = part1(&parsed);
+        let (_, scanner) = part1(&parsed)?;
 
-        let result = part2(&parsed, &scanner);
+        let result = part2(&parsed, &scanner)?;
 
         assert_eq!(result, 3621);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

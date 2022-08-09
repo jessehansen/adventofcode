@@ -1,7 +1,8 @@
+use anyhow::*;
 use aoc_common::*;
 
-fn main() {
-    run_vec(parse_lines, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse_lines, part1, part2)
 }
 
 fn is_nice_part1(s: &str) -> bool {
@@ -48,12 +49,12 @@ fn is_nice_part2(s: &str) -> bool {
     has_duplicate_pair && has_surrounding_double
 }
 
-fn part1(contents: &[String]) -> usize {
-    contents.iter().filter(|x| is_nice_part1(x)).count()
+fn part1(contents: &[String]) -> Result<usize> {
+    Ok(contents.iter().filter(|x| is_nice_part1(x)).count())
 }
 
-fn part2(contents: &[String]) -> usize {
-    contents.iter().filter(|x| is_nice_part2(x)).count()
+fn part2(contents: &[String]) -> Result<usize> {
+    Ok(contents.iter().filter(|x| is_nice_part2(x)).count())
 }
 
 #[cfg(test)]
@@ -61,19 +62,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn is_nice_part1_check() {
+    fn is_nice_part1_check() -> Result<()> {
         assert!(is_nice_part1("ugknbfddgicrmopn"));
         assert!(is_nice_part1("aaa"));
         assert!(!is_nice_part1("jchzalrnumimnmhp"));
         assert!(!is_nice_part1("haegwjzuvuyypxyu"));
         assert!(!is_nice_part1("dvszwmarrgswjxmb"));
+
+        Ok(())
     }
 
     #[test]
-    fn is_nice_part2_check() {
+    fn is_nice_part2_check() -> Result<()> {
         assert!(is_nice_part2("qjhvhtzxzqqjkmpb"));
         assert!(is_nice_part2("xxyxx"));
         assert!(!is_nice_part2("uurcxstgmygtbstg"));
         assert!(!is_nice_part2("ieodomkazucvgmuy"));
+
+        Ok(())
     }
 }

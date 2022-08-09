@@ -1,9 +1,10 @@
+use anyhow::*;
 use aoc_common::*;
 use std::collections::HashSet;
 use std::str::FromStr;
 
-fn main() {
-    run(prepare, part1, part2);
+fn main() -> Result<()> {
+    run(prepare, part1, part2)
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -13,15 +14,15 @@ enum Operand {
 }
 
 impl FromStr for Operand {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(input: &str) -> Result<Operand, Self::Err> {
+    fn from_str(input: &str) -> Result<Operand> {
         match input {
             "w" => Ok(Operand::Register('w')),
             "x" => Ok(Operand::Register('x')),
             "y" => Ok(Operand::Register('y')),
             "z" => Ok(Operand::Register('z')),
-            num => Ok(Operand::Literal(num.parse().unwrap())),
+            num => Ok(Operand::Literal(num.parse()?)),
         }
     }
 }
@@ -37,9 +38,9 @@ enum Instruction {
 }
 
 impl FromStr for Instruction {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(input: &str) -> Result<Instruction, Self::Err> {
+    fn from_str(input: &str) -> Result<Instruction> {
         let mut parts = input.split(' ');
         match parts.next().unwrap() {
             "inp" => Ok(Instruction::Inp(parts.next().unwrap().parse().unwrap())),
@@ -154,12 +155,12 @@ impl ArithmeticLogicUnit {
     }
 }
 
-fn parse(contents: &str) -> Vec<Instruction> {
-    contents.lines().map(|x| x.parse().unwrap()).collect()
+fn parse(contents: &str) -> Result<Vec<Instruction>> {
+    contents.lines().map(|x| x.parse()).collect()
 }
 
-fn prepare(contents: &str) -> (Vec<Instruction>, Vec<HashSet<i64>>) {
-    let program = parse(contents);
+fn prepare(contents: &str) -> Result<(Vec<Instruction>, Vec<HashSet<i64>>)> {
+    let program = parse(contents)?;
 
     // model no. program is split into chunks of 18 instructions each. Each chunk looks at the z
     // output from the previous chunk and runs a bunch of instructions to set z for the next chunk
@@ -186,7 +187,7 @@ fn prepare(contents: &str) -> (Vec<Instruction>, Vec<HashSet<i64>>) {
         chunk_index -= 1;
     }
 
-    (program, valid_z)
+    Ok((program, valid_z))
 }
 
 fn find_model_number<F, T>(
@@ -233,12 +234,12 @@ where
         .join("")
 }
 
-fn part1((program, valid_z): &(Vec<Instruction>, Vec<HashSet<i64>>)) -> String {
-    find_model_number(program, valid_z, || (1..=9).rev())
+fn part1((program, valid_z): &(Vec<Instruction>, Vec<HashSet<i64>>)) -> Result<String> {
+    Ok(find_model_number(program, valid_z, || (1..=9).rev()))
 }
 
-fn part2((program, valid_z): &(Vec<Instruction>, Vec<HashSet<i64>>)) -> String {
-    find_model_number(program, valid_z, || 1..=9)
+fn part2((program, valid_z): &(Vec<Instruction>, Vec<HashSet<i64>>)) -> Result<String> {
+    Ok(find_model_number(program, valid_z, || 1..=9))
 }
 
 #[cfg(test)]
@@ -246,18 +247,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn alu_neg() {
-        let program = parse(NEG);
+    fn alu_neg() -> Result<()> {
+        let program = parse(NEG)?;
 
         let mut alu = ArithmeticLogicUnit::new();
         alu.run(&program, [1]);
 
         assert_eq!(alu.x, -1);
+
+        Ok(())
     }
 
     #[test]
-    fn alu_mul_eql() {
-        let program = parse(MUL_EQL);
+    fn alu_mul_eql() -> Result<()> {
+        let program = parse(MUL_EQL)?;
 
         let mut alu = ArithmeticLogicUnit::new();
         alu.run(&program, [1, 3]);
@@ -269,11 +272,13 @@ mod tests {
 
         assert_eq!(alu.x, 2);
         assert_eq!(alu.z, 0);
+
+        Ok(())
     }
 
     #[test]
-    fn alu_bit_split() {
-        let program = parse(BIT_SPLIT);
+    fn alu_bit_split() -> Result<()> {
+        let program = parse(BIT_SPLIT)?;
 
         let mut alu = ArithmeticLogicUnit::new();
         alu.run(&program, [0b1011]);
@@ -282,6 +287,8 @@ mod tests {
         assert_eq!(alu.x, 0);
         assert_eq!(alu.y, 1);
         assert_eq!(alu.z, 1);
+
+        Ok(())
     }
 
     const NEG: &str = "\

@@ -1,25 +1,26 @@
+use anyhow::*;
 use aoc_common::*;
 
-fn main() {
-    run_vec(parse, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse, part1, part2)
 }
 
-fn parse(contents: &str) -> Vec<u32> {
+fn parse(contents: &str) -> Result<Vec<u32>> {
     contents
         .lines()
         .into_iter()
-        .map(|x| x.parse().expect("invalid input"))
+        .map(|x| Ok(x.parse().context("invalid input")?))
         .collect()
 }
 
-fn part1(contents: &[u32]) -> usize {
-    contents.windows(2).filter(|x| x[1] > x[0]).count()
+fn part1(contents: &[u32]) -> Result<usize> {
+    Ok(contents.windows(2).filter(|x| x[1] > x[0]).count())
 }
 
-fn part2(contents: &[u32]) -> usize {
+fn part2(contents: &[u32]) -> Result<usize> {
     let windows_of_3: Vec<u32> = contents.windows(3).map(|x| x.iter().sum()).collect();
 
-    windows_of_3.windows(2).filter(|x| x[1] > x[0]).count()
+    Ok(windows_of_3.windows(2).filter(|x| x[1] > x[0]).count())
 }
 
 #[cfg(test)]
@@ -27,21 +28,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 7);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 5);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

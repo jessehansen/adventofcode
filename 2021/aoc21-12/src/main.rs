@@ -1,8 +1,9 @@
+use anyhow::*;
 use aoc_common::run;
 use std::collections::HashMap;
 
-fn main() {
-    run(parse, part1, part2);
+fn main() -> Result<()> {
+    run(parse, part1, part2)
 }
 
 struct Map {
@@ -86,29 +87,29 @@ struct Node {
     is_small: bool,
 }
 
-fn parse(contents: &str) -> Map {
+fn parse(contents: &str) -> Result<Map> {
     let mut map = Map {
         nodes: HashMap::new(),
     };
     for line in contents.lines() {
         let mut edge = line.split('-');
         map.add_edge([
-            edge.next().unwrap().to_string(),
-            edge.next().unwrap().to_string(),
+            edge.next().ok_or(anyhow!("missing edge"))?.to_string(),
+            edge.next().ok_or(anyhow!("missing edge"))?.to_string(),
         ]);
     }
-    map
+    Ok(map)
 }
 
-fn part1(map: &Map) -> usize {
+fn part1(map: &Map) -> Result<usize> {
     let paths = map.traverse("start".to_string(), vec!["start"]);
 
-    paths.len()
+    Ok(paths.len())
 }
 
-fn part2(map: &Map) -> usize {
+fn part2(map: &Map) -> Result<usize> {
     let paths = map.traverse2("start".to_string(), vec!["start"]);
-    paths.len()
+    Ok(paths.len())
 }
 
 #[cfg(test)]
@@ -116,57 +117,69 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 10);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 36);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_med_part1() {
-        let parsed = parse(SAMPLE_MED);
+    fn sample_med_part1() -> Result<()> {
+        let parsed = parse(SAMPLE_MED)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 19);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_med_part2() {
-        let parsed = parse(SAMPLE_MED);
+    fn sample_med_part2() -> Result<()> {
+        let parsed = parse(SAMPLE_MED)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 103);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_lrg_part1() {
-        let parsed = parse(SAMPLE_LRG);
+    fn sample_lrg_part1() -> Result<()> {
+        let parsed = parse(SAMPLE_LRG)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 226);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_lrg_part2() {
-        let parsed = parse(SAMPLE_LRG);
+    fn sample_lrg_part2() -> Result<()> {
+        let parsed = parse(SAMPLE_LRG)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 3509);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

@@ -1,10 +1,11 @@
 #![feature(drain_filter)]
 
+use anyhow::*;
 use aoc_common::run;
 use std::fmt;
 
-fn main() {
-    run(parse, part1, part2);
+fn main() -> Result<()> {
+    run(parse, part1, part2)
 }
 
 struct Game {
@@ -157,23 +158,27 @@ fn bool_star(a: bool) -> &'static str {
     " "
 }
 
-fn lines_to_board(lines: &str) -> Result<Board, ()> {
+fn lines_to_board(lines: &str) -> Result<Board> {
+    // remove empty lines
     let lines: Vec<&str> = lines
         .lines()
         .into_iter()
         .filter(|x| !x.is_empty())
         .collect();
+
     if lines.len() < 5 {
-        return Err(());
+        bail!("not enough lines to construct board");
     }
+
     let mut board = empty_board();
     for (x, line) in lines[..5].iter().enumerate() {
-        let cells: Vec<u32> = line
+        let cells = line
             .split_whitespace()
-            .map(|x| x.parse().unwrap())
-            .collect();
+            .map(|x| Ok(x.parse().context("cell should be int")?))
+            .collect::<Result<Vec<u32>>>()?;
+
         if cells.len() != 5 {
-            return Err(());
+            bail!("not enough cells on line {} to construct board", x);
         }
         for (y, cell) in cells.into_iter().enumerate() {
             board.cells[x][y] = cell;
@@ -182,40 +187,40 @@ fn lines_to_board(lines: &str) -> Result<Board, ()> {
     Ok(board)
 }
 
-fn parse(contents: &str) -> Game {
+fn parse(contents: &str) -> Result<Game> {
     let mut parts: Vec<&str> = contents.split("\n\n").into_iter().collect();
 
     let boards = parts.split_off(1);
 
-    let draws: Vec<u32> = parts[0]
+    let draws = parts[0]
         .split(',')
         .filter(|x| !x.is_empty())
-        .map(|x| x.parse().unwrap())
-        .collect();
+        .map(|x| Ok(x.parse().context("draw should be int")?))
+        .collect::<Result<Vec<u32>>>()?;
 
-    let boards: Vec<Board> = boards
+    let boards = boards
         .into_iter()
-        .map(|x| lines_to_board(x).unwrap())
-        .collect();
+        .map(|x| lines_to_board(x))
+        .collect::<Result<Vec<Board>>>()?;
 
-    Game { draws, boards }
+    Ok(Game { draws, boards })
 }
 
-fn part1(game: &Game) -> u32 {
+fn part1(game: &Game) -> Result<u32> {
     let mut boards = game.boards.clone();
 
     for draw in &game.draws {
         for board in &mut boards {
             if board.mark(*draw) {
-                return board.score(*draw);
+                return Ok(board.score(*draw));
             }
         }
     }
 
-    0
+    bail!("didn't find a winner")
 }
 
-fn part2(game: &Game) -> u32 {
+fn part2(game: &Game) -> Result<u32> {
     let mut boards = game.boards.clone();
 
     for draw in &game.draws {
@@ -228,11 +233,11 @@ fn part2(game: &Game) -> u32 {
             false
         });
         if boards.is_empty() {
-            return last_win.unwrap();
+            return last_win.ok_or(anyhow!("no last win"));
         }
     }
 
-    0
+    bail!("didn't find a winner")
 }
 
 #[cfg(test)]
@@ -240,21 +245,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 4512);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 1924);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

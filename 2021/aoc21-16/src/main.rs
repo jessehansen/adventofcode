@@ -1,8 +1,9 @@
+use anyhow::*;
 use aoc_common::hex_to_binary_string;
 use aoc_common::run;
 
-fn main() {
-    run(parse, part1, part2);
+fn main() -> Result<()> {
+    run(parse, part1, part2)
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -132,67 +133,67 @@ impl PacketParser {
         PacketParser { bits, pos: 0 }
     }
 
-    fn read_bits(&mut self, len: usize) -> usize {
+    fn read_bits(&mut self, len: usize) -> Result<usize> {
         let bits = &self.bits[self.pos..self.pos + len];
         self.pos += len;
 
-        usize::from_str_radix(bits, 2).unwrap()
+        Ok(usize::from_str_radix(bits, 2)?)
     }
 
-    fn parse_packet(&mut self) -> Packet {
-        let version = self.read_bits(3);
-        let ptype = PacketType::from(self.read_bits(3));
+    fn parse_packet(&mut self) -> Result<Packet> {
+        let version = self.read_bits(3)?;
+        let ptype = PacketType::from(self.read_bits(3)?);
 
         match ptype {
             PacketType::Literal => {
                 let mut value = 0;
                 loop {
-                    let last_segment = self.read_bits(1);
-                    let bits = self.read_bits(4);
+                    let last_segment = self.read_bits(1)?;
+                    let bits = self.read_bits(4)?;
                     value <<= 4;
                     value |= bits;
                     if last_segment == 0 {
                         break;
                     }
                 }
-                Packet::Literal { version, value }
+                Ok(Packet::Literal { version, value })
             }
             PacketType::Operation(op) => {
-                let length_type = LengthType::from(self.read_bits(1));
+                let length_type = LengthType::from(self.read_bits(1)?);
                 let mut inner = vec![];
                 match length_type {
                     LengthType::SubPacketLength => {
-                        let count = self.read_bits(15);
+                        let count = self.read_bits(15)?;
                         let start_pos = self.pos;
                         while self.pos < start_pos + count {
-                            let inner_packet = self.parse_packet();
+                            let inner_packet = self.parse_packet()?;
                             inner.push(inner_packet);
                         }
                     }
                     LengthType::SubPacketCount => {
-                        let count = self.read_bits(11);
+                        let count = self.read_bits(11)?;
                         while inner.len() < count {
-                            let inner_packet = self.parse_packet();
+                            let inner_packet = self.parse_packet()?;
                             inner.push(inner_packet);
                         }
                     }
                 }
-                Packet::Operation { version, op, inner }
+                Ok(Packet::Operation { version, op, inner })
             }
         }
     }
 }
 
-fn parse(contents: &str) -> Packet {
+fn parse(contents: &str) -> Result<Packet> {
     PacketParser::new(hex_to_binary_string(contents.trim())).parse_packet()
 }
 
-fn part1(contents: &Packet) -> usize {
-    contents.version_sum()
+fn part1(contents: &Packet) -> Result<usize> {
+    Ok(contents.version_sum())
 }
 
-fn part2(contents: &Packet) -> usize {
-    contents.execute()
+fn part2(contents: &Packet) -> Result<usize> {
+    Ok(contents.execute())
 }
 
 #[cfg(test)]
@@ -200,19 +201,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_literal_packet() {
-        match parse(LITERAL_PACKET) {
+    fn parse_literal_packet() -> Result<()> {
+        match parse(LITERAL_PACKET)? {
             Packet::Literal { version, value } => {
                 assert_eq!(version, 6);
                 assert_eq!(value, 2021);
             }
-            _ => panic!("incorrect packet"),
+            _ => bail!("incorrect packet"),
         }
+
+        Ok(())
     }
 
     #[test]
-    fn parse_operator_packet_length_type() {
-        match parse(OPERATOR_LENGTH_PACKET) {
+    fn parse_operator_packet_length_type() -> Result<()> {
+        match parse(OPERATOR_LENGTH_PACKET)? {
             Packet::Operation { version, inner, .. } => {
                 assert_eq!(version, 1);
                 assert_eq!(inner.len(), 2);
@@ -231,13 +234,15 @@ mod tests {
                     }
                 );
             }
-            _ => panic!("incorrect packet"),
+            _ => bail!("incorrect packet"),
         }
+
+        Ok(())
     }
 
     #[test]
-    fn parse_operator_packet_count_type() {
-        match parse(OPERATOR_COUNT_PACKET) {
+    fn parse_operator_packet_count_type() -> Result<()> {
+        match parse(OPERATOR_COUNT_PACKET)? {
             Packet::Operation { version, inner, .. } => {
                 assert_eq!(version, 7);
                 assert_eq!(inner.len(), 3);
@@ -263,69 +268,95 @@ mod tests {
                     }
                 );
             }
-            _ => panic!("incorrect packet"),
+            _ => bail!("incorrect packet"),
         }
+
+        Ok(())
     }
 
     #[test]
-    fn test_sample1_part1() {
-        assert_eq!(part1(&parse(SAMPLE_PACKET_1)), 16);
+    fn test_sample1_part1() -> Result<()> {
+        assert_eq!(part1(&parse(SAMPLE_PACKET_1)?)?, 16);
+
+        Ok(())
     }
 
     #[test]
-    fn test_sample2_part1() {
-        assert_eq!(part1(&parse(SAMPLE_PACKET_2)), 12);
+    fn test_sample2_part1() -> Result<()> {
+        assert_eq!(part1(&parse(SAMPLE_PACKET_2)?)?, 12);
+
+        Ok(())
     }
 
     #[test]
-    fn test_sample3_part1() {
-        assert_eq!(part1(&parse(SAMPLE_PACKET_3)), 23);
+    fn test_sample3_part1() -> Result<()> {
+        assert_eq!(part1(&parse(SAMPLE_PACKET_3)?)?, 23);
+
+        Ok(())
     }
 
     #[test]
-    fn test_sample4_part1() {
-        let packet = parse(SAMPLE_PACKET_4);
-        assert_eq!(part1(&packet), 31);
+    fn test_sample4_part1() -> Result<()> {
+        let packet = parse(SAMPLE_PACKET_4)?;
+        assert_eq!(part1(&packet)?, 31);
+
+        Ok(())
     }
 
     #[test]
-    fn test_sum_packet() {
-        assert_eq!(part2(&parse(SUM_PACKET)), 3);
+    fn test_sum_packet() -> Result<()> {
+        assert_eq!(part2(&parse(SUM_PACKET)?)?, 3);
+
+        Ok(())
     }
 
     #[test]
-    fn test_mul_packet() {
-        assert_eq!(part2(&parse(MUL_PACKET)), 54);
+    fn test_mul_packet() -> Result<()> {
+        assert_eq!(part2(&parse(MUL_PACKET)?)?, 54);
+
+        Ok(())
     }
 
     #[test]
-    fn test_min_packet() {
-        assert_eq!(part2(&parse(MIN_PACKET)), 7);
+    fn test_min_packet() -> Result<()> {
+        assert_eq!(part2(&parse(MIN_PACKET)?)?, 7);
+
+        Ok(())
     }
 
     #[test]
-    fn test_max_packet() {
-        assert_eq!(part2(&parse(MAX_PACKET)), 9);
+    fn test_max_packet() -> Result<()> {
+        assert_eq!(part2(&parse(MAX_PACKET)?)?, 9);
+
+        Ok(())
     }
 
     #[test]
-    fn test_lt_packet() {
-        assert_eq!(part2(&parse(LT_PACKET)), 1);
+    fn test_lt_packet() -> Result<()> {
+        assert_eq!(part2(&parse(LT_PACKET)?)?, 1);
+
+        Ok(())
     }
 
     #[test]
-    fn test_gt_packet() {
-        assert_eq!(part2(&parse(GT_PACKET)), 0);
+    fn test_gt_packet() -> Result<()> {
+        assert_eq!(part2(&parse(GT_PACKET)?)?, 0);
+
+        Ok(())
     }
 
     #[test]
-    fn test_ne_packet() {
-        assert_eq!(part2(&parse(NE_PACKET)), 0);
+    fn test_ne_packet() -> Result<()> {
+        assert_eq!(part2(&parse(NE_PACKET)?)?, 0);
+
+        Ok(())
     }
 
     #[test]
-    fn test_eq_packet() {
-        assert_eq!(part2(&parse(EQ_PACKET)), 1);
+    fn test_eq_packet() -> Result<()> {
+        assert_eq!(part2(&parse(EQ_PACKET)?)?, 1);
+
+        Ok(())
     }
 
     const LITERAL_PACKET: &str = "D2FE28";

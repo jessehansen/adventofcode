@@ -1,15 +1,16 @@
+use anyhow::*;
 use aoc_common::run;
 use aoc_common::{Bounds2D, Grid2D, Point2D};
 
-fn main() {
-    run(Grid2D::<u32>::from_char_str, part1, part2);
+fn main() -> Result<()> {
+    run(Grid2D::<u32>::from_char_str, part1, part2)
 }
 
-fn part1(cave: &Grid2D<u32>) -> u32 {
-    cave.shortest_path()
+fn part1(cave: &Grid2D<u32>) -> Result<u32> {
+    Ok(cave.shortest_path())
 }
 
-fn part2(cave_tile: &Grid2D<u32>) -> u32 {
+fn part2(cave_tile: &Grid2D<u32>) -> Result<u32> {
     let mut cave = Grid2D::new_constant(
         Bounds2D {
             width: cave_tile.bounds.width * 5,
@@ -34,7 +35,7 @@ fn part2(cave_tile: &Grid2D<u32>) -> u32 {
         }
     }
 
-    cave.shortest_path()
+    Ok(cave.shortest_path())
 }
 
 #[cfg(test)]
@@ -42,21 +43,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = Grid2D::<u32>::from_char_str(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = Grid2D::<u32>::from_char_str(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 40);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = Grid2D::<u32>::from_char_str(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = Grid2D::<u32>::from_char_str(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 315);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

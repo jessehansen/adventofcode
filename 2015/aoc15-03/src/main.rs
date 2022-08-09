@@ -1,9 +1,10 @@
+use anyhow::*;
 use aoc_common::*;
 use std::collections::HashSet;
 use std::str::FromStr;
 
-fn main() {
-    run_vec(parse_chars, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse_chars, part1, part2)
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -15,7 +16,7 @@ enum CardinalDirection {
 }
 
 impl FromStr for CardinalDirection {
-    type Err = String;
+    type Err = Error;
 
     fn from_str(direction: &str) -> Result<Self, Self::Err> {
         match direction {
@@ -23,7 +24,7 @@ impl FromStr for CardinalDirection {
             ">" => Ok(CardinalDirection::East),
             "v" => Ok(CardinalDirection::South),
             "<" => Ok(CardinalDirection::West),
-            unknown => Err(unknown.to_string()),
+            unknown => bail!("unknown direction '{}'", unknown),
         }
     }
 }
@@ -37,7 +38,7 @@ fn move_santa(location: IPoint2D, direction: CardinalDirection) -> IPoint2D {
     }
 }
 
-fn part1(directions: &[CardinalDirection]) -> usize {
+fn part1(directions: &[CardinalDirection]) -> Result<usize> {
     let mut visited = HashSet::new();
     let mut location = IPoint2D::ORIGIN;
     visited.insert(location);
@@ -46,10 +47,10 @@ fn part1(directions: &[CardinalDirection]) -> usize {
         visited.insert(location);
     }
 
-    visited.len()
+    Ok(visited.len())
 }
 
-fn part2(directions: &[CardinalDirection]) -> usize {
+fn part2(directions: &[CardinalDirection]) -> Result<usize> {
     let mut visited = HashSet::new();
     let mut locations = [IPoint2D::ORIGIN, IPoint2D::ORIGIN];
     visited.insert(locations[0]);
@@ -59,7 +60,7 @@ fn part2(directions: &[CardinalDirection]) -> usize {
         visited.insert(locations[ix]);
     }
 
-    visited.len()
+    Ok(visited.len())
 }
 
 #[cfg(test)]
@@ -67,16 +68,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        assert_eq!(part1(&parse_chars(">")), 2);
-        assert_eq!(part1(&parse_chars("^>v<")), 4);
-        assert_eq!(part1(&parse_chars("^v^v^v^v^v")), 2);
+    fn sample_part1() -> Result<()> {
+        assert_eq!(part1(&parse_chars(">")?)?, 2);
+        assert_eq!(part1(&parse_chars("^>v<")?)?, 4);
+        assert_eq!(part1(&parse_chars("^v^v^v^v^v")?)?, 2);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        assert_eq!(part2(&parse_chars("^v")), 3);
-        assert_eq!(part2(&parse_chars("^>v<")), 3);
-        assert_eq!(part2(&parse_chars("^v^v^v^v^v")), 11);
+    fn sample_part2() -> Result<()> {
+        assert_eq!(part2(&parse_chars("^v")?)?, 3);
+        assert_eq!(part2(&parse_chars("^>v<")?)?, 3);
+        assert_eq!(part2(&parse_chars("^v^v^v^v^v")?)?, 11);
+
+        Ok(())
     }
 }

@@ -1,3 +1,4 @@
+use anyhow::*;
 use console::{style, Term};
 use std::fmt;
 use std::fmt::Display;
@@ -13,105 +14,133 @@ pub use graph::*;
 mod tree;
 pub use tree::*;
 
-pub fn run<T, U, V, FParse, F1, F2>(parse: FParse, part1: F1, part2: F2)
+pub fn run<T, U, V, FParse, F1, F2>(parse: FParse, part1: F1, part2: F2) -> Result<()>
 where
     U: Display,
     V: Display,
-    FParse: Fn(&str) -> T,
-    F1: Fn(&T) -> U,
-    F2: Fn(&T) -> V,
+    FParse: Fn(&str) -> Result<T>,
+    F1: Fn(&T) -> Result<U>,
+    F2: Fn(&T) -> Result<V>,
 {
-    let (input, parse_time) = read_and_parse(parse);
+    let (input, parse_time) = read_and_parse(parse)?;
 
-    let part1_time = print_and_time("Part 1", || part1(&input));
-    let part2_time = print_and_time("Part 2", || part2(&input));
+    let part1_time = print_and_time("Part 1", || part1(&input)).context("failure in part 1")?;
+    let part2_time = print_and_time("Part 2", || part2(&input)).context("failure in part 2")?;
 
     print_stats(parse_time, part1_time, part2_time);
+    Ok(())
 }
 
-pub fn run_raw<U, V, F1, F2>(part1: F1, part2: F2)
+pub fn run_raw<U, V, F1, F2>(part1: F1, part2: F2) -> Result<()>
 where
     U: Display,
     V: Display,
-    F1: Fn(&str) -> U,
-    F2: Fn(&str) -> V,
+    F1: Fn(&str) -> Result<U>,
+    F2: Fn(&str) -> Result<V>,
 {
-    let (input, parse_time) = read_and_parse(trim);
+    let (input, parse_time) = read_and_parse(|x| Ok(trim(x)))?;
 
-    let part1_time = print_and_time("Part 1", || part1(&input));
-    let part2_time = print_and_time("Part 2", || part2(&input));
+    let part1_time = print_and_time("Part 1", || part1(&input))?;
+    let part2_time = print_and_time("Part 2", || part2(&input))?;
 
     print_stats(parse_time, part1_time, part2_time);
+
+    Ok(())
 }
 
-pub fn run_vec<T, U, V, FParse, F1, F2>(parse: FParse, part1: F1, part2: F2)
+// because I'm tired of clippy warnings
+pub fn run_vec<T, U, V, FParse, F1, F2>(parse: FParse, part1: F1, part2: F2) -> Result<()>
 where
     U: Display,
     V: Display,
-    FParse: Fn(&str) -> Vec<T>,
-    F1: Fn(&[T]) -> U,
-    F2: Fn(&[T]) -> V,
+    FParse: Fn(&str) -> Result<Vec<T>>,
+    F1: Fn(&[T]) -> Result<U>,
+    F2: Fn(&[T]) -> Result<V>,
 {
-    let (input, parse_time) = read_and_parse(parse);
+    let (input, parse_time) = read_and_parse(parse)?;
 
-    let part1_time = print_and_time("Part 1", || part1(&input));
-    let part2_time = print_and_time("Part 2", || part2(&input));
+    let part1_time = print_and_time("Part 1", || part1(&input)).context("failure in part 1")?;
+    let part2_time = print_and_time("Part 2", || part2(&input)).context("failure in part 2")?;
 
     print_stats(parse_time, part1_time, part2_time);
+    Ok(())
 }
 
-pub fn run_progressive<T, T2, U, V, FParse, F1, F2>(parse: FParse, part1: F1, part2: F2)
+pub fn run_progressive<T, T2, U, V, FParse, F1, F2>(
+    parse: FParse,
+    part1: F1,
+    part2: F2,
+) -> Result<()>
 where
     U: Display,
     V: Display,
-    FParse: Fn(&str) -> T,
-    F1: Fn(&T) -> (U, T2),
-    F2: Fn(&T, &T2) -> V,
+    FParse: Fn(&str) -> Result<T>,
+    F1: Fn(&T) -> Result<(U, T2)>,
+    F2: Fn(&T, &T2) -> Result<V>,
 {
-    let (input, parse_time) = read_and_parse(parse);
+    let (input, parse_time) = read_and_parse(parse)?;
 
-    let (part1_time, data_for_next) = print_and_time_and_return("Part 1", || part1(&input));
-    let part2_time = print_and_time("Part 2", || part2(&input, &data_for_next));
+    let (part1_time, data_for_next) = print_and_time_and_return("Part 1", || part1(&input))?;
+    let part2_time = print_and_time("Part 2", || part2(&input, &data_for_next))?;
 
     print_stats(parse_time, part1_time, part2_time);
+
+    Ok(())
 }
 
-pub fn run_progressive_vec<T, T2, U, V, FParse, F1, F2>(parse: FParse, part1: F1, part2: F2)
+pub fn run_progressive_vec<T, T2, U, V, FParse, F1, F2>(
+    parse: FParse,
+    part1: F1,
+    part2: F2,
+) -> Result<()>
 where
     U: Display,
     V: Display,
-    FParse: Fn(&str) -> Vec<T>,
-    F1: Fn(&[T]) -> (U, T2),
-    F2: Fn(&[T], &T2) -> V,
+    FParse: Fn(&str) -> Result<Vec<T>>,
+    F1: Fn(&[T]) -> Result<(U, T2)>,
+    F2: Fn(&[T], &T2) -> Result<V>,
 {
-    let (input, parse_time) = read_and_parse(parse);
-
-    let (part1_time, data_for_next) = print_and_time_and_return("Part 1", || part1(&input));
-    let part2_time = print_and_time("Part 2", || part2(&input, &data_for_next));
-
-    print_stats(parse_time, part1_time, part2_time);
-}
-
-fn read_and_parse<T, F>(parse: F) -> (T, Duration)
-where
-    F: Fn(&str) -> T,
-{
-    let input = fs::read_to_string("./input.txt").expect("Something went wrong reading input.txt");
+    let (input, parse_time) = read_and_parse(parse)?;
 
     let start = Instant::now();
-    let input = parse(&input);
+    let (result, data_for_next) = part1(&input).context("failure in part 1")?;
+    let part1_time = start.elapsed();
+
+    print!("Part 1 - ");
+    let result = format!("{}", result);
+    if result.len() > 20 || result.contains('\n') {
+        println!();
+    }
+    println!("{}", style(result).bold());
+
+    let part2_time =
+        print_and_time("Part 2", || part2(&input, &data_for_next)).context("failure in part 2")?;
+
+    print_stats(parse_time, part1_time, part2_time);
+
+    Ok(())
+}
+
+fn read_and_parse<T, F>(parse: F) -> Result<(T, Duration)>
+where
+    F: Fn(&str) -> Result<T>,
+{
+    let input = fs::read_to_string("./input.txt").context("could not read input.txt")?;
+
+    let start = Instant::now();
+    let input = parse(&input)?;
     let parse_time = start.elapsed();
 
-    (input, parse_time)
+    Ok((input, parse_time))
 }
 
-fn print_and_time<F, T>(description: &str, runner: F) -> Duration
+fn print_and_time<F, T>(description: &str, runner: F) -> Result<Duration>
 where
     T: Display,
-    F: Fn() -> T,
+    F: Fn() -> Result<T>,
 {
     let start = Instant::now();
-    let result = runner();
+    let result = runner()?;
     let elapsed = start.elapsed();
 
     print!("{} - ", description);
@@ -121,16 +150,16 @@ where
     }
     println!("{}", style(result).bold());
 
-    elapsed
+    Ok(elapsed)
 }
 
-fn print_and_time_and_return<F, T, T2>(description: &str, runner: F) -> (Duration, T2)
+fn print_and_time_and_return<F, T, T2>(description: &str, runner: F) -> Result<(Duration, T2)>
 where
     T: Display,
-    F: Fn() -> (T, T2),
+    F: Fn() -> Result<(T, T2)>,
 {
     let start = Instant::now();
-    let (result, more_data) = runner();
+    let (result, more_data) = runner()?;
     let elapsed = start.elapsed();
 
     print!("{} - ", description);
@@ -140,7 +169,7 @@ where
     }
     println!("{}", style(result).bold());
 
-    (elapsed, more_data)
+    Ok((elapsed, more_data))
 }
 
 fn print_stats(parse_time: Duration, part1_time: Duration, part2_time: Duration) {
@@ -163,31 +192,44 @@ pub fn trim(contents: &str) -> String {
     contents.trim().to_string()
 }
 
-pub fn parse_all<T>(contents: &str) -> T
+pub fn wrap_parse_error<T, TErr>(result: std::result::Result<T, TErr>) -> Result<T>
 where
-    T: std::str::FromStr,
-    <T as std::str::FromStr>::Err: std::fmt::Debug,
+    TErr: std::fmt::Display,
 {
-    contents.trim().parse().unwrap()
+    match result {
+        std::result::Result::Ok(value) => Ok(value),
+        std::result::Result::Err(err) => Err(anyhow!("parse error {}", err)),
+    }
 }
 
-pub fn parse_lines<T>(contents: &str) -> Vec<T>
+pub fn parse_all<T>(contents: &str) -> Result<T>
 where
     T: std::str::FromStr,
-    <T as std::str::FromStr>::Err: std::fmt::Debug,
+    <T as std::str::FromStr>::Err: std::fmt::Display,
 {
-    contents.lines().map(|x| x.parse().unwrap()).collect()
+    wrap_parse_error(contents.trim().parse())
 }
 
-pub fn parse_chars<T>(contents: &str) -> Vec<T>
+pub fn parse_lines<T>(contents: &str) -> Result<Vec<T>>
 where
     T: std::str::FromStr,
-    <T as std::str::FromStr>::Err: std::fmt::Debug,
+    <T as std::str::FromStr>::Err: std::fmt::Display,
+{
+    contents
+        .lines()
+        .map(|x| wrap_parse_error(x.parse()))
+        .collect()
+}
+
+pub fn parse_chars<T>(contents: &str) -> Result<Vec<T>>
+where
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Display,
 {
     contents
         .trim()
         .chars()
-        .map(|x| x.to_string().parse().unwrap())
+        .map(|x| wrap_parse_error(x.to_string().parse()))
         .collect()
 }
 

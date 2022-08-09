@@ -1,9 +1,10 @@
+use anyhow::*;
 use aoc_common::*;
 use std::fmt;
 use std::str::FromStr;
 
-fn main() {
-    run(Grid2D::from_char_str, part1, part2);
+fn main() -> Result<()> {
+    run(Grid2D::from_char_str, part1, part2)
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -14,16 +15,24 @@ enum SeaFloor {
 }
 use SeaFloor::*;
 
+#[derive(thiserror::Error, Debug)]
+pub enum InvalidSeaFloorError {
+    #[error("invalid sea floor character {0}")]
+    InvalidSeaFloorCharacter(String),
+}
+
+use InvalidSeaFloorError::*;
+
 impl FromStr for SeaFloor {
-    type Err = ();
+    type Err = InvalidSeaFloorError;
 
-    fn from_str(input: &str) -> Result<SeaFloor, Self::Err> {
+    fn from_str(input: &str) -> std::result::Result<SeaFloor, Self::Err> {
         match input {
-            ">" => Ok(SeaCucumberEast),
-            "v" => Ok(SeaCucumberSouth),
-            "." => Ok(Empty),
+            ">" => std::result::Result::Ok(SeaCucumberEast),
+            "v" => std::result::Result::Ok(SeaCucumberSouth),
+            "." => std::result::Result::Ok(Empty),
 
-            _ => Err(()),
+            c => std::result::Result::Err(InvalidSeaFloorCharacter(c.to_string())),
         }
     }
 }
@@ -96,7 +105,7 @@ fn do_move(floor: &mut Grid2D<SeaFloor>, start: Point2D, target: Point2D) {
     floor[start] = Empty;
 }
 
-fn part1(floor: &Grid2D<SeaFloor>) -> usize {
+fn part1(floor: &Grid2D<SeaFloor>) -> Result<usize> {
     let mut floor = floor.clone();
     let mut step = 0;
     loop {
@@ -113,11 +122,11 @@ fn part1(floor: &Grid2D<SeaFloor>) -> usize {
             break;
         }
     }
-    step
+    Ok(step)
 }
 
-fn part2(_: &Grid2D<SeaFloor>) -> usize {
-    0
+fn part2(_: &Grid2D<SeaFloor>) -> Result<usize> {
+    Ok(0)
 }
 
 #[cfg(test)]
@@ -125,12 +134,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = Grid2D::from_char_str(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = Grid2D::from_char_str(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 58);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

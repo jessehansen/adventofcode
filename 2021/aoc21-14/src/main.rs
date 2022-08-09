@@ -1,9 +1,10 @@
+use anyhow::*;
 use aoc_common::run;
 use std::collections::HashMap;
 use std::str::FromStr;
 
-fn main() {
-    run(parse, part1, part2);
+fn main() -> Result<()> {
+    run(parse, part1, part2)
 }
 
 struct FormulaInstructions {
@@ -12,34 +13,48 @@ struct FormulaInstructions {
 }
 
 impl FromStr for FormulaInstructions {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(input: &str) -> Result<FormulaInstructions, Self::Err> {
+    fn from_str(input: &str) -> Result<FormulaInstructions> {
         let mut parts = input.split("\n\n");
 
+        let template = parts
+            .next()
+            .ok_or(anyhow!("missing template"))?
+            .trim()
+            .to_string();
+
+        let rules: Result<Vec<(String, String)>> = parts
+            .next()
+            .ok_or(anyhow!("missing rules"))?
+            .lines()
+            .map(|x| {
+                let mut parts = x.split(" -> ");
+                Ok((
+                    parts
+                        .next()
+                        .ok_or(anyhow!("missing rule input"))?
+                        .to_string(),
+                    parts
+                        .next()
+                        .ok_or(anyhow!("missing rule output"))?
+                        .to_string(),
+                ))
+            })
+            .collect();
+
         Ok(FormulaInstructions {
-            template: parts.next().unwrap().trim().to_string(),
-            rules: parts
-                .next()
-                .unwrap()
-                .lines()
-                .map(|x| {
-                    let mut parts = x.split(" -> ");
-                    (
-                        parts.next().unwrap().to_string(),
-                        parts.next().unwrap().to_string(),
-                    )
-                })
-                .collect(),
+            template,
+            rules: rules?.into_iter().collect(),
         })
     }
 }
 
-fn parse(contents: &str) -> FormulaInstructions {
-    contents.parse().unwrap()
+fn parse(contents: &str) -> Result<FormulaInstructions> {
+    contents.parse()
 }
 
-fn part1(instructions: &FormulaInstructions) -> usize {
+fn part1(instructions: &FormulaInstructions) -> Result<usize> {
     let mut template = instructions.template.to_string();
     let rules = &instructions.rules;
 
@@ -62,7 +77,7 @@ fn part1(instructions: &FormulaInstructions) -> usize {
         *ct += 1;
     });
 
-    chars.values().max().unwrap() - chars.values().min().unwrap()
+    Ok(chars.values().max().unwrap() - chars.values().min().unwrap())
 }
 
 fn step2(
@@ -96,7 +111,7 @@ fn step2(
     new_pairs
 }
 
-fn part2(instructions: &FormulaInstructions) -> u64 {
+fn part2(instructions: &FormulaInstructions) -> Result<u64> {
     let rules = &instructions.rules;
 
     let mut chars = HashMap::<char, u64>::new();
@@ -117,7 +132,7 @@ fn part2(instructions: &FormulaInstructions) -> u64 {
         pairs = step2(&pairs, &mut chars, rules);
     }
 
-    chars.values().max().unwrap() - chars.values().min().unwrap()
+    Ok(chars.values().max().unwrap() - chars.values().min().unwrap())
 }
 
 #[cfg(test)]
@@ -125,21 +140,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 1588);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 2188189693529);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

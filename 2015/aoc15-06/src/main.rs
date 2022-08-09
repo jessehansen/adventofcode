@@ -1,10 +1,11 @@
+use anyhow::*;
 use aoc_common::*;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::str::FromStr;
 
-fn main() {
-    run_vec(parse, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse, part1, part2)
 }
 
 enum Op {
@@ -16,14 +17,14 @@ enum Op {
 use Op::*;
 
 impl FromStr for Op {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(op: &str) -> Result<Self, Self::Err> {
+    fn from_str(op: &str) -> Result<Self> {
         match op {
             "turn on" => Ok(TurnOn),
             "turn off" => Ok(TurnOff),
             "toggle" => Ok(Toggle),
-            _ => Err(()),
+            unknown => bail!("unsupported op '{}'", unknown),
         }
     }
 }
@@ -35,9 +36,9 @@ struct Instruction {
 }
 
 impl FromStr for Instruction {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(instruction: &str) -> Result<Self, Self::Err> {
+    fn from_str(instruction: &str) -> Result<Self> {
         lazy_static! {
             static ref RE: Regex =
                 Regex::new(r"^(?P<op>[^\d]+) (?P<start>\d+,\d+) through (?P<end>\d+,\d+)$")
@@ -46,18 +47,18 @@ impl FromStr for Instruction {
 
         if let Some(caps) = RE.captures(instruction) {
             Ok(Instruction {
-                op: caps["op"].parse().unwrap(),
-                start: caps["start"].parse().unwrap(),
-                end: caps["end"].parse().unwrap(),
+                op: caps["op"].parse()?,
+                start: caps["start"].parse()?,
+                end: caps["end"].parse()?,
             })
         } else {
-            Err(())
+            bail!("line didn't match pattern")
         }
     }
 }
 
-fn parse(contents: &str) -> Vec<Instruction> {
-    contents.lines().map(|x| x.parse().unwrap()).collect()
+fn parse(contents: &str) -> Result<Vec<Instruction>> {
+    contents.lines().map(|x| Ok(x.parse()?)).collect()
 }
 
 const BOUNDS: Bounds2D = Bounds2D {
@@ -65,7 +66,7 @@ const BOUNDS: Bounds2D = Bounds2D {
     height: 1000,
 };
 
-fn part1(instructions: &[Instruction]) -> usize {
+fn part1(instructions: &[Instruction]) -> Result<usize> {
     let mut on = Grid2D::new_constant(BOUNDS, false);
     for instruction in instructions {
         instruction
@@ -77,10 +78,10 @@ fn part1(instructions: &[Instruction]) -> usize {
                 Toggle => on[pt] = !on[pt],
             });
     }
-    on.iter_horizontal().filter(|(_, x)| **x).count()
+    Ok(on.iter_horizontal().filter(|(_, x)| **x).count())
 }
 
-fn part2(instructions: &[Instruction]) -> usize {
+fn part2(instructions: &[Instruction]) -> Result<usize> {
     let mut lights = Grid2D::new_constant(BOUNDS, 0);
     for instruction in instructions {
         instruction
@@ -100,7 +101,7 @@ fn part2(instructions: &[Instruction]) -> usize {
                 }
             });
     }
-    lights.iter_horizontal().map(|(_, x)| x).sum()
+    Ok(lights.iter_horizontal().map(|(_, x)| x).sum())
 }
 
 #[cfg(test)]
@@ -108,12 +109,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 998_996);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

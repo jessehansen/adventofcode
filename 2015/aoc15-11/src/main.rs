@@ -1,8 +1,9 @@
+use anyhow::*;
 use aoc_common::*;
 use std::collections::HashSet;
 
-fn main() {
-    run_raw(part1, part2);
+fn main() -> Result<()> {
+    run_raw(part1, part2)
 }
 
 fn meets_requirements(password: &[char]) -> bool {
@@ -64,12 +65,12 @@ fn next_pass(password: &str) -> String {
         .join("")
 }
 
-fn part1(password: &str) -> String {
-    next_pass(password)
+fn part1(password: &str) -> Result<String> {
+    Ok(next_pass(password))
 }
 
-fn part2(password: &str) -> String {
-    next_pass(&next_pass(password))
+fn part2(password: &str) -> Result<String> {
+    Ok(next_pass(&next_pass(password)))
 }
 
 #[cfg(test)]

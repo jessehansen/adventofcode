@@ -1,9 +1,10 @@
+use anyhow::*;
 use aoc_common::*;
 use std::cmp::min;
 use std::str::FromStr;
 
-fn main() {
-    run_vec(parse_lines, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse_lines, part1, part2)
 }
 
 struct Present {
@@ -46,25 +47,25 @@ impl Present {
 }
 
 impl FromStr for Present {
-    type Err = ();
+    type Err = Error;
 
-    fn from_str(present: &str) -> Result<Self, Self::Err> {
+    fn from_str(present: &str) -> Result<Self> {
         let mut parts = present.split('x');
 
         Ok(Present {
-            length: parts.next().unwrap().parse().unwrap(),
-            width: parts.next().unwrap().parse().unwrap(),
-            height: parts.next().unwrap().parse().unwrap(),
+            length: parts.next().ok_or(anyhow!("missing length"))?.parse()?,
+            width: parts.next().ok_or(anyhow!("missing width"))?.parse()?,
+            height: parts.next().ok_or(anyhow!("missing height"))?.parse()?,
         })
     }
 }
 
-fn part1(contents: &[Present]) -> u32 {
-    contents.iter().map(|x| x.paper_required()).sum()
+fn part1(contents: &[Present]) -> Result<u32> {
+    Ok(contents.iter().map(|x| x.paper_required()).sum())
 }
 
-fn part2(contents: &[Present]) -> u32 {
-    contents.iter().map(|x| x.ribbon_required()).sum()
+fn part2(contents: &[Present]) -> Result<u32> {
+    Ok(contents.iter().map(|x| x.ribbon_required()).sum())
 }
 
 #[cfg(test)]
@@ -72,21 +73,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse_lines(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse_lines(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 101);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse_lines(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse_lines(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 48);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

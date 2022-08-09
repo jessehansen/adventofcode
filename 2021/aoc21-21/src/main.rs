@@ -1,8 +1,9 @@
+use anyhow::*;
 use aoc_common::*;
 use std::collections::HashMap;
 
-fn main() {
-    run(parse, part1, part2);
+fn main() -> Result<()> {
+    run(parse, part1, part2)
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -36,13 +37,18 @@ impl GameBoard {
     }
 }
 
-fn parse(contents: &str) -> GameBoard {
-    let positions: Vec<usize> = contents
+fn parse(contents: &str) -> Result<GameBoard> {
+    let positions = contents
         .lines()
-        .map(|x| x.split(": ").last().unwrap().parse().unwrap())
-        .collect();
+        .map(|x| {
+            Ok(x.split(": ")
+                .last()
+                .ok_or(anyhow!("missing content on line"))?
+                .parse()?)
+        })
+        .collect::<Result<Vec<usize>>>()?;
 
-    GameBoard::new(positions[0], positions[1])
+    Ok(GameBoard::new(positions[0], positions[1]))
 }
 
 struct DeterministicDie {
@@ -69,7 +75,7 @@ impl DeterministicDie {
     }
 }
 
-fn part1(board: &GameBoard) -> u32 {
+fn part1(board: &GameBoard) -> Result<u32> {
     let mut board = *board;
     let mut player = 0;
     let mut die = DeterministicDie::new();
@@ -80,7 +86,7 @@ fn part1(board: &GameBoard) -> u32 {
 
         player = (player + 1) % 2;
     }
-    board.scores[player] as u32 * die.roll_count
+    Ok(board.scores[player] as u32 * die.roll_count)
 }
 
 const DIRAC_ROLL_3: [u64; 10] = [0, 0, 0, 1, 3, 6, 7, 6, 3, 1];
@@ -134,11 +140,11 @@ impl Multiverse {
     }
 }
 
-fn part2(board: &GameBoard) -> u64 {
+fn part2(board: &GameBoard) -> Result<u64> {
     let mut multiverse = Multiverse::new(*board);
     loop {
         if let Some(winning_universes) = multiverse.take_turn() {
-            return winning_universes;
+            return Ok(winning_universes);
         }
     }
 }
@@ -148,21 +154,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
+    fn sample_part1() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part1(&parsed);
+        let result = part1(&parsed)?;
 
         assert_eq!(result, 739785);
+
+        Ok(())
     }
 
     #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
+    fn sample_part2() -> Result<()> {
+        let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         assert_eq!(result, 444356092776315);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\

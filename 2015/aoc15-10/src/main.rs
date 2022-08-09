@@ -1,7 +1,8 @@
+use anyhow::*;
 use aoc_common::*;
 
-fn main() {
-    run_vec(parse_chars, part1, part2);
+fn main() -> Result<()> {
+    run_vec(parse_chars, part1, part2)
 }
 
 fn look_and_say_step(input: &[u8]) -> Vec<u8> {
@@ -30,12 +31,12 @@ fn look_and_say(start: &[u8], steps: usize) -> Vec<u8> {
     result
 }
 
-fn part1(start: &[u8]) -> usize {
-    look_and_say(start, 40).len()
+fn part1(start: &[u8]) -> Result<usize> {
+    Ok(look_and_say(start, 40).len())
 }
 
-fn part2(start: &[u8]) -> usize {
-    look_and_say(start, 50).len()
+fn part2(start: &[u8]) -> Result<usize> {
+    Ok(look_and_say(start, 50).len())
 }
 
 #[cfg(test)]
