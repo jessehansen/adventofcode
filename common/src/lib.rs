@@ -233,6 +233,13 @@ where
         .collect()
 }
 
+pub fn parse_line_groups<T, FParse>(contents: &str, parse_group: FParse) -> Result<Vec<T>>
+where
+    FParse: Fn(&str) -> Result<T>,
+{
+    contents.split("\n\n").map(parse_group).collect()
+}
+
 pub fn hex_to_binary_string(hex: &str) -> String {
     hex.trim()
         .chars()
