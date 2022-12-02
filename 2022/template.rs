@@ -31,11 +31,10 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn sample_part2() -> Result<()> {
         let parsed = parse(SAMPLE)?;
 
-        let result = part2(&parsed);
+        let result = part2(&parsed)?;
 
         bail!("not tested")
     }

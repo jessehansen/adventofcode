@@ -2,7 +2,7 @@ number=1
 project_name="aoc22-01"
 
 while [ -d "$project_name" ]; do
-  printf -v project_name 'aoc21-%02d' "$(( ++number ))"
+  printf -v project_name 'aoc22-%02d' "$(( ++number ))"
 done
 
 cargo new $project_name
