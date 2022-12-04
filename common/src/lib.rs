@@ -240,6 +240,29 @@ where
     contents.split("\n\n").map(parse_group).collect()
 }
 
+pub fn parse_line_pairs<T>(contents: &str, separator: &str) -> Result<Vec<(T, T)>>
+where
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Display,
+{
+    contents
+        .lines()
+        .map(|x| wrap_parse_error(parse_pair(x, separator)))
+        .collect()
+}
+
+pub fn parse_pair<T>(contents: &str, separator: &str) -> Result<(T, T)>
+where
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Display,
+{
+    let mut parts = contents.split(separator);
+    Ok((
+        wrap_parse_error(parts.next().ok_or(anyhow!("malformed pair"))?.parse())?,
+        wrap_parse_error(parts.next().ok_or(anyhow!("malformed pair"))?.parse())?,
+    ))
+}
+
 pub fn hex_to_binary_string(hex: &str) -> String {
     hex.trim()
         .chars()
