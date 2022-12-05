@@ -210,6 +210,14 @@ where
     wrap_parse_error(contents.trim().parse())
 }
 
+pub fn parse_untrimmed<T>(contents: &str) -> Result<T>
+where
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Display,
+{
+    wrap_parse_error(contents.parse())
+}
+
 pub fn parse_lines<T>(contents: &str) -> Result<Vec<T>>
 where
     T: std::str::FromStr,
@@ -251,15 +259,51 @@ where
         .collect()
 }
 
-pub fn parse_pair<T>(contents: &str, separator: &str) -> Result<(T, T)>
+pub fn parse_pair<T0, T1>(contents: &str, separator: &str) -> Result<(T0, T1)>
 where
-    T: std::str::FromStr,
-    <T as std::str::FromStr>::Err: std::fmt::Display,
+    T0: std::str::FromStr,
+    <T0 as std::str::FromStr>::Err: std::fmt::Display,
+    T1: std::str::FromStr,
+    <T1 as std::str::FromStr>::Err: std::fmt::Display,
 {
     let mut parts = contents.split(separator);
     Ok((
         wrap_parse_error(parts.next().ok_or(anyhow!("malformed pair"))?.parse())?,
         wrap_parse_error(parts.next().ok_or(anyhow!("malformed pair"))?.parse())?,
+    ))
+}
+
+pub fn parse_pair_by<T0, FParse0, T1, FParse1>(
+    contents: &str,
+    separator: &str,
+    parse0: FParse0,
+    parse1: FParse1,
+) -> Result<(T0, T1)>
+where
+    FParse0: Fn(&str) -> Result<T0>,
+    FParse1: Fn(&str) -> Result<T1>,
+{
+    let mut parts = contents.split(separator);
+    Ok((
+        parse0(parts.next().ok_or(anyhow!("malformed pair"))?)?,
+        parse1(parts.next().ok_or(anyhow!("malformed pair"))?)?,
+    ))
+}
+
+pub fn parse_triple<T0, T1, T2>(contents: &str, separator: &str) -> Result<(T0, T1, T2)>
+where
+    T0: std::str::FromStr,
+    <T0 as std::str::FromStr>::Err: std::fmt::Display,
+    T1: std::str::FromStr,
+    <T1 as std::str::FromStr>::Err: std::fmt::Display,
+    T2: std::str::FromStr,
+    <T2 as std::str::FromStr>::Err: std::fmt::Display,
+{
+    let mut parts = contents.split(separator);
+    Ok((
+        wrap_parse_error(parts.next().ok_or(anyhow!("malformed triple"))?.parse())?,
+        wrap_parse_error(parts.next().ok_or(anyhow!("malformed triple"))?.parse())?,
+        wrap_parse_error(parts.next().ok_or(anyhow!("malformed triple"))?.parse())?,
     ))
 }
 
