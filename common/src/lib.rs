@@ -307,6 +307,116 @@ where
     ))
 }
 
+// grabs the 2 items at ix0 and ix1, in a string separated by separator
+pub fn grab_2<T0, T1>(contents: &str, separator: &str, ix0: usize, ix1: usize) -> Result<(T0, T1)>
+where
+    T0: std::str::FromStr,
+    <T0 as std::str::FromStr>::Err: std::fmt::Display,
+    T1: std::str::FromStr,
+    <T1 as std::str::FromStr>::Err: std::fmt::Display,
+{
+    let mut parts = contents.split(separator);
+    let mut ix = 0;
+    while ix < ix0 {
+        parts
+            .next()
+            .ok_or(anyhow!("malformed line, could not get index {}", ix0))?;
+
+        ix += 1;
+    }
+    let first = wrap_parse_error(
+        parts
+            .next()
+            .ok_or(anyhow!("malformed line, could not get index {}", ix0))?
+            .parse(),
+    )?;
+    ix += 1;
+    while ix < ix1 {
+        parts
+            .next()
+            .ok_or(anyhow!("malformed line, could not get index {}", ix1))?;
+
+        ix += 1;
+    }
+
+    return Ok((
+        first,
+        wrap_parse_error(
+            parts
+                .next()
+                .ok_or(anyhow!("malformed line, could not get index {}", ix1))?
+                .parse(),
+        )?,
+    ));
+}
+
+// grabs the 3 items at ix0, ix1, and ix2, in a string separated by separator
+pub fn grab_3<T0, T1, T2>(
+    contents: &str,
+    separator: &str,
+    ix0: usize,
+    ix1: usize,
+    ix2: usize,
+) -> Result<(T0, T1, T2)>
+where
+    T0: std::str::FromStr,
+    <T0 as std::str::FromStr>::Err: std::fmt::Display,
+    T1: std::str::FromStr,
+    <T1 as std::str::FromStr>::Err: std::fmt::Display,
+    T2: std::str::FromStr,
+    <T2 as std::str::FromStr>::Err: std::fmt::Display,
+{
+    let mut parts = contents.split(separator);
+    let mut ix = 0;
+    while ix < ix0 {
+        parts
+            .next()
+            .ok_or(anyhow!("malformed line, could not get index {}", ix0))?;
+
+        ix += 1;
+    }
+    let first = wrap_parse_error(
+        parts
+            .next()
+            .ok_or(anyhow!("malformed line, could not get index {}", ix0))?
+            .parse(),
+    )?;
+    ix += 1;
+    while ix < ix1 {
+        parts
+            .next()
+            .ok_or(anyhow!("malformed line, could not get index {}", ix1))?;
+
+        ix += 1;
+    }
+    let second = wrap_parse_error(
+        parts
+            .next()
+            .ok_or(anyhow!("malformed line, could not get index {}", ix1))?
+            .parse(),
+    )?;
+    ix += 1;
+
+    while ix < ix2 {
+        parts
+            .next()
+            .ok_or(anyhow!("malformed line, could not get index {}", ix2))?;
+
+        ix += 1;
+    }
+
+    return Ok((
+        first,
+        second,
+        wrap_parse_error(
+            parts
+                .next()
+                .ok_or(anyhow!("malformed line, could not get index {}", ix2))?
+                .parse(),
+        )?,
+    ));
+}
+
 pub fn hex_to_binary_string(hex: &str) -> String {
     hex.trim()
         .chars()

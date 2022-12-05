@@ -125,23 +125,8 @@ impl FromStr for Move {
     type Err = Error;
 
     fn from_str(mv: &str) -> Result<Self, Self::Err> {
-        let mut parts = mv.split(" ");
-
-        // skip "move"
-        parts.next().ok_or(anyhow!("invalid move"))?;
-
-        let count = parts.next().ok_or(anyhow!("invalid move"))?.parse()?;
-
-        // skip "from"
-        parts.next().ok_or(anyhow!("invalid move"))?;
-
-        let from = parts.next().ok_or(anyhow!("invalid move"))?.parse()?;
-
-        // skip "to"
-        parts.next().ok_or(anyhow!("invalid move"))?;
-
-        let to = parts.next().ok_or(anyhow!("invalid move"))?.parse()?;
-
+        // "move {} from {} to {}"
+        let (count, from, to) = grab_3(mv, " ", 1, 3, 5)?;
         Ok(Move { count, from, to })
     }
 }
