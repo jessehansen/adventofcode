@@ -43,12 +43,33 @@ fn find_pos(contents: &str, marker_len: usize) -> Result<usize> {
     bail!("no position found");
 }
 
+// alternate solution using .windows()
+// same runtime as find_pos
+fn find_pos_windows(contents: &str, marker_len: usize) -> Result<usize> {
+    for (pos, window) in contents
+        .chars()
+        .collect::<Vec<char>>()
+        .windows(marker_len)
+        .enumerate()
+    {
+        if window
+            .iter()
+            .enumerate()
+            .all(|(pos, c)| !window[pos + 1..].contains(c))
+        {
+            return Ok(pos + marker_len);
+        }
+    }
+
+    bail!("no position found");
+}
+
 fn part1(contents: &str) -> Result<usize> {
     find_pos(contents, 4)
 }
 
 fn part2(contents: &str) -> Result<usize> {
-    find_pos(contents, 14)
+    find_pos_windows(contents, 14)
 }
 
 #[cfg(test)]
