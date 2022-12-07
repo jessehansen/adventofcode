@@ -179,19 +179,15 @@ impl Scanner {
     fn find_rotation(&self, other: &Scanner, overlap: &OverlappingBeacons) -> Option<Matrix3<i32>> {
         let my_distances = &self.dist_matrix[overlap.ref_beacon];
         let other_distances = &other.dist_matrix[overlap.other_ref_beacon];
-        for rot in ROTATION_MATRICES {
-            if overlap
+        ROTATION_MATRICES.into_iter().find(|&rot| {
+            overlap
                 .overlapping_beacon_indices
                 .iter()
                 .all(|(my_beacon_ix, other_beacon_ix)| {
                     let rotated = rot * other_distances[*other_beacon_ix].as_vector();
                     my_distances[*my_beacon_ix].as_vector() == rotated
                 })
-            {
-                return Some(rot);
-            }
-        }
-        None
+        })
     }
 
     fn plot_beacons(&mut self, other: &Scanner) -> bool {
@@ -285,7 +281,7 @@ mod tests {
 
         let result = scanners[0]
             .overlapping_beacons(&scanners[1])
-            .ok_or(anyhow!("overlapping_beacons failed"))?;
+            .ok_or_else(|| anyhow!("overlapping_beacons failed"))?;
 
         assert_eq!(result.overlapping_beacon_indices.len(), 12);
 

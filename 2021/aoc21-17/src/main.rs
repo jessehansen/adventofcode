@@ -31,26 +31,26 @@ impl FromStr for TargetArea {
 
         let caps = RE
             .captures(line.trim())
-            .ok_or(anyhow!("input didn't match target area regex"))?;
+            .ok_or_else(|| anyhow!("input didn't match target area regex"))?;
 
         let mut x_min: i32 = caps
             .name("x_min")
-            .ok_or(anyhow!("missing x min"))?
+            .ok_or_else(|| anyhow!("missing x min"))?
             .as_str()
             .parse()?;
         let mut x_max: i32 = caps
             .name("x_max")
-            .ok_or(anyhow!("missing x max"))?
+            .ok_or_else(|| anyhow!("missing x max"))?
             .as_str()
             .parse()?;
         let mut y_min: i32 = caps
             .name("y_min")
-            .ok_or(anyhow!("missing y min"))?
+            .ok_or_else(|| anyhow!("missing y min"))?
             .as_str()
             .parse()?;
         let mut y_max: i32 = caps
             .name("y_max")
-            .ok_or(anyhow!("missing y max"))?
+            .ok_or_else(|| anyhow!("missing y max"))?
             .as_str()
             .parse()?;
 

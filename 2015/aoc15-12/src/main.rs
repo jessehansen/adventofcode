@@ -23,7 +23,7 @@ fn sum_subtree(current: &JsonValue) -> i32 {
                 current.entries().map(|(_, value)| sum_subtree(value)).sum()
             }
         }
-        JsonValue::Array(_) => current.members().map(|value| sum_subtree(value)).sum(),
+        JsonValue::Array(_) => current.members().map(sum_subtree).sum(),
         JsonValue::Number(_) => current.as_i32().unwrap(),
 
         _ => 0,

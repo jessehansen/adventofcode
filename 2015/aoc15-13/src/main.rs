@@ -103,14 +103,14 @@ fn part1(contents: &SeatingHappiness) -> Result<i32> {
     all_happiness(contents)
         .into_iter()
         .max()
-        .ok_or(anyhow!("no happiness"))
+        .ok_or_else(|| anyhow!("no happiness"))
 }
 
 fn part2(contents: &SeatingHappiness) -> Result<i32> {
     all_happiness(&contents.add_me())
         .into_iter()
         .max()
-        .ok_or(anyhow!("no happiness"))
+        .ok_or_else(|| anyhow!("no happiness"))
 }
 
 #[cfg(test)]

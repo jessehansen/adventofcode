@@ -265,12 +265,12 @@ fn part2(contents: &[FishNum]) -> Result<u32> {
                 .iter()
                 .map(|y| if x == y { 0 } else { x.plus(y).magnitude() })
                 .max()
-                .ok_or(anyhow!("no max"))?)
+                .ok_or_else(|| anyhow!("no max"))?)
         })
         .collect::<Result<Vec<u32>>>()?
         .into_iter()
         .max()
-        .ok_or(anyhow!("no max"))
+        .ok_or_else(|| anyhow!("no max"))
 }
 
 #[cfg(test)]

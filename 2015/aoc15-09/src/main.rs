@@ -84,16 +84,16 @@ fn part1(map: &Map) -> Result<u32> {
     all_paths(map)
         .iter()
         .min()
-        .map(|x| *x)
-        .ok_or(anyhow!("no min"))
+        .copied()
+        .ok_or_else(|| anyhow!("no min"))
 }
 
 fn part2(map: &Map) -> Result<u32> {
     all_paths(map)
         .iter()
         .max()
-        .map(|x| *x)
-        .ok_or(anyhow!("no max"))
+        .copied()
+        .ok_or_else(|| anyhow!("no max"))
 }
 
 #[cfg(test)]

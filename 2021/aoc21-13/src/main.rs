@@ -14,7 +14,7 @@ fn parse(contents: &str) -> Result<(Vec<Point2D>, Vec<Fold>)> {
 
     let points = parts
         .next()
-        .ok_or(anyhow!("missing points"))?
+        .ok_or_else(|| anyhow!("missing points"))?
         .lines()
         .into_iter()
         .map(|x| {
@@ -24,7 +24,7 @@ fn parse(contents: &str) -> Result<(Vec<Point2D>, Vec<Fold>)> {
         .collect::<Result<Vec<Point2D>>>()?;
     let folds = parts
         .next()
-        .ok_or(anyhow!("missing folds"))?
+        .ok_or_else(|| anyhow!("missing folds"))?
         .lines()
         .into_iter()
         .map(|x| {
@@ -119,17 +119,20 @@ impl FromStr for Fold {
     fn from_str(input: &str) -> Result<Fold> {
         let mut parts = input.split('=');
 
-        match parts.next().ok_or(anyhow!("missing fold direction"))? {
+        match parts
+            .next()
+            .ok_or_else(|| anyhow!("missing fold direction"))?
+        {
             "fold along x" => Ok(Fold::Horizontal(
                 parts
                     .next()
-                    .ok_or(anyhow!("missing fold location"))?
+                    .ok_or_else(|| anyhow!("missing fold location"))?
                     .parse()?,
             )),
             "fold along y" => Ok(Fold::Vertical(
                 parts
                     .next()
-                    .ok_or(anyhow!("missing fold location"))?
+                    .ok_or_else(|| anyhow!("missing fold location"))?
                     .parse()?,
             )),
             fold_along => bail!("unexpected fold along text {}", fold_along),

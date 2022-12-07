@@ -305,7 +305,7 @@ impl FromStr for Instruction {
     fn from_str(instruction: &str) -> Result<Self> {
         let (on_off, cuboid) = instruction
             .split_once(' ')
-            .ok_or(anyhow!("invalid instruction format"))?;
+            .ok_or_else(|| anyhow!("invalid instruction format"))?;
         let cuboid: Cuboid = cuboid.parse()?;
         match on_off {
             "on" => Ok(On(cuboid)),

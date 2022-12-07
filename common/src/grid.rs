@@ -127,8 +127,8 @@ impl FromStr for Point2D {
     fn from_str(input: &str) -> Result<Point2D> {
         let mut parts = input.split(',').map(|x| x.parse());
 
-        let x = parts.next().ok_or(anyhow!("missing x value"))??;
-        let y = parts.next().ok_or(anyhow!("missing y value"))??;
+        let x = parts.next().ok_or_else(|| anyhow!("missing x value"))??;
+        let y = parts.next().ok_or_else(|| anyhow!("missing y value"))??;
 
         if !matches!(parts.next(), None) {
             bail!("received extra coordinates for Point2D");

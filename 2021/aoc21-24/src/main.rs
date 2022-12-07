@@ -119,7 +119,7 @@ impl ArithmeticLogicUnit {
                 Instruction::Eql(Operand::Register(c), rhs) => {
                     let val = self.val(rhs);
                     let lhs = self.reg_mut(*c);
-                    *lhs = if *lhs == val { 1 } else { 0 }
+                    *lhs = i64::from(*lhs == val)
                 }
                 _ => panic!(),
             }

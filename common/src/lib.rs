@@ -268,8 +268,18 @@ where
 {
     let mut parts = contents.split(separator);
     Ok((
-        wrap_parse_error(parts.next().ok_or(anyhow!("malformed pair"))?.parse())?,
-        wrap_parse_error(parts.next().ok_or(anyhow!("malformed pair"))?.parse())?,
+        wrap_parse_error(
+            parts
+                .next()
+                .ok_or_else(|| anyhow!("malformed pair"))?
+                .parse(),
+        )?,
+        wrap_parse_error(
+            parts
+                .next()
+                .ok_or_else(|| anyhow!("malformed pair"))?
+                .parse(),
+        )?,
     ))
 }
 
@@ -285,8 +295,8 @@ where
 {
     let mut parts = contents.split(separator);
     Ok((
-        parse0(parts.next().ok_or(anyhow!("malformed pair"))?)?,
-        parse1(parts.next().ok_or(anyhow!("malformed pair"))?)?,
+        parse0(parts.next().ok_or_else(|| anyhow!("malformed pair"))?)?,
+        parse1(parts.next().ok_or_else(|| anyhow!("malformed pair"))?)?,
     ))
 }
 
@@ -301,9 +311,24 @@ where
 {
     let mut parts = contents.split(separator);
     Ok((
-        wrap_parse_error(parts.next().ok_or(anyhow!("malformed triple"))?.parse())?,
-        wrap_parse_error(parts.next().ok_or(anyhow!("malformed triple"))?.parse())?,
-        wrap_parse_error(parts.next().ok_or(anyhow!("malformed triple"))?.parse())?,
+        wrap_parse_error(
+            parts
+                .next()
+                .ok_or_else(|| anyhow!("malformed triple"))?
+                .parse(),
+        )?,
+        wrap_parse_error(
+            parts
+                .next()
+                .ok_or_else(|| anyhow!("malformed triple"))?
+                .parse(),
+        )?,
+        wrap_parse_error(
+            parts
+                .next()
+                .ok_or_else(|| anyhow!("malformed triple"))?
+                .parse(),
+        )?,
     ))
 }
 
@@ -320,34 +345,34 @@ where
     while ix < ix0 {
         parts
             .next()
-            .ok_or(anyhow!("malformed line, could not get index {}", ix0))?;
+            .ok_or_else(|| anyhow!("malformed line, could not get index {}", ix0))?;
 
         ix += 1;
     }
     let first = wrap_parse_error(
         parts
             .next()
-            .ok_or(anyhow!("malformed line, could not get index {}", ix0))?
+            .ok_or_else(|| anyhow!("malformed line, could not get index {}", ix0))?
             .parse(),
     )?;
     ix += 1;
     while ix < ix1 {
         parts
             .next()
-            .ok_or(anyhow!("malformed line, could not get index {}", ix1))?;
+            .ok_or_else(|| anyhow!("malformed line, could not get index {}", ix1))?;
 
         ix += 1;
     }
 
-    return Ok((
+    Ok((
         first,
         wrap_parse_error(
             parts
                 .next()
-                .ok_or(anyhow!("malformed line, could not get index {}", ix1))?
+                .ok_or_else(|| anyhow!("malformed line, could not get index {}", ix1))?
                 .parse(),
         )?,
-    ));
+    ))
 }
 
 // grabs the 3 items at ix0, ix1, and ix2, in a string separated by separator
@@ -371,28 +396,28 @@ where
     while ix < ix0 {
         parts
             .next()
-            .ok_or(anyhow!("malformed line, could not get index {}", ix0))?;
+            .ok_or_else(|| anyhow!("malformed line, could not get index {}", ix0))?;
 
         ix += 1;
     }
     let first = wrap_parse_error(
         parts
             .next()
-            .ok_or(anyhow!("malformed line, could not get index {}", ix0))?
+            .ok_or_else(|| anyhow!("malformed line, could not get index {}", ix0))?
             .parse(),
     )?;
     ix += 1;
     while ix < ix1 {
         parts
             .next()
-            .ok_or(anyhow!("malformed line, could not get index {}", ix1))?;
+            .ok_or_else(|| anyhow!("malformed line, could not get index {}", ix1))?;
 
         ix += 1;
     }
     let second = wrap_parse_error(
         parts
             .next()
-            .ok_or(anyhow!("malformed line, could not get index {}", ix1))?
+            .ok_or_else(|| anyhow!("malformed line, could not get index {}", ix1))?
             .parse(),
     )?;
     ix += 1;
@@ -400,21 +425,21 @@ where
     while ix < ix2 {
         parts
             .next()
-            .ok_or(anyhow!("malformed line, could not get index {}", ix2))?;
+            .ok_or_else(|| anyhow!("malformed line, could not get index {}", ix2))?;
 
         ix += 1;
     }
 
-    return Ok((
+    Ok((
         first,
         second,
         wrap_parse_error(
             parts
                 .next()
-                .ok_or(anyhow!("malformed line, could not get index {}", ix2))?
+                .ok_or_else(|| anyhow!("malformed line, could not get index {}", ix2))?
                 .parse(),
         )?,
-    ));
+    ))
 }
 
 pub fn hex_to_binary_string(hex: &str) -> String {

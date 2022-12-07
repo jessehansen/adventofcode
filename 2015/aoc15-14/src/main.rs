@@ -93,7 +93,7 @@ fn part1(reindeer: &[Reindeer]) -> Result<u32> {
         .iter()
         .map(|x| x.race(2503))
         .max()
-        .ok_or(anyhow!("no max result"))
+        .ok_or_else(|| anyhow!("no max result"))
 }
 
 fn race_new_score(reindeer: &[Reindeer], secs: u32) -> u32 {

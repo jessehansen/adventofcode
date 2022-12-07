@@ -53,9 +53,18 @@ impl FromStr for Present {
         let mut parts = present.split('x');
 
         Ok(Present {
-            length: parts.next().ok_or(anyhow!("missing length"))?.parse()?,
-            width: parts.next().ok_or(anyhow!("missing width"))?.parse()?,
-            height: parts.next().ok_or(anyhow!("missing height"))?.parse()?,
+            length: parts
+                .next()
+                .ok_or_else(|| anyhow!("missing length"))?
+                .parse()?,
+            width: parts
+                .next()
+                .ok_or_else(|| anyhow!("missing width"))?
+                .parse()?,
+            height: parts
+                .next()
+                .ok_or_else(|| anyhow!("missing height"))?
+                .parse()?,
         })
     }
 }

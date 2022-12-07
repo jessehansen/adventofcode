@@ -20,24 +20,24 @@ impl FromStr for FormulaInstructions {
 
         let template = parts
             .next()
-            .ok_or(anyhow!("missing template"))?
+            .ok_or_else(|| anyhow!("missing template"))?
             .trim()
             .to_string();
 
         let rules: Result<Vec<(String, String)>> = parts
             .next()
-            .ok_or(anyhow!("missing rules"))?
+            .ok_or_else(|| anyhow!("missing rules"))?
             .lines()
             .map(|x| {
                 let mut parts = x.split(" -> ");
                 Ok((
                     parts
                         .next()
-                        .ok_or(anyhow!("missing rule input"))?
+                        .ok_or_else(|| anyhow!("missing rule input"))?
                         .to_string(),
                     parts
                         .next()
-                        .ok_or(anyhow!("missing rule output"))?
+                        .ok_or_else(|| anyhow!("missing rule output"))?
                         .to_string(),
                 ))
             })

@@ -20,11 +20,11 @@ fn part1(contents: &[i32]) -> Result<i32> {
     let min = contents
         .iter()
         .min()
-        .ok_or(anyhow!("contents missing values"))?;
+        .ok_or_else(|| anyhow!("contents missing values"))?;
     let max = contents
         .iter()
         .max()
-        .ok_or(anyhow!("contents missing values"))?;
+        .ok_or_else(|| anyhow!("contents missing values"))?;
 
     let mut least_fuel = std::i32::MAX;
 
@@ -48,11 +48,11 @@ fn part2(contents: &[i32]) -> Result<i32> {
     let min = contents
         .iter()
         .min()
-        .ok_or(anyhow!("contents missing values"))?;
+        .ok_or_else(|| anyhow!("contents missing values"))?;
     let max = contents
         .iter()
         .max()
-        .ok_or(anyhow!("contents missing values"))?;
+        .ok_or_else(|| anyhow!("contents missing values"))?;
 
     let mut least_fuel = std::i32::MAX;
 

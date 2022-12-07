@@ -27,7 +27,7 @@ impl Image {
                 line.push(
                     alg.chars()
                         .nth(self.pixel_num(x, y))
-                        .ok_or(anyhow!("missing character in alg"))?,
+                        .ok_or_else(|| anyhow!("missing character in alg"))?,
                 );
             }
             lines.push(line);
@@ -36,7 +36,7 @@ impl Image {
         let outliers = alg
             .chars()
             .nth(self.pixel_num(-3000, -3000))
-            .ok_or(anyhow!("missing charagcter in alg"))?;
+            .ok_or_else(|| anyhow!("missing charagcter in alg"))?;
 
         Ok(Image { lines, outliers })
     }
@@ -54,7 +54,7 @@ impl Image {
 
     fn pixel_at(&self, x: i32, y: i32) -> usize {
         if x < 0 || y < 0 || x >= self.lines[0].len() as i32 || y >= self.lines.len() as i32 {
-            return if self.outliers == '#' { 1 } else { 0 };
+            return usize::from(self.outliers == '#');
         }
         match self.lines[y as usize].chars().nth(x as usize) {
             Some('#') => 1,
@@ -79,11 +79,14 @@ fn parse(contents: &str) -> Result<(String, Image)> {
     let mut parts = contents.split("\n\n");
 
     Ok((
-        parts.next().ok_or(anyhow!("missing alg"))?.to_string(),
+        parts
+            .next()
+            .ok_or_else(|| anyhow!("missing alg"))?
+            .to_string(),
         Image {
             lines: parts
                 .next()
-                .ok_or(anyhow!("missing image"))?
+                .ok_or_else(|| anyhow!("missing image"))?
                 .lines()
                 .map(|x| x.to_string())
                 .collect(),

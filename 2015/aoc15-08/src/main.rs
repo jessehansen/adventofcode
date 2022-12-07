@@ -12,7 +12,7 @@ fn parse(contents: &str) -> Result<Vec<String>> {
 }
 
 fn escape(line: &str) -> String {
-    format!("\"{}\"", line.replace("\\", "\\\\").replace("\"", "\\\\"))
+    format!("\"{}\"", line.replace(['\\', '\"'], "\\\\"))
 }
 
 fn unescape(line: &str) -> String {

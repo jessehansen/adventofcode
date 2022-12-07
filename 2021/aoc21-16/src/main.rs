@@ -96,27 +96,15 @@ impl Packet {
                 Operator::Maximum => inner.iter().map(|x| x.execute()).max().unwrap(),
                 Operator::GreaterThan => {
                     let operands: Vec<usize> = inner.iter().map(|x| x.execute()).collect();
-                    if operands[0] > operands[1] {
-                        1
-                    } else {
-                        0
-                    }
+                    usize::from(operands[0] > operands[1])
                 }
                 Operator::LessThan => {
                     let operands: Vec<usize> = inner.iter().map(|x| x.execute()).collect();
-                    if operands[0] < operands[1] {
-                        1
-                    } else {
-                        0
-                    }
+                    usize::from(operands[0] < operands[1])
                 }
                 Operator::EqualTo => {
                     let operands: Vec<usize> = inner.iter().map(|x| x.execute()).collect();
-                    if operands[0] == operands[1] {
-                        1
-                    } else {
-                        0
-                    }
+                    usize::from(operands[0] == operands[1])
                 }
             },
         }

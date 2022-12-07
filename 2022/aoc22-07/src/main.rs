@@ -61,7 +61,7 @@ fn parse(contents: &str) -> Result<(Arena<FileNode>, NodeId)> {
                     current_dir = current_dir
                         .ancestors(&arena)
                         .nth(1)
-                        .ok_or(anyhow!("malformed input, changed dirs above root"))?;
+                        .ok_or_else(|| anyhow!("malformed input, changed dirs above root"))?;
                 } else {
                     match current_dir.children(&arena).find(|x| {
                         match arena.get(*x).map(|y| y.get()) {
@@ -89,7 +89,7 @@ fn parse(contents: &str) -> Result<(Arena<FileNode>, NodeId)> {
     let root = current_dir
         .ancestors(&arena)
         .last()
-        .ok_or(anyhow!("malformed input, changed dir outside of root"))?;
+        .ok_or_else(|| anyhow!("malformed input, changed dir outside of root"))?;
     Ok((arena, root))
 }
 
@@ -142,7 +142,7 @@ fn part2(
     sizes
         .into_iter()
         .find(|x| x >= &min_to_delete)
-        .ok_or(anyhow!("no directory big enough to delete"))
+        .ok_or_else(|| anyhow!("no directory big enough to delete"))
 }
 
 #[cfg(test)]

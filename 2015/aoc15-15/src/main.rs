@@ -99,7 +99,7 @@ fn get_best_cookie(ingredients: &[Ingredient], set_calories: bool) -> i32 {
     let mut max_score = 0;
     for p in permutations {
         max_score = max(
-            total_score(p.to_owned().into_iter().zip(ingredients), set_calories),
+            total_score(p.iter().copied().zip(ingredients), set_calories),
             max_score,
         );
     }

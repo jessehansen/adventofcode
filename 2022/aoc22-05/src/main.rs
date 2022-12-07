@@ -23,7 +23,7 @@ impl Port {
         for _ in 0..mv.count {
             let c = self.stacks[mv.from - 1]
                 .pop()
-                .ok_or(anyhow!("tried to move from empty stack"))?;
+                .ok_or_else(|| anyhow!("tried to move from empty stack"))?;
             self.stacks[mv.to - 1].push(c);
         }
 
@@ -61,7 +61,7 @@ impl FromStr for Port {
         let mut bottom_up = contents.lines().rev();
         let stack_count = bottom_up
             .next()
-            .ok_or(anyhow!("malformed stack grid"))?
+            .ok_or_else(|| anyhow!("malformed stack grid"))?
             .len()
             / 4
             + 1;
@@ -74,7 +74,8 @@ impl FromStr for Port {
             for (pos, chunk) in line.as_bytes().chunks(4).enumerate() {
                 if chunk.len() > 1 && chunk[1] != b' ' {
                     stacks[pos].push(
-                        char::from_u32(chunk[1].into()).ok_or(anyhow!("invalid crate character"))?
+                        char::from_u32(chunk[1].into())
+                            .ok_or_else(|| anyhow!("invalid crate character"))?
                             as Crate,
                     )
                 }

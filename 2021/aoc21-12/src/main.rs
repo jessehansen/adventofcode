@@ -94,8 +94,12 @@ fn parse(contents: &str) -> Result<Map> {
     for line in contents.lines() {
         let mut edge = line.split('-');
         map.add_edge([
-            edge.next().ok_or(anyhow!("missing edge"))?.to_string(),
-            edge.next().ok_or(anyhow!("missing edge"))?.to_string(),
+            edge.next()
+                .ok_or_else(|| anyhow!("missing edge"))?
+                .to_string(),
+            edge.next()
+                .ok_or_else(|| anyhow!("missing edge"))?
+                .to_string(),
         ]);
     }
     Ok(map)

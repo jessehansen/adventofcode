@@ -43,7 +43,7 @@ fn parse(contents: &str) -> Result<GameBoard> {
         .map(|x| {
             Ok(x.split(": ")
                 .last()
-                .ok_or(anyhow!("missing content on line"))?
+                .ok_or_else(|| anyhow!("missing content on line"))?
                 .parse()?)
         })
         .collect::<Result<Vec<usize>>>()?;

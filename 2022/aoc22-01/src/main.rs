@@ -19,7 +19,7 @@ fn part1(contents: &[u32]) -> Result<u32> {
         .iter()
         .max()
         .copied()
-        .ok_or(anyhow!("No calories for elf"))
+        .ok_or_else(|| anyhow!("No calories for elf"))
 }
 
 fn part2(contents: &[u32]) -> Result<u32> {
