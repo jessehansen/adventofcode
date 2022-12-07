@@ -107,7 +107,7 @@ where
     let part1_time = start.elapsed();
 
     print!("Part 1 - ");
-    let result = format!("{}", result);
+    let result = format!("{result}");
     if result.len() > 20 || result.contains('\n') {
         println!();
     }
@@ -143,8 +143,8 @@ where
     let result = runner()?;
     let elapsed = start.elapsed();
 
-    print!("{} - ", description);
-    let result = format!("{}", result);
+    print!("{description} - ");
+    let result = format!("{result}");
     if result.len() > 20 || result.contains('\n') {
         println!();
     }
@@ -162,8 +162,8 @@ where
     let (result, more_data) = runner()?;
     let elapsed = start.elapsed();
 
-    print!("{} - ", description);
-    let result = format!("{}", result);
+    print!("{description} - ");
+    let result = format!("{result}");
     if result.len() > 20 || result.contains('\n') {
         println!();
     }
@@ -438,7 +438,7 @@ pub fn hex_to_binary_string(hex: &str) -> String {
                 'D' => "1101",
                 'E' => "1110",
                 'F' => "1111",
-                c => panic!("unexpected char '{}' in hex string", c),
+                c => panic!("unexpected char '{c}' in hex string"),
             }
             .to_string()
         })
@@ -469,7 +469,7 @@ pub fn binary_string_to_hex(binary: &str) -> String {
                 "1101" => "D",
                 "1110" => "E",
                 "1111" => "F",
-                nib => panic!("unexpected nibble sequence \"{}\" in binary string", nib),
+                nib => panic!("unexpected nibble sequence \"{nib}\" in binary string"),
             }
             .to_string()
         })

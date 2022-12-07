@@ -405,7 +405,7 @@ where
                 .iter()
                 .map(|row| row
                     .iter()
-                    .map(|x| format!("{}", x))
+                    .map(|x| format!("{x}"))
                     .collect::<Vec<String>>()
                     .join(""))
                 .collect::<Vec<String>>()
