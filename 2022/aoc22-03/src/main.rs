@@ -55,7 +55,7 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let result = part1(&SAMPLE)?;
+        let result = part1(SAMPLE)?;
 
         assert_eq!(157, result);
 
@@ -64,7 +64,7 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let result = part2(&SAMPLE)?;
+        let result = part2(SAMPLE)?;
 
         assert_eq!(70, result);
 

@@ -16,7 +16,7 @@ fn parse(contents: &str) -> Result<Vec<u32>> {
 
 fn part1(contents: &[u32]) -> Result<u32> {
     contents
-        .into_iter()
+        .iter()
         .max()
         .copied()
         .ok_or(anyhow!("No calories for elf"))

@@ -33,15 +33,15 @@ impl Range {
 
 fn part1(contents: &[(Range, Range)]) -> Result<usize> {
     Ok(contents
-        .into_iter()
-        .filter(|(first, second)| first.contains(&second) || second.contains(&first))
+        .iter()
+        .filter(|(first, second)| first.contains(second) || second.contains(first))
         .count())
 }
 
 fn part2(contents: &[(Range, Range)]) -> Result<usize> {
     Ok(contents
-        .into_iter()
-        .filter(|(first, second)| first.overlaps(&second))
+        .iter()
+        .filter(|(first, second)| first.overlaps(second))
         .count())
 }
 

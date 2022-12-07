@@ -29,7 +29,7 @@ fn parse(contents: &str) -> Result<(Arena<FileNode>, NodeId)> {
         if !command.starts_with("$ ") {
             bail!("malformed input, missing command prefix");
         }
-        let parts: Vec<&str> = command.split(" ").collect();
+        let parts: Vec<&str> = command.split(' ').collect();
         match parts[1] {
             "ls" => {
                 line = lines.next();
@@ -37,7 +37,7 @@ fn parse(contents: &str) -> Result<(Arena<FileNode>, NodeId)> {
                     if ls_output_line.starts_with("$ ") {
                         break;
                     }
-                    let ls_line_parts: Vec<&str> = ls_output_line.split(" ").collect();
+                    let ls_line_parts: Vec<&str> = ls_output_line.split(' ').collect();
                     match ls_line_parts[0] {
                         "dir" => {
                             current_dir.append(
@@ -60,18 +60,15 @@ fn parse(contents: &str) -> Result<(Arena<FileNode>, NodeId)> {
                 if parts[2] == ".." {
                     current_dir = current_dir
                         .ancestors(&arena)
-                        .skip(1)
-                        .next()
+                        .nth(1)
                         .ok_or(anyhow!("malformed input, changed dirs above root"))?;
                 } else {
-                    match current_dir
-                        .children(&arena)
-                        .filter(|x| match arena.get(*x).map(|y| y.get()) {
+                    match current_dir.children(&arena).find(|x| {
+                        match arena.get(*x).map(|y| y.get()) {
                             Some(Directory(name)) => name == parts[2],
                             _ => false,
-                        })
-                        .next()
-                    {
+                        }
+                    }) {
                         Some(target_dir) => {
                             current_dir = target_dir;
                         }
@@ -97,18 +94,18 @@ fn parse(contents: &str) -> Result<(Arena<FileNode>, NodeId)> {
 }
 
 fn calculate_size(
-    mut size_cache: &mut HashMap<NodeId, u32>,
+    size_cache: &mut HashMap<NodeId, u32>,
     node: &NodeId,
     arena: &Arena<FileNode>,
 ) -> Result<u32> {
-    if let Some(size) = size_cache.get(&node) {
+    if let Some(size) = size_cache.get(node) {
         Ok(*size)
     } else {
         match arena.get(*node).map(|x| x.get()) {
             Some(Directory(_)) => {
                 let size: u32 = node
                     .children(arena)
-                    .filter_map(|child| calculate_size(&mut size_cache, &child, arena).ok())
+                    .filter_map(|child| calculate_size(size_cache, &child, arena).ok())
                     .sum();
 
                 size_cache.insert(*node, size);
@@ -144,8 +141,7 @@ fn part2(
 
     sizes
         .into_iter()
-        .filter(|x| x >= &min_to_delete)
-        .next()
+        .find(|x| x >= &min_to_delete)
         .ok_or(anyhow!("no directory big enough to delete"))
 }
 

@@ -21,18 +21,15 @@ fn find_pos(contents: &str, marker_len: usize) -> Result<usize> {
     let mut buffer: VecDeque<char> = VecDeque::new();
 
     for (pos, c) in contents.chars().enumerate() {
-        match index_of(&buffer, &c) {
-            Some(ix) => {
-                // this rotates characters moving the last occurrence of the repeated character to
-                // the end of the ring buffer, then removes them
-                //
-                // ex: buffer=abcdef with current character d (ix=3)
-                buffer.rotate_left(ix + 1);
-                // buffer=efabcd
-                buffer.resize(buffer.len() - ix - 1, ' ');
-                // buffer=ef
-            }
-            None => (),
+        if let Some(ix) = index_of(&buffer, &c) {
+            // this rotates characters moving the last occurrence of the repeated character to
+            // the end of the ring buffer, then removes them
+            //
+            // ex: buffer=abcdef with current character d (ix=3)
+            buffer.rotate_left(ix + 1);
+            // buffer=efabcd
+            buffer.resize(buffer.len() - ix - 1, ' ');
+            // buffer=ef
         }
         buffer.push_back(c);
         if buffer.len() == marker_len {

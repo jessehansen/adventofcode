@@ -136,11 +136,11 @@ impl Round {
 }
 
 fn part1(contents: &[Round]) -> Result<u32> {
-    Ok(contents.into_iter().map(|x| x.score_part_1()).sum())
+    Ok(contents.iter().map(|x| x.score_part_1()).sum())
 }
 
 fn part2(contents: &[Round]) -> Result<u32> {
-    Ok(contents.into_iter().map(|x| x.score_part_2()).sum())
+    Ok(contents.iter().map(|x| x.score_part_2()).sum())
 }
 
 #[cfg(test)]

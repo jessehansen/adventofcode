@@ -72,7 +72,7 @@ impl FromStr for Port {
 
         for line in bottom_up {
             for (pos, chunk) in line.as_bytes().chunks(4).enumerate() {
-                if chunk.len() > 1 && chunk[1] != ' ' as u8 {
+                if chunk.len() > 1 && chunk[1] != b' ' {
                     stacks[pos].push(
                         char::from_u32(chunk[1].into()).ok_or(anyhow!("invalid crate character"))?
                             as Crate,
@@ -106,7 +106,7 @@ impl Display for Port {
         }
 
         for ix in 1..(self.stacks.len() + 1) {
-            write!(f, " {}  ", ix)?;
+            write!(f, " {ix}  ")?;
         }
 
         writeln!(f)?;
@@ -134,7 +134,7 @@ impl FromStr for Move {
 fn part1((starting_stacks, moves): &(Port, Vec<Move>)) -> Result<String> {
     let mut port = starting_stacks.clone();
 
-    for mv in moves.into_iter() {
+    for mv in moves.iter() {
         port.do_move(mv)?;
     }
 
@@ -144,7 +144,7 @@ fn part1((starting_stacks, moves): &(Port, Vec<Move>)) -> Result<String> {
 fn part2((starting_stacks, moves): &(Port, Vec<Move>)) -> Result<String> {
     let mut port = starting_stacks.clone();
 
-    for mv in moves.into_iter() {
+    for mv in moves.iter() {
         port.do_move_9001(mv)?;
     }
 
