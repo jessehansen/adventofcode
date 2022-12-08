@@ -35,6 +35,14 @@ pub struct Bounds2D {
     pub height: usize,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Direction {
+    Up,
+    Left,
+    Right,
+    Down,
+}
+
 impl Point2D {
     pub const ORIGIN: Point2D = Point2D { x: 0, y: 0 };
 
@@ -103,6 +111,15 @@ impl Point2D {
             Some(pt(self.x, self.y + 1))
         } else {
             None
+        }
+    }
+
+    pub fn cardinal_neighbor(&self, direction: Direction, bounds: Bounds2D) -> Option<Point2D> {
+        match direction {
+            Direction::Left => self.left(),
+            Direction::Right => self.right(bounds.width),
+            Direction::Up => self.up(),
+            Direction::Down => self.down(bounds.height),
         }
     }
 

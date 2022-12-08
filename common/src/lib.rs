@@ -1,9 +1,9 @@
-use anyhow::*;
-use console::{style, Term};
-use std::fmt;
-use std::fmt::Display;
+use std::fmt::{self, Display};
 use std::fs;
 use std::time::{Duration, Instant};
+
+use anyhow::*;
+use console::{style, Term};
 
 mod grid;
 pub use grid::*;
@@ -134,10 +134,10 @@ where
     Ok((input, parse_time))
 }
 
-fn print_and_time<F, T>(description: &str, runner: F) -> Result<Duration>
+fn print_and_time<F, T>(description: &str, mut runner: F) -> Result<Duration>
 where
     T: Display,
-    F: Fn() -> Result<T>,
+    F: FnMut() -> Result<T>,
 {
     let start = Instant::now();
     let result = runner()?;
@@ -525,7 +525,7 @@ pub fn pad_right_for_multiple(some_str: &mut String, padding: char, multiple: us
 }
 
 struct HumanDuration(Duration);
-impl fmt::Display for HumanDuration {
+impl Display for HumanDuration {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let secs = self.0.as_secs();
 
@@ -541,4 +541,30 @@ impl fmt::Display for HumanDuration {
             write!(f, "{}µs ({}ns)", self.0.as_micros(), self.0.as_nanos())
         }
     }
+}
+
+pub trait Solution<TPart1, TPart2>
+where
+    Self: std::marker::Sized,
+    TPart1: Display,
+    TPart2: Display,
+{
+    fn part1(&mut self) -> Result<TPart1>;
+    fn part2(&self) -> Result<TPart2>;
+}
+
+pub fn go<FParse, TSolution, TPart1, TPart2>(parse: FParse) -> Result<()>
+where
+    FParse: Fn(&str) -> Result<TSolution>,
+    TSolution: Solution<TPart1, TPart2>,
+    TPart1: Display,
+    TPart2: Display,
+{
+    let (mut solution, parse_time) = read_and_parse(parse)?;
+
+    let part1_time = print_and_time("Part 1", || solution.part1()).context("failure in part 1")?;
+    let part2_time = print_and_time("Part 2", || solution.part2()).context("failure in part 2")?;
+
+    print_stats(parse_time, part1_time, part2_time);
+    Ok(())
 }

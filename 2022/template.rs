@@ -2,19 +2,25 @@ use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    run_vec(parse, part1, part2)
+    go(Problem::parse)
 }
 
-fn parse(contents: &str) -> Result<Vec<String>> {
-    Ok(contents.lines().map(|x| x.to_string()).collect())
+struct Problem {}
+
+impl Problem {
+    fn parse(contents: &str) -> Result<Problem> {
+        Ok(Problem {})
+    }
 }
 
-fn part1(contents: &[String]) -> Result<usize> {
-    bail!("not implemented")
-}
+impl Solution<usize, usize> for Problem {
+    fn part1(contents: &[String]) -> Result<_> {
+        bail!("not implemented")
+    }
 
-fn part2(contents: &[String]) -> Result<usize> {
-    bail!("not implemented")
+    fn part2(contents: &[String]) -> Result<_> {
+        bail!("not implemented")
+    }
 }
 
 #[cfg(test)]
@@ -23,20 +29,24 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let parsed = parse(SAMPLE)?;
+        let mut problem = Problem::parse(SAMPLE)?;
 
-        let result = part1(&parsed)?;
+        let result = problem.part1()?;
 
-        bail!("not tested")
+        assert_eq!(0, result);
+
+        Ok(())
     }
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let parsed = parse(SAMPLE)?;
+        let problem = Problem::parse(SAMPLE)?;
 
-        let result = part2(&parsed)?;
+        let result = problem.part2()?;
 
-        bail!("not tested")
+        assert_eq!(0, result);
+
+        Ok(())
     }
 
     const SAMPLE: &str = "\
