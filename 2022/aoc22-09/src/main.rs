@@ -81,19 +81,7 @@ impl Rope {
             let dx = head.x - tail.x;
             let dy = head.y - tail.y;
             if dx.abs() > 1 || dy.abs() > 1 {
-                self.knots[ix_tail] = match (dx.signum(), dy.signum()) {
-                    (0, 1) => tail.up(),
-                    (0, -1) => tail.down(),
-                    (1, 0) => tail.right(),
-                    (-1, 0) => tail.left(),
-
-                    (1, 1) => tail.right().up(),
-                    (1, -1) => tail.right().down(),
-
-                    (-1, 1) => tail.left().up(),
-                    (-1, -1) => tail.left().down(),
-                    _ => tail,
-                };
+                self.knots[ix_tail] = tail.move_by(dx.signum(), dy.signum());
             }
         }
         self.tail_visited.insert(*self.knots.last().unwrap());

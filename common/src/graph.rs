@@ -64,6 +64,13 @@ impl IPoint2D {
             Direction::Down => self.down(),
         }
     }
+
+    pub fn move_by(&self, dx: i32, dy: i32) -> IPoint2D {
+        IPoint2D {
+            x: self.x + dx,
+            y: self.y + dy,
+        }
+    }
 }
 
 impl fmt::Display for IPoint2D {
