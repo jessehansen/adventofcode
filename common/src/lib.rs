@@ -159,6 +159,10 @@ where
                 let res = client
                     .get(input_url)
                     .header(reqwest::header::COOKIE, cookie)
+                    .header(
+                        reqwest::header::USER_AGENT,
+                        "github.com/jessehansen/adventofcode by jesse@twindagger.com",
+                    )
                     .send()?;
 
                 if res.status().is_success() {
