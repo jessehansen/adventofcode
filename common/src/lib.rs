@@ -1,5 +1,8 @@
+#![feature(pattern)]
+
 use std::fmt::{self, Display};
 use std::fs;
+use std::str::pattern::Pattern;
 use std::time::{Duration, Instant};
 
 use anyhow::*;
@@ -259,12 +262,13 @@ where
         .collect()
 }
 
-pub fn parse_pair<T0, T1>(contents: &str, separator: &str) -> Result<(T0, T1)>
+pub fn parse_pair<'a, T0, T1, P>(contents: &'a str, separator: P) -> Result<(T0, T1)>
 where
     T0: std::str::FromStr,
     <T0 as std::str::FromStr>::Err: std::fmt::Display,
     T1: std::str::FromStr,
     <T1 as std::str::FromStr>::Err: std::fmt::Display,
+    P: Pattern<'a>,
 {
     let mut parts = contents.split(separator);
     Ok((
@@ -333,7 +337,12 @@ where
 }
 
 // grabs the 2 items at ix0 and ix1, in a string separated by separator
-pub fn grab_2<T0, T1>(contents: &str, separator: &str, ix0: usize, ix1: usize) -> Result<(T0, T1)>
+pub fn grab_2<'a, T0, T1, P: Pattern<'a>>(
+    contents: &'a str,
+    separator: P,
+    ix0: usize,
+    ix1: usize,
+) -> Result<(T0, T1)>
 where
     T0: std::str::FromStr,
     <T0 as std::str::FromStr>::Err: std::fmt::Display,

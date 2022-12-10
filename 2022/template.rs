@@ -14,11 +14,11 @@ impl Problem {
 }
 
 impl Solution<usize, usize> for Problem {
-    fn part1(contents: &[String]) -> Result<_> {
+    fn part1(&mut self) -> Result<usize> {
         bail!("not implemented")
     }
 
-    fn part2(contents: &[String]) -> Result<_> {
+    fn part2(&self) -> Result<usize> {
         bail!("not implemented")
     }
 }
