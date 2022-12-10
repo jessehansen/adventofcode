@@ -11,8 +11,8 @@ use console::{style, Term};
 mod grid;
 pub use grid::*;
 
-mod graph;
-pub use graph::*;
+mod plot;
+pub use plot::*;
 
 mod tree;
 pub use tree::*;

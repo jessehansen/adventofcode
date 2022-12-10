@@ -64,12 +64,8 @@ struct Rope {
 
 impl Rope {
     fn new(len: usize) -> Rope {
-        let mut knots = vec![];
-        for _ in 0..len {
-            knots.push(IPoint2D::ORIGIN);
-        }
         Rope {
-            knots,
+            knots: vec![IPoint2D::ORIGIN; len],
             tail_visited: HashSet::new(),
             ix_last: len - 1,
         }
