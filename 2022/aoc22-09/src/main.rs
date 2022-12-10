@@ -59,10 +59,11 @@ impl Problem {
 struct Rope {
     knots: Vec<IPoint2D>,
     tail_visited: HashSet<IPoint2D>,
+    ix_last: usize,
 }
 
 impl Rope {
-    fn new(len: u32) -> Rope {
+    fn new(len: usize) -> Rope {
         let mut knots = vec![];
         for _ in 0..len {
             knots.push(IPoint2D::ORIGIN);
@@ -70,21 +71,20 @@ impl Rope {
         Rope {
             knots,
             tail_visited: HashSet::new(),
+            ix_last: len - 1,
         }
     }
 
     fn mv(&mut self, direction: Direction) {
         self.knots[0] = self.knots[0].mv(direction);
-        for ix_tail in 1..self.knots.len() {
-            let head = self.knots[ix_tail - 1];
-            let tail = self.knots[ix_tail];
-            let dx = head.x - tail.x;
-            let dy = head.y - tail.y;
+        for ix_knot in 1..self.knots.len() {
+            let knot = self.knots[ix_knot];
+            let (dx, dy) = self.knots[ix_knot - 1].cardinal_distance(&knot);
             if dx.abs() > 1 || dy.abs() > 1 {
-                self.knots[ix_tail] = tail.move_by(dx.signum(), dy.signum());
+                self.knots[ix_knot] = knot.move_by(dx.signum(), dy.signum());
             }
         }
-        self.tail_visited.insert(*self.knots.last().unwrap());
+        self.tail_visited.insert(self.knots[self.ix_last]);
     }
 }
 

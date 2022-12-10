@@ -28,6 +28,10 @@ pub struct IPoint2D {
 impl IPoint2D {
     pub const ORIGIN: IPoint2D = IPoint2D { x: 0, y: 0 };
 
+    pub fn cardinal_distance(&self, other: &IPoint2D) -> (i32, i32) {
+        (self.x - other.x, self.y - other.y)
+    }
+
     pub fn up(&self) -> IPoint2D {
         IPoint2D {
             x: self.x,
