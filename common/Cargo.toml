@@ -9,6 +9,7 @@ edition = "2021"
 anyhow = "1.0.60"
 console = "0.15.0"
 itertools = "0.10.3"
+reqwest = {version = "0.11.13", features = ["blocking"]}
 
 [features]
 pattern = []

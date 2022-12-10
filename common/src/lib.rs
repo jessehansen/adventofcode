@@ -1,12 +1,14 @@
 #![feature(pattern)]
 
 use std::fmt::{self, Display};
-use std::fs;
+use std::path::Path;
 use std::str::pattern::Pattern;
 use std::time::{Duration, Instant};
+use std::{env, fs};
 
 use anyhow::*;
 use console::{style, Term};
+use reqwest::blocking::Client;
 
 mod grid;
 pub use grid::*;
@@ -124,11 +126,56 @@ where
     Ok(())
 }
 
+fn get_year_and_day() -> Result<(usize, usize)> {
+    let binding = env::current_dir()?;
+    let path = binding
+        .file_name()
+        .ok_or_else(|| anyhow!("missing current dir"))?
+        .to_str()
+        .ok_or_else(|| anyhow!("converting current dir to str failed"))?;
+    // path should be aocyy-dd
+    let year = 2000 + path[3..=4].parse::<usize>()?;
+    let day = path[6..=7].parse::<usize>()?;
+
+    Ok((year, day))
+}
+
 fn read_and_parse<T, F>(parse: F) -> Result<(T, Duration)>
 where
     F: Fn(&str) -> Result<T>,
 {
-    let input = fs::read_to_string("./input.txt").context("could not read input.txt")?;
+    let input = if Path::new("./input.txt").is_file() {
+        fs::read_to_string("./input.txt").context("could not read input.txt")?
+    } else {
+        match env::var("AOC_COOKIE") {
+            std::result::Result::Ok(cookie) => {
+                println!("Input missing, attempting download");
+                let (year, day) = get_year_and_day()?;
+
+                let input_url = format!("https://adventofcode.com/{year}/day/{day}/input");
+                println!("Year {year}, Day {day}: {input_url}");
+
+                let client = Client::new();
+                let res = client
+                    .get(input_url)
+                    .header(reqwest::header::COOKIE, cookie)
+                    .send()?;
+
+                if res.status().is_success() {
+                    println!("Success! Saving input.txt...");
+                    let input = res.text()?;
+
+                    fs::write("./input.txt", input.clone())?;
+                    input
+                } else {
+                    bail!("Could not download input - got response {:?}", res.status());
+                }
+            }
+            Err(_) => {
+                bail!("Missing AOC_COOKIE environment variable, couldn't download input");
+            }
+        }
+    };
 
     let start = Instant::now();
     let input = parse(&input)?;

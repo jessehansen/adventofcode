@@ -7,7 +7,6 @@ done
 
 cargo new $project_name
 cd $project_name
-touch input.txt
 cp -fr ../template.rs src/main.rs
 
 echo "anyhow = \"1.0.60\"\naoc_common = { path =\"../../common\" }" >> Cargo.toml
