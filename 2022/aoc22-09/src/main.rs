@@ -80,19 +80,21 @@ impl Rope {
             let tail = self.knots[ix_tail];
             let dx = head.x - tail.x;
             let dy = head.y - tail.y;
-            self.knots[ix_tail] = match (dx, dy) {
-                (0, 2) => tail.up(),
-                (0, -2) => tail.down(),
-                (2, 0) => tail.right(),
-                (-2, 0) => tail.left(),
+            if dx.abs() > 1 || dy.abs() > 1 {
+                self.knots[ix_tail] = match (dx.signum(), dy.signum()) {
+                    (0, 1) => tail.up(),
+                    (0, -1) => tail.down(),
+                    (1, 0) => tail.right(),
+                    (-1, 0) => tail.left(),
 
-                (1, 2) | (2, 1) | (2, 2) => tail.right().up(),
-                (1, -2) | (2, -1) | (2, -2) => tail.right().down(),
+                    (1, 1) => tail.right().up(),
+                    (1, -1) => tail.right().down(),
 
-                (-1, 2) | (-2, 1) | (-2, 2) => tail.left().up(),
-                (-1, -2) | (-2, -1) | (-2, -2) => tail.left().down(),
-                _ => tail,
-            };
+                    (-1, 1) => tail.left().up(),
+                    (-1, -1) => tail.left().down(),
+                    _ => tail,
+                };
+            }
         }
         self.tail_visited.insert(*self.knots.last().unwrap());
     }
