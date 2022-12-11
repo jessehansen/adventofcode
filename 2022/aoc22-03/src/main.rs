@@ -4,7 +4,7 @@ use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    run_raw(part1, part2)
+    go(Problem::parse)
 }
 
 fn item_score(c: &char) -> Result<u32> {
@@ -15,38 +15,52 @@ fn item_score(c: &char) -> Result<u32> {
     }
 }
 
-fn part1(contents: &str) -> Result<u32> {
-    let mut score: u32 = 0;
-    for line in contents.lines() {
-        let compartments = line.split_at(line.len() / 2);
-        let compartment1: HashSet<char> = compartments.0.chars().collect();
-        let compartment2: HashSet<char> = compartments.1.chars().collect();
-        let common_items: Vec<&char> = compartment1.intersection(&compartment2).collect();
-        if common_items.len() != 1 {
-            bail!("compartments didn't have one common item");
-        }
-        score += item_score(common_items[0])?;
-    }
-    Ok(score)
+struct Problem {
+    input: String,
 }
 
-fn part2(contents: &str) -> Result<u32> {
-    let mut score: u32 = 0;
-    let lines: Vec<&str> = contents.lines().collect();
-    for group in lines.chunks(3) {
-        let sack1: HashSet<char> = group[0].chars().collect();
-        let sack2: HashSet<char> = group[1].chars().collect();
-        let sack3: HashSet<char> = group[2].chars().collect();
-
-        let common_items: HashSet<char> = sack1.intersection(&sack2).copied().collect();
-        let all_three: Vec<&char> = common_items.intersection(&sack3).collect();
-
-        if all_three.len() != 1 {
-            bail!("group didn't have one item in all three sacks");
-        }
-        score += item_score(all_three[0])?;
+impl Problem {
+    fn parse(input: &str) -> Result<Problem> {
+        Ok(Problem {
+            input: input.to_string(),
+        })
     }
-    Ok(score)
+}
+
+impl Solution<u32, u32> for Problem {
+    fn part1(&mut self) -> Result<u32> {
+        let mut score: u32 = 0;
+        for line in self.input.as_str().lines() {
+            let compartments = line.split_at(line.len() / 2);
+            let compartment1: HashSet<char> = compartments.0.chars().collect();
+            let compartment2: HashSet<char> = compartments.1.chars().collect();
+            let common_items: Vec<&char> = compartment1.intersection(&compartment2).collect();
+            if common_items.len() != 1 {
+                bail!("compartments didn't have one common item");
+            }
+            score += item_score(common_items[0])?;
+        }
+        Ok(score)
+    }
+
+    fn part2(&self) -> Result<u32> {
+        let mut score: u32 = 0;
+        let lines: Vec<&str> = self.input.as_str().lines().collect();
+        for group in lines.chunks(3) {
+            let sack1: HashSet<char> = group[0].chars().collect();
+            let sack2: HashSet<char> = group[1].chars().collect();
+            let sack3: HashSet<char> = group[2].chars().collect();
+
+            let common_items: HashSet<char> = sack1.intersection(&sack2).copied().collect();
+            let all_three: Vec<&char> = common_items.intersection(&sack3).collect();
+
+            if all_three.len() != 1 {
+                bail!("group didn't have one item in all three sacks");
+            }
+            score += item_score(all_three[0])?;
+        }
+        Ok(score)
+    }
 }
 
 #[cfg(test)]
@@ -55,7 +69,9 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let result = part1(SAMPLE)?;
+        let mut problem = Problem::parse(SAMPLE)?;
+
+        let result = problem.part1()?;
 
         assert_eq!(157, result);
 
@@ -64,7 +80,9 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let result = part2(SAMPLE)?;
+        let problem = Problem::parse(SAMPLE)?;
+
+        let result = problem.part2()?;
 
         assert_eq!(70, result);
 

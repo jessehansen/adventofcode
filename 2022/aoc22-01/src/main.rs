@@ -2,31 +2,40 @@ use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    run_vec(parse, part1, part2)
+    go(Problem::parse)
+}
+struct Problem {
+    calories: Vec<u32>,
 }
 
-fn parse(contents: &str) -> Result<Vec<u32>> {
-    parse_line_groups(contents, |elf_items: &str| -> Result<u32> {
-        elf_items
-            .lines()
-            .map(|x: &str| -> Result<u32> { wrap_parse_error(x.parse()) })
-            .sum()
-    })
+impl Problem {
+    fn parse(contents: &str) -> Result<Problem> {
+        Ok(Problem {
+            calories: parse_line_groups(contents, |elf_items: &str| -> Result<u32> {
+                elf_items
+                    .lines()
+                    .map(|x: &str| -> Result<u32> { wrap_parse_error(x.parse()) })
+                    .sum()
+            })?,
+        })
+    }
 }
 
-fn part1(contents: &[u32]) -> Result<u32> {
-    contents
-        .iter()
-        .max()
-        .copied()
-        .ok_or_else(|| anyhow!("No calories for elf"))
-}
+impl Solution<u32, u32> for Problem {
+    fn part1(&mut self) -> Result<u32> {
+        self.calories
+            .iter()
+            .max()
+            .copied()
+            .ok_or_else(|| anyhow!("No calories for elf"))
+    }
 
-fn part2(contents: &[u32]) -> Result<u32> {
-    let mut sums: Vec<u32> = contents.to_owned();
-    sums.sort_unstable_by(|a, b| b.cmp(a));
-    sums.truncate(3);
-    Ok(sums.into_iter().sum())
+    fn part2(&self) -> Result<u32> {
+        let mut sums: Vec<u32> = self.calories.clone();
+        sums.sort_unstable_by(|a, b| b.cmp(a));
+        sums.truncate(3);
+        Ok(sums.into_iter().sum())
+    }
 }
 
 #[cfg(test)]
@@ -35,9 +44,9 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let parsed = parse(SAMPLE)?;
+        let mut problem = Problem::parse(SAMPLE)?;
 
-        let result = part1(&parsed)?;
+        let result = problem.part1()?;
 
         assert_eq!(24000, result);
         Ok(())
@@ -45,9 +54,9 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let parsed = parse(SAMPLE)?;
+        let problem = Problem::parse(SAMPLE)?;
 
-        let result = part2(&parsed)?;
+        let result = problem.part2()?;
 
         assert_eq!(45000, result);
         Ok(())

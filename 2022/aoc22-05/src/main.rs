@@ -4,11 +4,19 @@ use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    run(parse, part1, part2)
+    go(Problem::parse)
 }
 
-fn parse(contents: &str) -> Result<(Port, Vec<Move>)> {
-    parse_pair_by(contents, "\n\n", parse_untrimmed, parse_lines)
+struct Problem {
+    port: Port,
+    moves: Vec<Move>,
+}
+
+impl Problem {
+    fn parse(contents: &str) -> Result<Problem> {
+        let (port, moves) = parse_pair_by(contents, "\n\n", parse_untrimmed, parse_lines)?;
+        Ok(Problem { port, moves })
+    }
 }
 
 type Crate = char;
@@ -132,24 +140,26 @@ impl FromStr for Move {
     }
 }
 
-fn part1((starting_stacks, moves): &(Port, Vec<Move>)) -> Result<String> {
-    let mut port = starting_stacks.clone();
+impl Solution<String, String> for Problem {
+    fn part1(&mut self) -> Result<String> {
+        let mut port = self.port.clone();
 
-    for mv in moves.iter() {
-        port.do_move(mv)?;
+        for mv in self.moves.iter() {
+            port.do_move(mv)?;
+        }
+
+        port.top_crates()
     }
 
-    port.top_crates()
-}
+    fn part2(&self) -> Result<String> {
+        let mut port = self.port.clone();
 
-fn part2((starting_stacks, moves): &(Port, Vec<Move>)) -> Result<String> {
-    let mut port = starting_stacks.clone();
+        for mv in self.moves.iter() {
+            port.do_move_9001(mv)?;
+        }
 
-    for mv in moves.iter() {
-        port.do_move_9001(mv)?;
+        port.top_crates()
     }
-
-    port.top_crates()
 }
 
 #[cfg(test)]
@@ -158,9 +168,9 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let parsed = parse(SAMPLE)?;
+        let mut problem = Problem::parse(SAMPLE)?;
 
-        let result = part1(&parsed)?;
+        let result = problem.part1()?;
 
         assert_eq!("CMZ", result);
 
@@ -169,9 +179,9 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let parsed = parse(SAMPLE)?;
+        let problem = Problem::parse(SAMPLE)?;
 
-        let result = part2(&parsed)?;
+        let result = problem.part2()?;
 
         assert_eq!("MCD", result);
 

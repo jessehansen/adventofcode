@@ -4,7 +4,7 @@ use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    run_vec(parse_lines, part1, part2)
+    go(Problem::parse)
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -135,12 +135,26 @@ impl Round {
     }
 }
 
-fn part1(contents: &[Round]) -> Result<u32> {
-    Ok(contents.iter().map(|x| x.score_part_1()).sum())
+struct Problem {
+    rounds: Vec<Round>,
 }
 
-fn part2(contents: &[Round]) -> Result<u32> {
-    Ok(contents.iter().map(|x| x.score_part_2()).sum())
+impl Problem {
+    fn parse(contents: &str) -> Result<Problem> {
+        Ok(Problem {
+            rounds: parse_lines(contents)?,
+        })
+    }
+}
+
+impl Solution<u32, u32> for Problem {
+    fn part1(&mut self) -> Result<u32> {
+        Ok(self.rounds.iter().map(|x| x.score_part_1()).sum())
+    }
+
+    fn part2(&self) -> Result<u32> {
+        Ok(self.rounds.iter().map(|x| x.score_part_2()).sum())
+    }
 }
 
 #[cfg(test)]
@@ -149,9 +163,9 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let parsed = parse_lines(SAMPLE)?;
+        let mut problem = Problem::parse(SAMPLE)?;
 
-        let result = part1(&parsed)?;
+        let result = problem.part1()?;
 
         assert_eq!(15, result);
 
@@ -160,9 +174,9 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let parsed = parse_lines(SAMPLE)?;
+        let problem = Problem::parse(SAMPLE)?;
 
-        let result = part2(&parsed)?;
+        let result = problem.part2()?;
 
         assert_eq!(12, result);
 

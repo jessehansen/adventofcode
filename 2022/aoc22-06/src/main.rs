@@ -4,7 +4,19 @@ use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    run_raw(part1, part2)
+    go(Problem::parse)
+}
+
+struct Problem {
+    input: String,
+}
+
+impl Problem {
+    fn parse(input: &str) -> Result<Problem> {
+        Ok(Problem {
+            input: input.to_string(),
+        })
+    }
 }
 
 fn index_of(buffer: &VecDeque<char>, c: &char) -> Option<usize> {
@@ -61,12 +73,14 @@ fn find_pos_windows(contents: &str, marker_len: usize) -> Result<usize> {
     bail!("no position found");
 }
 
-fn part1(contents: &str) -> Result<usize> {
-    find_pos(contents, 4)
-}
+impl Solution<usize, usize> for Problem {
+    fn part1(&mut self) -> Result<usize> {
+        find_pos(self.input.as_str(), 4)
+    }
 
-fn part2(contents: &str) -> Result<usize> {
-    find_pos_windows(contents, 14)
+    fn part2(&self) -> Result<usize> {
+        find_pos_windows(self.input.as_str(), 14)
+    }
 }
 
 #[cfg(test)]
@@ -75,22 +89,28 @@ mod tests {
 
     #[test]
     fn test_part1() -> Result<()> {
-        assert_eq!(7, part1("mjqjpqmgbljsphdztnvjfqwrcgsmlb")?);
-        assert_eq!(5, part1("bvwbjplbgvbhsrlpgdmjqwftvncz")?);
-        assert_eq!(6, part1("nppdvjthqldpwncqszvftbrmjlhg")?);
-        assert_eq!(10, part1("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg")?);
-        assert_eq!(11, part1("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw")?);
+        assert_eq!(7, find_pos("mjqjpqmgbljsphdztnvjfqwrcgsmlb", 4)?);
+        assert_eq!(5, find_pos("bvwbjplbgvbhsrlpgdmjqwftvncz", 4)?);
+        assert_eq!(6, find_pos("nppdvjthqldpwncqszvftbrmjlhg", 4)?);
+        assert_eq!(10, find_pos("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg", 4)?);
+        assert_eq!(11, find_pos("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw", 4)?);
 
         Ok(())
     }
 
     #[test]
     fn test_part2() -> Result<()> {
-        assert_eq!(19, part2("mjqjpqmgbljsphdztnvjfqwrcgsmlb")?);
-        assert_eq!(23, part2("bvwbjplbgvbhsrlpgdmjqwftvncz")?);
-        assert_eq!(23, part2("nppdvjthqldpwncqszvftbrmjlhg")?);
-        assert_eq!(29, part2("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg")?);
-        assert_eq!(26, part2("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw")?);
+        assert_eq!(19, find_pos_windows("mjqjpqmgbljsphdztnvjfqwrcgsmlb", 14)?);
+        assert_eq!(23, find_pos_windows("bvwbjplbgvbhsrlpgdmjqwftvncz", 14)?);
+        assert_eq!(23, find_pos_windows("nppdvjthqldpwncqszvftbrmjlhg", 14)?);
+        assert_eq!(
+            29,
+            find_pos_windows("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg", 14)?
+        );
+        assert_eq!(
+            26,
+            find_pos_windows("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw", 14)?
+        );
 
         Ok(())
     }
