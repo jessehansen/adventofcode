@@ -24,30 +24,27 @@ pub use tree::*;
 mod legacy;
 pub use legacy::*;
 
-pub trait Solution<TPart1, TPart2>
+pub trait Solution: std::str::FromStr
 where
-    Self: std::marker::Sized,
-    TPart1: Display,
-    TPart2: Display,
+    <Self as std::str::FromStr>::Err: std::fmt::Display,
 {
-    fn part1(&mut self) -> Result<TPart1>;
-    fn part2(&self) -> Result<TPart2>;
-}
+    type Part1: Display;
+    type Part2: Display;
 
-pub fn go<FParse, TSolution, TPart1, TPart2>(parse: FParse) -> Result<()>
-where
-    FParse: Fn(&str) -> Result<TSolution>,
-    TSolution: Solution<TPart1, TPart2>,
-    TPart1: Display,
-    TPart2: Display,
-{
-    let (mut solution, parse_time) = read_and_parse(parse)?;
+    fn part1(&mut self) -> Result<Self::Part1>;
+    fn part2(&self) -> Result<Self::Part2>;
 
-    let part1_time = print_and_time("Part 1", || solution.part1()).context("failure in part 1")?;
-    let part2_time = print_and_time("Part 2", || solution.part2()).context("failure in part 2")?;
+    fn go() -> Result<()> {
+        let (mut solution, parse_time) = read_and_parse(parse_all::<Self>)?;
 
-    print_stats(parse_time, part1_time, part2_time);
-    Ok(())
+        let part1_time =
+            print_and_time("Part 1", || solution.part1()).context("failure in part 1")?;
+        let part2_time =
+            print_and_time("Part 2", || solution.part2()).context("failure in part 2")?;
+
+        print_stats(parse_time, part1_time, part2_time);
+        Ok(())
+    }
 }
 
 fn get_year_and_day() -> Result<(usize, usize)> {

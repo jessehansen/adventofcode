@@ -1,24 +1,31 @@
+use std::str::FromStr;
+
 use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    go(Problem::parse)
+    Problem::go()
 }
 
 struct Problem {}
 
-impl Problem {
-    fn parse(contents: &str) -> Result<Problem> {
+impl FromStr for Problem {
+    type Err = Error;
+
+    fn from_str(contents: &str) -> Result<Problem> {
         Ok(Problem {})
     }
 }
 
-impl Solution<usize, usize> for Problem {
-    fn part1(&mut self) -> Result<usize> {
+impl Solution for Problem {
+    type Part1 = usize;
+    type Part2 = usize;
+
+    fn part1(&mut self) -> Result<Self::Part1> {
         bail!("not implemented")
     }
 
-    fn part2(&self) -> Result<usize> {
+    fn part2(&self) -> Result<Self::Part2> {
         bail!("not implemented")
     }
 }
@@ -29,7 +36,7 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let mut problem = Problem::parse(SAMPLE)?;
+        let mut problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part1()?;
 
@@ -40,7 +47,7 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let problem = Problem::parse(SAMPLE)?;
+        let problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part2()?;
 

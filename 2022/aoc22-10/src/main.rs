@@ -4,7 +4,8 @@ use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    go(Problem::parse)
+    Problem::go()
+    // go(Problem::parse)
 }
 
 #[derive(Clone, Copy)]
@@ -140,16 +141,21 @@ struct Problem {
     instructions: Vec<Instruction>,
 }
 
-impl Problem {
-    fn parse(contents: &str) -> Result<Problem> {
+impl FromStr for Problem {
+    type Err = Error;
+
+    fn from_str(contents: &str) -> Result<Problem> {
         Ok(Problem {
             instructions: parse_lines(contents)?,
         })
     }
 }
 
-impl Solution<i32, String> for Problem {
-    fn part1(&mut self) -> Result<i32> {
+impl Solution for Problem {
+    type Part1 = i32;
+    type Part2 = String;
+
+    fn part1(&mut self) -> Result<Self::Part1> {
         let mut vm = SamplingVM::new();
         for i in &self.instructions {
             vm.execute(i);
@@ -161,7 +167,7 @@ impl Solution<i32, String> for Problem {
         Ok(vm.samples.into_iter().sum())
     }
 
-    fn part2(&self) -> Result<String> {
+    fn part2(&self) -> Result<Self::Part2> {
         let mut vm = SpriteVM::new(&self.instructions);
 
         vm.run();
@@ -176,7 +182,7 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let mut problem = Problem::parse(SAMPLE)?;
+        let mut problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part1()?;
 
@@ -187,7 +193,7 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let problem = Problem::parse(SAMPLE)?;
+        let problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part2()?;
 

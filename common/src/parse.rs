@@ -55,11 +55,15 @@ where
         .collect()
 }
 
-pub fn parse_line_groups<T, FParse>(contents: &str, parse_group: FParse) -> Result<Vec<T>>
+pub fn parse_line_groups<T>(contents: &str) -> Result<Vec<T>>
 where
-    FParse: Fn(&str) -> Result<T>,
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Display,
 {
-    contents.split("\n\n").map(parse_group).collect()
+    contents
+        .split("\n\n")
+        .map(|x| wrap_parse_error(x.parse()))
+        .collect()
 }
 
 pub fn parse_line_pairs<T>(contents: &str, separator: &str) -> Result<Vec<(T, T)>>
