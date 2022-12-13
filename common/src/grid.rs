@@ -7,6 +7,8 @@ use std::hash::{Hash, Hasher};
 use std::ops::{Index, IndexMut};
 use std::str::FromStr;
 
+use crate::wrap_parse_error;
+
 // contains helpers for grids and unsigned points
 // coordinates are laid out like this
 // +------------------------  y = 0
@@ -435,6 +437,21 @@ impl<T> Grid2D<T>
 where
     T: fmt::Display,
 {
+    pub fn to_string_with_cell_width(&self, width: usize) -> String {
+        self.data
+            .iter()
+            .map(|row| {
+                row.iter()
+                    .map(|x| format!("{x:width$}"))
+                    .collect::<Vec<String>>()
+                    .join("")
+            })
+            .collect::<Vec<String>>()
+            .join("\n")
+    }
+}
+
+impl<T> Grid2D<T> {
     pub fn to_string_format_cell<F>(&self, formatter: F) -> String
     where
         F: Copy + FnMut(&T) -> String,
@@ -450,11 +467,7 @@ where
 impl<T> Grid2D<T>
 where
     T: FromStr + Default,
-    <T as FromStr>::Err: std::fmt::Debug,
-    <T as FromStr>::Err: Sync,
-    <T as FromStr>::Err: Send,
-    <T as FromStr>::Err: std::error::Error,
-    <T as FromStr>::Err: 'static,
+    <T as FromStr>::Err: std::fmt::Display,
 {
     // this is a special case where each grid item is only represented by a single character
     pub fn from_char_str(input: &str) -> Result<Grid2D<T>> {
@@ -465,7 +478,7 @@ where
                 x.chars()
                     .into_iter()
                     .map(|x| -> Result<T> {
-                        let result: T = x.to_string().parse()?;
+                        let result: T = wrap_parse_error(x.to_string().parse())?;
                         Ok(result)
                     })
                     .collect()
@@ -480,7 +493,7 @@ where
             .map(|x| -> Result<Vec<T>> {
                 x.split(delimiter)
                     .map(|x| {
-                        let result: T = x.to_string().parse()?;
+                        let result: T = wrap_parse_error(x.to_string().parse())?;
                         Ok(result)
                     })
                     .collect()
