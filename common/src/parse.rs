@@ -43,6 +43,18 @@ where
         .collect()
 }
 
+pub fn parse_split<T, P>(input: &str, separator: P) -> Result<Vec<T>>
+where
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Display,
+    P: for<'a> Pattern<'a>,
+{
+    input
+        .split(separator)
+        .map(|x| wrap_parse_error(x.parse()))
+        .collect()
+}
+
 pub fn parse_chars<T>(contents: &str) -> Result<Vec<T>>
 where
     T: std::str::FromStr,

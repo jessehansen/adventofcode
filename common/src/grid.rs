@@ -100,6 +100,10 @@ impl Point2D {
         }
     }
 
+    pub fn right_unbounded(&self) -> Point2D {
+        pt(self.x + 1, self.y)
+    }
+
     pub fn up(&self) -> Option<Point2D> {
         if self.y > 0 {
             Some(pt(self.x, self.y - 1))
@@ -114,6 +118,10 @@ impl Point2D {
         } else {
             None
         }
+    }
+
+    pub fn down_unbounded(&self) -> Point2D {
+        pt(self.x, self.y + 1)
     }
 
     pub fn cardinal_neighbor(&self, direction: Direction, bounds: Bounds2D) -> Option<Point2D> {
@@ -136,7 +144,7 @@ impl Point2D {
         let max_y = max(self.y, other.y);
         (min_x..=max_x)
             .cartesian_product(min_y..=max_y)
-            .map(|(y, x)| pt(x, y))
+            .map(|(x, y)| pt(x, y))
     }
 }
 
@@ -363,6 +371,25 @@ where
     pub fn new_constant(bounds: Bounds2D, value: T) -> Grid2D<T> {
         let data: Vec<Vec<T>> = vec![vec![value; bounds.width]; bounds.height];
         Grid2D { data, bounds }
+    }
+}
+
+impl<T> Grid2D<T>
+where
+    T: Copy + Clone,
+{
+    pub fn grow_y(&self, by: usize, fill: T) -> Grid2D<T> {
+        let mut data: Vec<Vec<T>> = self.data.clone();
+        for _ in 0..by {
+            data.push(vec![fill; self.bounds.width]);
+        }
+        Grid2D {
+            data,
+            bounds: Bounds2D {
+                width: self.bounds.width,
+                height: self.bounds.height + by,
+            },
+        }
     }
 }
 

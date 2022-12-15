@@ -15,6 +15,9 @@ pub use parse::*;
 mod grid;
 pub use grid::*;
 
+mod sparse_grid;
+pub use sparse_grid::*;
+
 mod plot;
 pub use plot::*;
 
