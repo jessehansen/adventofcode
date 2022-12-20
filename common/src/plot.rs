@@ -75,6 +75,27 @@ impl IPoint2D {
             y: self.y + dy,
         }
     }
+
+    pub fn manhattan_distance(&self, other: IPoint2D) -> i32 {
+        (other.x - self.x).abs() + (other.y - self.y).abs()
+    }
+
+    pub fn points_within_manhattan_distance(
+        &self,
+        distance: i32,
+    ) -> impl Iterator<Item = IPoint2D> {
+        let mut points = vec![];
+        for dx in -distance..=distance {
+            let y_allowed = distance - dx.abs();
+            for dy in -y_allowed..=y_allowed {
+                points.push(IPoint2D {
+                    x: self.x + dx,
+                    y: self.y + dy,
+                });
+            }
+        }
+        points.into_iter()
+    }
 }
 
 impl fmt::Display for IPoint2D {
@@ -86,5 +107,55 @@ impl fmt::Display for IPoint2D {
 impl fmt::Debug for IPoint2D {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{},{}", self.x, self.y,)
+    }
+}
+
+#[inline]
+pub fn ipt(x: i32, y: i32) -> IPoint2D {
+    IPoint2D { x, y }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_points_within_manhattan_distance() {
+        let point = ipt(2, 3);
+        let points: Vec<IPoint2D> = point.points_within_manhattan_distance(3).collect();
+        assert_eq!(
+            points,
+            vec![
+                ipt(-1, 3),
+                ipt(0, 2),
+                ipt(0, 3),
+                ipt(0, 4),
+                ipt(1, 1),
+                ipt(1, 2),
+                ipt(1, 3),
+                ipt(1, 4),
+                ipt(1, 5),
+                ipt(2, 0),
+                ipt(2, 1),
+                ipt(2, 2),
+                ipt(2, 3),
+                ipt(2, 4),
+                ipt(2, 5),
+                ipt(2, 6),
+                ipt(3, 1),
+                ipt(3, 2),
+                ipt(3, 3),
+                ipt(3, 4),
+                ipt(3, 5),
+                ipt(4, 2),
+                ipt(4, 3),
+                ipt(4, 4),
+                ipt(5, 3),
+            ]
+        );
+
+        for pt in points {
+            assert!(pt.manhattan_distance(point) <= 3);
+        }
     }
 }
