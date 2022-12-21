@@ -277,3 +277,17 @@ where
         )?,
     ))
 }
+
+pub trait Substring {
+    fn substring(&self, start_index: usize, end_index: usize) -> &str;
+}
+
+impl Substring for str {
+    fn substring(&self, start_index: usize, end_index: usize) -> &str {
+        let (_, rest) = self.split_at(start_index);
+
+        let (substr, _) = rest.split_at(end_index);
+
+        substr
+    }
+}

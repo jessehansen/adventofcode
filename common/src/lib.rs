@@ -27,6 +27,9 @@ pub use tree::*;
 mod legacy;
 pub use legacy::*;
 
+mod best;
+pub use best::*;
+
 pub trait Solution: std::str::FromStr
 where
     <Self as std::str::FromStr>::Err: std::fmt::Display,
