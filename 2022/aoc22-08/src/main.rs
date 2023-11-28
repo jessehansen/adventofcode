@@ -1,23 +1,29 @@
+use std::str::FromStr;
+
 use anyhow::*;
 use aoc_common::*;
 
 use Direction::*;
 
 fn main() -> Result<()> {
-    go(Problem::parse)
+    Problem::go()
 }
 
 struct Problem {
     forest: Grid2D<u32>,
 }
 
-impl Problem {
-    fn parse(contents: &str) -> Result<Self> {
+impl FromStr for Problem {
+    type Err = Error;
+
+    fn from_str(contents: &str) -> Result<Self> {
         Ok(Problem {
             forest: Grid2D::from_char_str(contents)?,
         })
     }
+}
 
+impl Problem {
     fn is_visible_from(&self, pt: &Point2D, direction: Direction) -> bool {
         let height = self.forest[*pt];
         let mut location = pt.cardinal_neighbor(direction, self.forest.bounds);
@@ -61,7 +67,10 @@ impl Problem {
     }
 }
 
-impl Solution<usize, u32> for Problem {
+impl Solution for Problem {
+    type Part1 = usize;
+    type Part2 = u32;
+
     fn part1(&mut self) -> Result<usize> {
         Ok(self
             .forest
@@ -87,7 +96,7 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let mut problem = Problem::parse(SAMPLE)?;
+        let mut problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part1()?;
 
@@ -98,7 +107,7 @@ mod tests {
 
     #[test]
     fn test_viewing_distance() -> Result<()> {
-        let problem = Problem::parse(SAMPLE)?;
+        let problem = Problem::from_str(SAMPLE)?;
 
         assert_eq!(1, problem.viewing_distance(&pt(2, 1), Left));
         assert_eq!(2, problem.viewing_distance(&pt(2, 1), Right));
@@ -110,7 +119,7 @@ mod tests {
 
     #[test]
     fn test_viewing_score() -> Result<()> {
-        let problem = Problem::parse(SAMPLE)?;
+        let problem = Problem::from_str(SAMPLE)?;
 
         assert_eq!(4, problem.viewing_score(&pt(2, 1)));
         assert_eq!(8, problem.viewing_score(&pt(2, 3)));
@@ -120,7 +129,7 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let problem = Problem::parse(SAMPLE)?;
+        let problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part2()?;
 

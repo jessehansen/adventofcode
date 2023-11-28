@@ -8,7 +8,6 @@ fn main() -> Result<()> {
 fn parse(contents: &str) -> Result<Vec<u32>> {
     contents
         .lines()
-        .into_iter()
         .map(|x| Ok(x.parse().context("invalid input")?))
         .collect()
 }

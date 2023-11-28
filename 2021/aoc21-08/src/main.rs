@@ -14,7 +14,6 @@ struct DisplayLine {
 fn parse(contents: &str) -> Result<Vec<DisplayLine>> {
     Ok(contents
         .lines()
-        .into_iter()
         .map(|x| {
             let mut parts = x.split('|');
 
@@ -78,7 +77,6 @@ fn get_codes(signal: &[String]) -> [String; 10] {
     // collect bottom_left and bottom - the only ones in 8 but not 4 or 7
     let bottom_left_and_bottom: String = result[8]
         .chars()
-        .into_iter()
         .filter(|x| !result[4].contains(*x) && !result[7].contains(*x))
         .collect();
 

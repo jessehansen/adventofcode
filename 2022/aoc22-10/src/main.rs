@@ -5,7 +5,6 @@ use aoc_common::*;
 
 fn main() -> Result<()> {
     Problem::go()
-    // go(Problem::parse)
 }
 
 #[derive(Clone, Copy)]

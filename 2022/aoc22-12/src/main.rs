@@ -1,4 +1,4 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 use std::str::FromStr;
 
 use anyhow::*;
@@ -37,8 +37,9 @@ impl FromStr for Problem {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Default, Debug, PartialEq)]
 enum Elevation {
+    #[default]
     Start,
     End,
     Height(u32),
@@ -54,12 +55,6 @@ impl FromStr for Elevation {
             c if c.len() == 1 => Elevation::Height(c.chars().next().unwrap() as u32 - 'a' as u32),
             _ => bail!("invalid elevation"),
         })
-    }
-}
-
-impl Default for Elevation {
-    fn default() -> Self {
-        Elevation::Start
     }
 }
 

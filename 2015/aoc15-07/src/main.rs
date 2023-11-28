@@ -1,5 +1,3 @@
-#![feature(drain_filter)]
-
 use anyhow::*;
 use aoc_common::*;
 use std::collections::HashMap;
@@ -141,7 +139,9 @@ struct Circuit {
 impl Circuit {
     fn override_output(&mut self, name: &str, value: u16) {
         let name = name.to_string();
-        self.gates.drain_filter(|gate| gate.output == name);
+        if let Some(ix) = self.gates.iter().position(|g| g.output == name) {
+            self.gates.remove(ix);
+        }
         self.gates.insert(
             0,
             Gate {
@@ -155,14 +155,16 @@ impl Circuit {
         let mut wires = HashMap::new();
         let mut gates = self.gates.clone();
         while !gates.is_empty() {
-            gates.drain_filter(|gate| {
+            if let Some(ix) = gates.iter().position(|gate| {
                 if gate.has_signal(&wires) {
                     gate.exec(&mut wires);
                     true
                 } else {
                     false
                 }
-            });
+            }) {
+                gates.remove(ix);
+            }
         }
         wires
     }

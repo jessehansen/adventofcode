@@ -8,7 +8,6 @@ fn main() -> Result<()> {
 fn parse(contents: &str) -> Result<Vec<i32>> {
     contents
         .lines()
-        .into_iter()
         .next()
         .unwrap()
         .split(',')

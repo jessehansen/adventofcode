@@ -1,5 +1,3 @@
-#![feature(drain_filter)]
-
 use anyhow::*;
 use aoc_common::run;
 use std::fmt;
@@ -160,11 +158,7 @@ fn bool_star(a: bool) -> &'static str {
 
 fn lines_to_board(lines: &str) -> Result<Board> {
     // remove empty lines
-    let lines: Vec<&str> = lines
-        .lines()
-        .into_iter()
-        .filter(|x| !x.is_empty())
-        .collect();
+    let lines: Vec<&str> = lines.lines().filter(|x| !x.is_empty()).collect();
 
     if lines.len() < 5 {
         bail!("not enough lines to construct board");
@@ -188,7 +182,7 @@ fn lines_to_board(lines: &str) -> Result<Board> {
 }
 
 fn parse(contents: &str) -> Result<Game> {
-    let mut parts: Vec<&str> = contents.split("\n\n").into_iter().collect();
+    let mut parts: Vec<&str> = contents.split("\n\n").collect();
 
     let boards = parts.split_off(1);
 
@@ -200,7 +194,7 @@ fn parse(contents: &str) -> Result<Game> {
 
     let boards = boards
         .into_iter()
-        .map(|x| lines_to_board(x))
+        .map(lines_to_board)
         .collect::<Result<Vec<Board>>>()?;
 
     Ok(Game { draws, boards })
@@ -225,13 +219,15 @@ fn part2(game: &Game) -> Result<u32> {
 
     for draw in &game.draws {
         let mut last_win: Option<u32> = None;
-        boards.drain_filter(|x| {
+        while let Some(ix) = boards.iter_mut().position(|x| {
             if x.mark(*draw) {
                 last_win = Some(x.score(*draw));
                 return true;
             }
             false
-        });
+        }) {
+            boards.remove(ix);
+        }
         if boards.is_empty() {
             return last_win.ok_or(anyhow!("no last win"));
         }

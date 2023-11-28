@@ -46,7 +46,7 @@ impl Image {
         for dy in -1..=1 {
             for dx in -1..=1 {
                 result <<= 1;
-                result |= self.pixel_at(x as i32 + dx, y as i32 + dy)
+                result |= self.pixel_at(x + dx, y + dy)
             }
         }
         result

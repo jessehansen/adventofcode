@@ -38,6 +38,7 @@ struct RowCoverage {
     ranges: Vec<RangeInclusive<i32>>,
 }
 
+#[allow(clippy::reversed_empty_ranges)] // need an empty range on purpose
 const EMPTY_RANGE: RangeInclusive<i32> = 1..=0;
 
 impl RowCoverage {
@@ -114,7 +115,7 @@ impl FromStr for ProblemPoint {
 
     fn from_str(contents: &str) -> Result<ProblemPoint> {
         // x={}, y={}
-        let (x, y) = grab_2(contents, &['=', ',', ' '], 1, 4)?;
+        let (x, y) = grab_2(contents, ['=', ',', ' '], 1, 4)?;
         Ok(ProblemPoint(IPoint2D { x, y }))
     }
 }

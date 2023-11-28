@@ -50,7 +50,6 @@ impl FromStr for CmdVec {
 fn parse(contents: &str) -> Result<Vec<CmdVec>> {
     contents
         .lines()
-        .into_iter()
         .map(|x| Ok(x.parse().context("invalid input")?))
         .collect()
 }

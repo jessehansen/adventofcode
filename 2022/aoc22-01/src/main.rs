@@ -1,27 +1,38 @@
+use std::str::FromStr;
+
 use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    go(Problem::parse)
+    Problem::go()
 }
+
 struct Problem {
     calories: Vec<u32>,
 }
 
-impl Problem {
-    fn parse(contents: &str) -> Result<Problem> {
+impl FromStr for Problem {
+    type Err = Error;
+
+    fn from_str(contents: &str) -> Result<Problem> {
         Ok(Problem {
-            calories: parse_line_groups(contents, |elf_items: &str| -> Result<u32> {
-                elf_items
-                    .lines()
-                    .map(|x: &str| -> Result<u32> { wrap_parse_error(x.parse()) })
-                    .sum()
-            })?,
+            calories: contents
+                .split("\n\n")
+                .map(|group: &str| -> Result<u32> {
+                    group
+                        .lines()
+                        .map(|line: &str| -> Result<u32> { wrap_parse_error(line.parse()) })
+                        .sum()
+                })
+                .collect::<Result<Vec<u32>>>()?,
         })
     }
 }
 
-impl Solution<u32, u32> for Problem {
+impl Solution for Problem {
+    type Part1 = u32;
+    type Part2 = u32;
+
     fn part1(&mut self) -> Result<u32> {
         self.calories
             .iter()
@@ -44,7 +55,7 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let mut problem = Problem::parse(SAMPLE)?;
+        let mut problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part1()?;
 
@@ -54,7 +65,7 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let problem = Problem::parse(SAMPLE)?;
+        let problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part2()?;
 

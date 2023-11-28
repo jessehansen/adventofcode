@@ -16,7 +16,6 @@ fn parse(contents: &str) -> Result<(Vec<Point2D>, Vec<Fold>)> {
         .next()
         .ok_or_else(|| anyhow!("missing points"))?
         .lines()
-        .into_iter()
         .map(|x| {
             x.parse()
                 .context(anyhow!("can't parse point from line {}", x))
@@ -26,7 +25,6 @@ fn parse(contents: &str) -> Result<(Vec<Point2D>, Vec<Fold>)> {
         .next()
         .ok_or_else(|| anyhow!("missing folds"))?
         .lines()
-        .into_iter()
         .map(|x| {
             x.parse()
                 .context(anyhow!("can't parse fold from line {}", x))

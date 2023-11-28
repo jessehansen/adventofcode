@@ -1,10 +1,11 @@
 use std::collections::HashSet;
+use std::str::FromStr;
 
 use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    go(Problem::parse)
+    Problem::go()
 }
 
 fn item_score(c: &char) -> Result<u32> {
@@ -19,15 +20,20 @@ struct Problem {
     input: String,
 }
 
-impl Problem {
-    fn parse(input: &str) -> Result<Problem> {
+impl FromStr for Problem {
+    type Err = Error;
+
+    fn from_str(input: &str) -> Result<Problem> {
         Ok(Problem {
             input: input.to_string(),
         })
     }
 }
 
-impl Solution<u32, u32> for Problem {
+impl Solution for Problem {
+    type Part1 = u32;
+    type Part2 = u32;
+
     fn part1(&mut self) -> Result<u32> {
         let mut score: u32 = 0;
         for line in self.input.as_str().lines() {
@@ -69,7 +75,7 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let mut problem = Problem::parse(SAMPLE)?;
+        let mut problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part1()?;
 
@@ -80,7 +86,7 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let problem = Problem::parse(SAMPLE)?;
+        let problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part2()?;
 

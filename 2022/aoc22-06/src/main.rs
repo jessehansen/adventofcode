@@ -1,18 +1,21 @@
 use std::collections::VecDeque;
+use std::str::FromStr;
 
 use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    go(Problem::parse)
+    Problem::go()
 }
 
 struct Problem {
     input: String,
 }
 
-impl Problem {
-    fn parse(input: &str) -> Result<Problem> {
+impl FromStr for Problem {
+    type Err = Error;
+
+    fn from_str(input: &str) -> Result<Problem> {
         Ok(Problem {
             input: input.to_string(),
         })
@@ -73,7 +76,10 @@ fn find_pos_windows(contents: &str, marker_len: usize) -> Result<usize> {
     bail!("no position found");
 }
 
-impl Solution<usize, usize> for Problem {
+impl Solution for Problem {
+    type Part1 = usize;
+    type Part2 = usize;
+
     fn part1(&mut self) -> Result<usize> {
         find_pos(self.input.as_str(), 4)
     }

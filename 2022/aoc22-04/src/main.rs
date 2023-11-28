@@ -4,7 +4,7 @@ use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    go(Problem::parse)
+    Problem::go()
 }
 
 struct Range {
@@ -35,14 +35,19 @@ struct Problem {
     ranges: Vec<(Range, Range)>,
 }
 
-impl Problem {
-    fn parse(contents: &str) -> Result<Problem> {
+impl FromStr for Problem {
+    type Err = Error;
+
+    fn from_str(contents: &str) -> Result<Problem> {
         Ok(Problem {
             ranges: parse_line_pairs(contents, ",")?,
         })
     }
 }
-impl Solution<usize, usize> for Problem {
+impl Solution for Problem {
+    type Part1 = usize;
+    type Part2 = usize;
+
     fn part1(&mut self) -> Result<usize> {
         Ok(self
             .ranges
@@ -66,7 +71,7 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let mut problem = Problem::parse(SAMPLE)?;
+        let mut problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part1()?;
 
@@ -77,7 +82,7 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let problem = Problem::parse(SAMPLE)?;
+        let problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part2()?;
 

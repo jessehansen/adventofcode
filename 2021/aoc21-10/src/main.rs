@@ -6,11 +6,7 @@ fn main() -> Result<()> {
 }
 
 fn parse(contents: &str) -> Result<Vec<String>> {
-    Ok(contents
-        .lines()
-        .into_iter()
-        .map(|x| x.to_string())
-        .collect())
+    Ok(contents.lines().map(|x| x.to_string()).collect())
 }
 
 fn part1(contents: &[String]) -> Result<u32> {

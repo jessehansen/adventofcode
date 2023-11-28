@@ -9,7 +9,6 @@ fn parse(contents: &str) -> Result<Vec<i32>> {
     contents
         .trim()
         .split(',')
-        .into_iter()
         .map(|x| x.parse().context("invalid input"))
         .collect()
 }

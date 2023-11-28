@@ -157,7 +157,7 @@ impl FromStr for Point2D {
         let x = parts.next().ok_or_else(|| anyhow!("missing x value"))??;
         let y = parts.next().ok_or_else(|| anyhow!("missing y value"))??;
 
-        if !matches!(parts.next(), None) {
+        if parts.next().is_some() {
             bail!("received extra coordinates for Point2D");
         }
 
@@ -500,10 +500,8 @@ where
     pub fn from_char_str(input: &str) -> Result<Grid2D<T>> {
         input
             .lines()
-            .into_iter()
             .map(|x| -> Result<Vec<T>> {
                 x.chars()
-                    .into_iter()
                     .map(|x| -> Result<T> {
                         let result: T = wrap_parse_error(x.to_string().parse())?;
                         Ok(result)
@@ -516,7 +514,6 @@ where
     pub fn from_delimited_str(input: &str, delimiter: &str) -> Result<Grid2D<T>> {
         input
             .lines()
-            .into_iter()
             .map(|x| -> Result<Vec<T>> {
                 x.split(delimiter)
                     .map(|x| {

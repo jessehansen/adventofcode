@@ -4,7 +4,7 @@ use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    go(Problem::parse)
+    Problem::go()
 }
 
 struct Problem {
@@ -12,8 +12,9 @@ struct Problem {
     moves: Vec<Move>,
 }
 
-impl Problem {
-    fn parse(contents: &str) -> Result<Problem> {
+impl FromStr for Problem {
+    type Err = Error;
+    fn from_str(contents: &str) -> Result<Problem> {
         let (port, moves) = parse_pair_by(contents, "\n\n", parse_untrimmed, parse_lines)?;
         Ok(Problem { port, moves })
     }
@@ -103,7 +104,7 @@ impl Display for Port {
             .max()
             .expect("Invalid port");
 
-        for ix in (0..max_len).into_iter().rev() {
+        for ix in (0..max_len).rev() {
             for stack in &self.stacks {
                 if ix < stack.len() {
                     write!(f, "[{}] ", stack[ix])?;
@@ -140,7 +141,10 @@ impl FromStr for Move {
     }
 }
 
-impl Solution<String, String> for Problem {
+impl Solution for Problem {
+    type Part1 = String;
+    type Part2 = String;
+
     fn part1(&mut self) -> Result<String> {
         let mut port = self.port.clone();
 
@@ -168,7 +172,7 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let mut problem = Problem::parse(SAMPLE)?;
+        let mut problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part1()?;
 
@@ -179,7 +183,7 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let problem = Problem::parse(SAMPLE)?;
+        let problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part2()?;
 

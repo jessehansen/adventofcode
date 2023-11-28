@@ -5,7 +5,7 @@ use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    go(Problem::parse)
+    Problem::go()
 }
 
 struct Problem {
@@ -48,8 +48,10 @@ impl FromStr for Move {
     }
 }
 
-impl Problem {
-    fn parse(contents: &str) -> Result<Problem> {
+impl FromStr for Problem {
+    type Err = Error;
+
+    fn from_str(contents: &str) -> Result<Problem> {
         Ok(Problem {
             moves: parse_lines(contents)?,
         })
@@ -84,7 +86,10 @@ impl Rope {
     }
 }
 
-impl Solution<usize, usize> for Problem {
+impl Solution for Problem {
+    type Part1 = usize;
+    type Part2 = usize;
+
     fn part1(&mut self) -> Result<usize> {
         let mut rope = Rope::new(2);
         for mv in &self.moves {
@@ -114,7 +119,7 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let mut problem = Problem::parse(SAMPLE)?;
+        let mut problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part1()?;
 
@@ -125,7 +130,7 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let problem = Problem::parse(SAMPLE)?;
+        let problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part2()?;
 
@@ -136,7 +141,7 @@ mod tests {
 
     #[test]
     fn sample2_part2() -> Result<()> {
-        let problem = Problem::parse(SAMPLE_2)?;
+        let problem = Problem::from_str(SAMPLE_2)?;
 
         let result = problem.part2()?;
 

@@ -4,7 +4,7 @@ use anyhow::*;
 use aoc_common::*;
 
 fn main() -> Result<()> {
-    go(Problem::parse)
+    Problem::go()
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -139,15 +139,20 @@ struct Problem {
     rounds: Vec<Round>,
 }
 
-impl Problem {
-    fn parse(contents: &str) -> Result<Problem> {
+impl FromStr for Problem {
+    type Err = Error;
+
+    fn from_str(contents: &str) -> Result<Problem> {
         Ok(Problem {
             rounds: parse_lines(contents)?,
         })
     }
 }
 
-impl Solution<u32, u32> for Problem {
+impl Solution for Problem {
+    type Part1 = u32;
+    type Part2 = u32;
+
     fn part1(&mut self) -> Result<u32> {
         Ok(self.rounds.iter().map(|x| x.score_part_1()).sum())
     }
@@ -163,7 +168,7 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let mut problem = Problem::parse(SAMPLE)?;
+        let mut problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part1()?;
 
@@ -174,7 +179,7 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let problem = Problem::parse(SAMPLE)?;
+        let problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part2()?;
 

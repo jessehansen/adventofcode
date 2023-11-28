@@ -7,8 +7,9 @@ fn main() -> Result<()> {
     run(Grid2D::from_char_str, part1, part2)
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 enum SeaFloor {
+    #[default]
     Empty,
     SeaCucumberEast,
     SeaCucumberSouth,
@@ -48,12 +49,6 @@ impl fmt::Display for SeaFloor {
                 SeaCucumberSouth => "v",
             }
         )
-    }
-}
-
-impl Default for SeaFloor {
-    fn default() -> Self {
-        Empty
     }
 }
 

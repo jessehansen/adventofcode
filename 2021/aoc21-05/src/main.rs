@@ -124,7 +124,6 @@ impl Iterator for LineIter {
 fn parse(contents: &str) -> Result<Vec<Line>> {
     contents
         .lines()
-        .into_iter()
         .map(|x| x.parse().context("invalid input"))
         .collect()
 }

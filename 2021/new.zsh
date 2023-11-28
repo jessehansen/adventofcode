@@ -9,4 +9,4 @@ cargo new $project_name
 cd $project_name
 cp -fr ../template.rs src/main.rs
 
-echo "anyhow = \"1.0.60\"\naoc_common = { path =\"../../common\" }" >> Cargo.toml
+echo "anyhow = \"1.0.75\"\naoc_common = { path =\"../../common\" }" >> Cargo.toml

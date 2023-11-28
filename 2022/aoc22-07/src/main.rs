@@ -1,11 +1,12 @@
 use std::collections::HashMap;
+use std::str::FromStr;
 
 use anyhow::*;
 use aoc_common::*;
 use indextree::*;
 
 fn main() -> Result<()> {
-    go(Problem::parse)
+    Problem::go()
 }
 
 enum FileNode {
@@ -21,8 +22,10 @@ struct Problem {
     dir_sizes: HashMap<NodeId, u32>,
 }
 
-impl Problem {
-    fn parse(contents: &str) -> Result<Problem> {
+impl FromStr for Problem {
+    type Err = Error;
+
+    fn from_str(contents: &str) -> Result<Problem> {
         let mut arena = Arena::new();
         let mut lines = contents.lines();
 
@@ -132,7 +135,10 @@ fn calculate_size(
 const TOTAL_SPACE: u32 = 70_000_000;
 const DESIRED_FREE_SPACE: u32 = 30_000_000;
 
-impl Solution<u32, u32> for Problem {
+impl Solution for Problem {
+    type Part1 = u32;
+    type Part2 = u32;
+
     fn part1(&mut self) -> Result<u32> {
         calculate_size(&mut self.dir_sizes, &self.root, &self.arena)?;
 
@@ -158,7 +164,7 @@ mod tests {
 
     #[test]
     fn test_parse() -> Result<()> {
-        let problem = Problem::parse(SAMPLE)?;
+        let problem = Problem::from_str(SAMPLE)?;
 
         assert_eq!(14, problem.arena.count());
 
@@ -170,7 +176,7 @@ mod tests {
 
     #[test]
     fn sample_part1() -> Result<()> {
-        let mut problem = Problem::parse(SAMPLE)?;
+        let mut problem = Problem::from_str(SAMPLE)?;
 
         let result = problem.part1()?;
 
@@ -181,7 +187,7 @@ mod tests {
 
     #[test]
     fn sample_part2() -> Result<()> {
-        let mut problem = Problem::parse(SAMPLE)?;
+        let mut problem = Problem::from_str(SAMPLE)?;
 
         problem.part1()?;
         let result = problem.part2()?;
