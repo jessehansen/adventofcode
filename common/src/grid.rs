@@ -502,10 +502,7 @@ where
             .lines()
             .map(|x| -> Result<Vec<T>> {
                 x.chars()
-                    .map(|x| -> Result<T> {
-                        let result: T = wrap_parse_error(x.to_string().parse())?;
-                        Ok(result)
-                    })
+                    .map(|x| -> Result<T> { Ok(wrap_parse_error(x.to_string().parse())?) })
                     .collect()
             })
             .collect()
@@ -516,10 +513,7 @@ where
             .lines()
             .map(|x| -> Result<Vec<T>> {
                 x.split(delimiter)
-                    .map(|x| {
-                        let result: T = wrap_parse_error(x.to_string().parse())?;
-                        Ok(result)
-                    })
+                    .map(|x| Ok(wrap_parse_error(x.to_string().parse())?))
                     .collect()
             })
             .collect()
