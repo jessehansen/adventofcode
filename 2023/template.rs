@@ -12,8 +12,8 @@ struct Problem {}
 impl FromStr for Problem {
     type Err = Error;
 
-    fn from_str(contents: &str) -> Result<Problem> {
-        Ok(Problem {})
+    fn from_str(contents: &str) -> Result<Self> {
+        Ok(Self {})
     }
 }
 
