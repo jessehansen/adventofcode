@@ -69,7 +69,6 @@ impl Solution for Problem {
     fn part2(&self) -> Result<Self::Part2> {
         let mut count = self.passports.len();
         for passport in &self.passports {
-            dbg!(&passport.fields);
             if !valid_byr(passport.fields.get("byr")) {
                 count -= 1;
                 continue;
@@ -98,7 +97,6 @@ impl Solution for Problem {
                 count -= 1;
                 continue;
             }
-            dbg!("GOOD");
         }
 
         Ok(count)
