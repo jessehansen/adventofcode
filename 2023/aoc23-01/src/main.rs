@@ -38,18 +38,7 @@ impl Solution for Problem {
         Ok(self
             .lines
             .iter()
-            .map(|x| {
-                let digits = find_digits(x);
-
-                let first = digits.first().ok_or_else(|| anyhow!("no first digit"))?;
-                let last = digits
-                    .iter()
-                    .last()
-                    .ok_or_else(|| anyhow!("no first digit"))?;
-
-                Ok(first * 10 + last)
-            })
-            .filter_map(|x| x.ok())
+            .map(|line| get_calibration_value(line))
             .sum())
     }
 }
@@ -69,38 +58,46 @@ fn first_and_last_digits(line: &str) -> Result<usize> {
     wrap_parse_error(first_last.parse::<usize>())
 }
 
-fn find_digits(line: &str) -> Vec<usize> {
-    let mut res = vec![];
+fn get_calibration_value(line: &str) -> usize {
     let len = line.len();
 
     let mut ix = 0;
+    let mut first = 0;
+    let mut last = 0;
     while ix < len {
-        if &line[ix..=ix] == "0" {
-            res.push(0);
-        } else if &line[ix..=ix] == "1" || line[ix..len].starts_with("one") {
-            res.push(1);
+        let digit = if &line[ix..=ix] == "1" || line[ix..len].starts_with("one") {
+            1
         } else if &line[ix..=ix] == "2" || line[ix..len].starts_with("two") {
-            res.push(2);
+            2
         } else if &line[ix..=ix] == "3" || line[ix..len].starts_with("three") {
-            res.push(3);
+            3
         } else if &line[ix..=ix] == "4" || line[ix..len].starts_with("four") {
-            res.push(4);
+            4
         } else if &line[ix..=ix] == "5" || line[ix..len].starts_with("five") {
-            res.push(5);
+            5
         } else if &line[ix..=ix] == "6" || line[ix..len].starts_with("six") {
-            res.push(6);
+            6
         } else if &line[ix..=ix] == "7" || line[ix..len].starts_with("seven") {
-            res.push(7);
+            7
         } else if &line[ix..=ix] == "8" || line[ix..len].starts_with("eight") {
-            res.push(8);
+            8
         } else if &line[ix..=ix] == "9" || line[ix..len].starts_with("nine") {
-            res.push(9);
+            9
+        } else {
+            0
+        };
+
+        if digit != 0 {
+            if first == 0 {
+                first = digit;
+            }
+            last = digit;
         }
 
         ix += 1
     }
 
-    res
+    first * 10 + last
 }
 
 #[cfg(test)]
