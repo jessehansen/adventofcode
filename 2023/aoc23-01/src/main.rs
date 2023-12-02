@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use anyhow::*;
 use aoc_common::*;
-use regex::Regex;
 
 fn main() -> Result<()> {
     Problem::go()
@@ -36,41 +35,22 @@ impl Solution for Problem {
     }
 
     fn part2(&self) -> Result<Self::Part2> {
-        let re = Regex::new(r"(one|two|three|four|five|six|seven|eight|nine|[0-9])").unwrap();
-
         Ok(self
             .lines
             .iter()
             .map(|x| {
-                let nums: Vec<_> = overlapping_matches(x, &re);
-                let first = nums.first().ok_or_else(|| anyhow!("no first digit"))?;
-                let last = nums
+                let digits = find_digits(x);
+
+                let first = digits.first().ok_or_else(|| anyhow!("no first digit"))?;
+                let last = digits
                     .iter()
                     .last()
                     .ok_or_else(|| anyhow!("no first digit"))?;
-                let first_last = [*first, *last]
-                    .into_iter()
-                    .map(to_digit)
-                    .collect::<String>();
-                wrap_parse_error(first_last.parse::<usize>())
+
+                Ok(first * 10 + last)
             })
             .filter_map(|x| x.ok())
             .sum())
-    }
-}
-
-fn to_digit(s: &str) -> &str {
-    match s {
-        "one" => "1",
-        "two" => "2",
-        "three" => "3",
-        "four" => "4",
-        "five" => "5",
-        "six" => "6",
-        "seven" => "7",
-        "eight" => "8",
-        "nine" => "9",
-        _ => s,
     }
 }
 
@@ -89,19 +69,35 @@ fn first_and_last_digits(line: &str) -> Result<usize> {
     wrap_parse_error(first_last.parse::<usize>())
 }
 
-fn overlapping_matches<'a>(haystack: &'a str, re: &'a Regex) -> Vec<&'a str> {
+fn find_digits(line: &str) -> Vec<usize> {
     let mut res = vec![];
-    let mut ix = 0;
-    let len = haystack.len();
+    let len = line.len();
 
+    let mut ix = 0;
     while ix < len {
-        match re.find_at(haystack, ix) {
-            Some(ma) => {
-                res.push(ma.as_str());
-                ix += 1;
-            }
-            None => break,
-        };
+        if &line[ix..=ix] == "0" {
+            res.push(0);
+        } else if &line[ix..=ix] == "1" || line[ix..len].starts_with("one") {
+            res.push(1);
+        } else if &line[ix..=ix] == "2" || line[ix..len].starts_with("two") {
+            res.push(2);
+        } else if &line[ix..=ix] == "3" || line[ix..len].starts_with("three") {
+            res.push(3);
+        } else if &line[ix..=ix] == "4" || line[ix..len].starts_with("four") {
+            res.push(4);
+        } else if &line[ix..=ix] == "5" || line[ix..len].starts_with("five") {
+            res.push(5);
+        } else if &line[ix..=ix] == "6" || line[ix..len].starts_with("six") {
+            res.push(6);
+        } else if &line[ix..=ix] == "7" || line[ix..len].starts_with("seven") {
+            res.push(7);
+        } else if &line[ix..=ix] == "8" || line[ix..len].starts_with("eight") {
+            res.push(8);
+        } else if &line[ix..=ix] == "9" || line[ix..len].starts_with("nine") {
+            res.push(9);
+        }
+
+        ix += 1
     }
 
     res
