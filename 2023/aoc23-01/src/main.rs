@@ -22,15 +22,14 @@ impl FromStr for Problem {
 }
 
 impl Solution for Problem {
-    type Part1 = usize;
+    type Part1 = u32;
     type Part2 = usize;
 
     fn part1(&mut self) -> Result<Self::Part1> {
         Ok(self
             .lines
             .iter()
-            .map(|x| first_and_last_digits(x))
-            .filter_map(|x| x.ok())
+            .map(|line| get_calibration_digit_value(line))
             .sum())
     }
 
@@ -43,19 +42,23 @@ impl Solution for Problem {
     }
 }
 
-fn first_and_last_digits(line: &str) -> Result<usize> {
-    let digits = line
+fn get_calibration_digit_value(line: &str) -> u32 {
+    let first_ix = line
+        .find(|c: char| c.is_ascii_digit())
+        .expect("no first digit");
+    let last_ix = line
+        .rfind(|c: char| c.is_ascii_digit())
+        .expect("no last digit");
+
+    return line
         .chars()
-        .filter(|c| c.is_ascii_digit())
-        .to_owned()
-        .collect::<Vec<char>>();
-    let first = digits.first().ok_or_else(|| anyhow!("no first digit"))?;
-    let last = digits
-        .iter()
-        .last()
-        .ok_or_else(|| anyhow!("no first digit"))?;
-    let first_last = [*first, *last].into_iter().collect::<String>();
-    wrap_parse_error(first_last.parse::<usize>())
+        .nth(first_ix)
+        .map_or(0, |c| c.to_digit(10).unwrap())
+        * 10
+        + line
+            .chars()
+            .nth(last_ix)
+            .map_or(0, |c| c.to_digit(10).unwrap());
 }
 
 fn get_calibration_value(line: &str) -> usize {
