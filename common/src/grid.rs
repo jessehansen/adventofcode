@@ -137,7 +137,7 @@ impl Point2D {
         max(self.x, other.x) - min(self.x, other.x) + max(self.y, other.y) - min(self.y, other.y)
     }
 
-    pub fn to(&self, other: Point2D) -> impl Iterator<Item = Point2D> {
+    pub fn to(&self, other: &Point2D) -> impl Iterator<Item = Point2D> {
         let min_x = min(self.x, other.x);
         let min_y = min(self.y, other.y);
         let max_x = max(self.x, other.x);
