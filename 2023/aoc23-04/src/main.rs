@@ -27,8 +27,8 @@ impl FromStr for Card {
 
         Ok(Self {
             id: id_str.trim_start().parse_wrapped()?,
-            numbers: parse_split_ignore_empty(numbers, ' ')?,
-            winning_numbers: parse_split_ignore_empty(winning_numbers, ' ')?,
+            numbers: numbers.parse_split_whitespace()?,
+            winning_numbers: winning_numbers.parse_split_whitespace()?,
         })
     }
 }

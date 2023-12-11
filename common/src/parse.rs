@@ -55,20 +55,6 @@ where
         .collect()
 }
 
-// special case of parse_split that ignores empty entries
-pub fn parse_split_ignore_empty<T, P>(input: &str, separator: P) -> Result<Vec<T>>
-where
-    T: std::str::FromStr,
-    <T as std::str::FromStr>::Err: std::fmt::Display,
-    P: for<'a> Pattern<'a>,
-{
-    input
-        .split(separator)
-        .filter(|x| !x.is_empty())
-        .map(|x| wrap_parse_error(x.parse()))
-        .collect()
-}
-
 pub fn parse_chars<T>(contents: &str) -> Result<Vec<T>>
 where
     T: std::str::FromStr,
@@ -308,6 +294,10 @@ impl Substring for str {
 
 pub trait WrappedParsable<T> {
     fn parse_wrapped(&self) -> Result<T>;
+    fn parse_lines(&self) -> Result<Vec<T>>;
+    fn parse_split_whitespace(&self) -> Result<Vec<T>>;
+    fn parse_chars(&self) -> Result<Vec<T>>;
+    fn parse_line_groups(&self) -> Result<Vec<T>>;
 }
 
 impl<T> WrappedParsable<T> for str
@@ -317,6 +307,41 @@ where
 {
     fn parse_wrapped(&self) -> Result<T> {
         wrap_parse_error(self.parse())
+    }
+
+    fn parse_lines(&self) -> Result<Vec<T>> {
+        self.lines().map(|line| line.parse_wrapped()).collect()
+    }
+
+    fn parse_split_whitespace(&self) -> Result<Vec<T>> {
+        self.split_ascii_whitespace()
+            .map(|x| x.parse_wrapped())
+            .collect()
+    }
+
+    fn parse_chars(&self) -> Result<Vec<T>> {
+        self.chars()
+            .map(|x| x.to_string().parse_wrapped())
+            .collect()
+    }
+
+    fn parse_line_groups(&self) -> Result<Vec<T>> {
+        self.split("\n\n").map(|x| x.parse_wrapped()).collect()
+    }
+}
+
+pub trait WrappedPatternParsable<T, P> {
+    fn parse_split(&self, separator: P) -> Result<Vec<T>>;
+}
+
+impl<T, P> WrappedPatternParsable<T, P> for str
+where
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Display,
+    P: for<'a> Pattern<'a>,
+{
+    fn parse_split(&self, separator: P) -> Result<Vec<T>> {
+        self.split(separator).map(|x| x.parse_wrapped()).collect()
     }
 }
 
