@@ -30,6 +30,9 @@ pub use legacy::*;
 mod best;
 pub use best::*;
 
+mod math;
+pub use math::*;
+
 pub trait Solution: std::str::FromStr
 where
     <Self as std::str::FromStr>::Err: std::fmt::Display,
