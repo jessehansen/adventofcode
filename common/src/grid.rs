@@ -292,6 +292,22 @@ impl<T> Grid2D<T> {
         let pt = self.bounds.bottom_right();
         &self.data[pt.y][pt.x]
     }
+
+    pub fn row(&self, row: usize) -> impl Iterator<Item = &T> {
+        if row >= self.bounds.height {
+            panic!("invalid row number");
+        }
+
+        (0..self.bounds.width).map(move |col| &self.data[row][col])
+    }
+
+    pub fn col(&self, col: usize) -> impl Iterator<Item = &T> {
+        if col >= self.bounds.width {
+            panic!("invalid column number");
+        }
+
+        (0..self.bounds.height).map(move |row| &self.data[row][col])
+    }
 }
 
 // basically a reverse sorter for T, with the location along for the ride
@@ -379,6 +395,18 @@ where
     pub fn new_constant(bounds: Bounds2D, value: T) -> Grid2D<T> {
         let data: Vec<Vec<T>> = vec![vec![value; bounds.width]; bounds.height];
         Grid2D { data, bounds }
+    }
+
+    pub fn insert_row(&mut self, row: usize, value: T) {
+        self.data.insert(row, vec![value; self.bounds.width]);
+        self.bounds.height += 1;
+    }
+
+    pub fn insert_col(&mut self, col: usize, value: T) {
+        for line in self.data.iter_mut() {
+            line.insert(col, value);
+        }
+        self.bounds.width += 1;
     }
 }
 
