@@ -37,7 +37,7 @@ pub struct Bounds2D {
     pub height: usize,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Direction {
     Up,
     Left,
@@ -153,6 +153,15 @@ impl Point2D {
         (min_x..=max_x)
             .cartesian_product(min_y..=max_y)
             .map(|(x, y)| pt(x, y))
+    }
+
+    pub fn mv(&self, dir: Direction, bounds: Bounds2D) -> Option<Point2D> {
+        match dir {
+            Direction::Up => self.up(),
+            Direction::Left => self.left(),
+            Direction::Down => self.down(bounds.height),
+            Direction::Right => self.right(bounds.width),
+        }
     }
 }
 
@@ -407,6 +416,24 @@ where
             line.insert(col, value);
         }
         self.bounds.width += 1;
+    }
+
+    pub fn rotate90(&self) -> Grid2D<T> {
+        let bounds = Bounds2D {
+            width: self.bounds.height,
+            height: self.bounds.width,
+        };
+
+        let data = self
+            .cols()
+            .map(|c| {
+                let mut new_rows: Vec<_> = c.copied().collect();
+                new_rows.reverse();
+                new_rows
+            })
+            .collect();
+
+        Grid2D { data, bounds }
     }
 }
 
