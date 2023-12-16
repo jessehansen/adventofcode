@@ -23,6 +23,7 @@ enum Operation {
 
 use Operation::*;
 
+#[derive(Clone, Debug)]
 struct Instruction {
     label: String,
     op: Operation,
@@ -33,7 +34,7 @@ impl FromStr for Instruction {
     type Err = Error;
 
     fn from_str(value: &str) -> Result<Self> {
-        if value.ends_with("-") {
+        if value.ends_with('-') {
             let label = value.trim_end_matches('-');
             let label_hash = hash_algorithm(label);
             Ok(Instruction {
@@ -42,7 +43,7 @@ impl FromStr for Instruction {
                 label_hash,
             })
         } else {
-            let (label, focal_length) = value.split_once("=").ok_or_invalid()?;
+            let (label, focal_length) = value.split_once('=').ok_or_invalid()?;
             let label_hash = hash_algorithm(label);
             Ok(Instruction {
                 label: label.to_string(),
@@ -53,6 +54,12 @@ impl FromStr for Instruction {
             })
         }
     }
+}
+
+#[derive(Clone, Debug)]
+struct Lens {
+    label: String,
+    focal_length: usize,
 }
 
 struct Problem {
@@ -90,24 +97,26 @@ impl Solution for Problem {
             .iter()
             .map(|inst| -> Result<Instruction> { inst.parse_wrapped() })
             .collect::<Result<Vec<_>>>()?;
-        let mut boxes: Vec<Vec<(String, usize)>> = vec![vec![]; 256];
+        let mut boxes: Vec<Vec<Lens>> = vec![vec![]; 256];
 
         for instruction in instructions {
             match instruction.op {
                 Remove => {
-                    boxes[instruction.label_hash].retain(|lens| lens.0 != instruction.label);
+                    boxes[instruction.label_hash].retain(|lens| lens.label != instruction.label);
                 }
                 Add { focal_length } => {
                     let mut replaced = false;
                     for lens in boxes[instruction.label_hash].iter_mut() {
-                        if lens.0 == instruction.label {
-                            *lens = (instruction.label.clone(), focal_length);
+                        if lens.label == instruction.label {
+                            lens.focal_length = focal_length;
                             replaced = true;
                         }
                     }
                     if !replaced {
-                        boxes[instruction.label_hash]
-                            .push((instruction.label.clone(), focal_length));
+                        boxes[instruction.label_hash].push(Lens {
+                            label: instruction.label.clone(),
+                            focal_length,
+                        });
                     }
                 }
             }
@@ -119,7 +128,7 @@ impl Solution for Problem {
             .flat_map(|(box_num, b)| {
                 b.iter()
                     .enumerate()
-                    .map(move |(slot_num, lens)| (box_num + 1) * (slot_num + 1) * lens.1)
+                    .map(move |(slot_num, lens)| (box_num + 1) * (slot_num + 1) * lens.focal_length)
             })
             .sum())
     }
