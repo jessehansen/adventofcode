@@ -161,6 +161,7 @@ impl Point2D {
         let min_y = min(self.y, other.y);
         let max_x = max(self.x, other.x);
         let max_y = max(self.y, other.y);
+
         (min_x..=max_x)
             .cartesian_product(min_y..=max_y)
             .map(|(x, y)| pt(x, y))
@@ -176,14 +177,17 @@ impl Point2D {
     }
 
     pub fn move_by(&self, dir: Direction, distance: usize, bounds: Bounds2D) -> Option<Point2D> {
-        let mut result = Some(*self);
-        for _ in 0..distance {
-            result = match result {
-                Some(pt) => pt.mv(dir, bounds),
-                None => None,
-            };
+        match dir {
+            Direction::Up if self.y >= distance => Some(pt(self.x, self.y - distance)),
+            Direction::Left if self.x >= distance => Some(pt(self.x - distance, self.y)),
+            Direction::Down if self.y + distance < bounds.height => {
+                Some(pt(self.x, self.y + distance))
+            }
+            Direction::Right if self.x + distance < bounds.width => {
+                Some(pt(self.x + distance, self.y))
+            }
+            _ => None,
         }
-        result
     }
 
     pub fn direction_to(&self, other: &Point2D) -> Option<Direction> {
@@ -225,6 +229,11 @@ impl fmt::Display for Point2D {
 }
 
 impl Bounds2D {
+    pub const INFINITE: Bounds2D = Bounds2D {
+        width: usize::MAX,
+        height: usize::MAX,
+    };
+
     pub fn iter_vertical(&self) -> impl Iterator<Item = Point2D> {
         (0..self.width)
             .cartesian_product(0..self.height)

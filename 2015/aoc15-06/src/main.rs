@@ -71,7 +71,7 @@ fn part1(instructions: &[Instruction]) -> Result<usize> {
     for instruction in instructions {
         instruction
             .start
-            .to(instruction.end)
+            .to(&instruction.end)
             .for_each(|pt| match instruction.op {
                 TurnOn => on[pt] = true,
                 TurnOff => on[pt] = false,
@@ -86,7 +86,7 @@ fn part2(instructions: &[Instruction]) -> Result<usize> {
     for instruction in instructions {
         instruction
             .start
-            .to(instruction.end)
+            .to(&instruction.end)
             .for_each(|pt| match instruction.op {
                 TurnOn => {
                     lights[pt] += 1;

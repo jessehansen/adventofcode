@@ -26,14 +26,8 @@ struct LavaPathMove {
     direction: Direction,
     steps: usize,
 }
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-struct LavaPathStep {
-    heat_loss: usize,
-    direction: Direction,
-    steps: usize,
-}
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Debug)]
 struct LavaPathState {
     heat_loss: usize,
     current_location: Point2D,
@@ -73,40 +67,38 @@ struct LavaPathCacheKey {
 }
 
 impl Problem {
-    fn next_moves(
-        &self,
+    fn next_moves<'a>(
+        &'a self,
         state: &LavaPathState,
         min_steps: usize,
         max_steps: usize,
-    ) -> Vec<LavaPathState> {
+    ) -> impl Iterator<Item = LavaPathState> + 'a {
         use Direction::*;
 
         let pt = state.current_location;
         let heat_loss_in = state.heat_loss;
         let mut dirs = vec![Right, Down, Left, Up];
         if let Some(last_move) = state.last_move {
-            // can't continue same direction or turn around in one step
+            // can't continue same direction or turn around
             dirs.retain(|&dir| dir != last_move.direction && dir != last_move.direction.opposite());
         }
 
-        dirs.into_iter()
-            .flat_map(move |direction| {
-                (min_steps..=max_steps).filter_map(move |steps| {
-                    pt.move_by(direction, steps, self.map.bounds)
-                        .map(move |location| {
-                            let heat_loss = heat_loss_in
+        dirs.into_iter().flat_map(move |direction| {
+            (min_steps..=max_steps).filter_map(move |steps| {
+                pt.move_by(direction, steps, self.map.bounds)
+                    .map(move |location| {
+                        let heat_loss = heat_loss_in
                             + pt.to(&location).map(|step| self.map[step]).sum::<usize>()
                             // pt.to includes start * end, so remove the start
                             - self.map[pt];
-                            LavaPathState {
-                                heat_loss,
-                                current_location: location,
-                                last_move: Some(LavaPathMove { direction, steps }),
-                            }
-                        })
-                })
+                        LavaPathState {
+                            heat_loss,
+                            current_location: location,
+                            last_move: Some(LavaPathMove { direction, steps }),
+                        }
+                    })
             })
-            .collect::<Vec<_>>()
+        })
     }
 }
 

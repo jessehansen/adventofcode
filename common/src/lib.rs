@@ -27,9 +27,6 @@ pub use tree::*;
 mod legacy;
 pub use legacy::*;
 
-mod best;
-pub use best::*;
-
 mod math;
 pub use math::*;
 

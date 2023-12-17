@@ -46,7 +46,7 @@ where
 // state should include:
 //  1. current location
 //  2. current output
-//  3. anything that effects next steps
+//  3. anything that affects next steps
 // cache key should omit the current output
 pub fn dijkstra<TState, FNext, TI, FFinal>(
     start_state: TState,

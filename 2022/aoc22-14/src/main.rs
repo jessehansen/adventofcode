@@ -47,7 +47,7 @@ impl FromStr for Problem {
 
                 points
                     .windows(2)
-                    .flat_map(|endpoints| endpoints[0].to(endpoints[1]))
+                    .flat_map(|endpoints| endpoints[0].to(&endpoints[1]))
                     .collect::<Vec<Point2D>>()
             })
             .collect();
