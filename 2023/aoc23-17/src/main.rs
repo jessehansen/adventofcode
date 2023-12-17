@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, str::FromStr};
+use std::{cmp::Reverse, str::FromStr};
 
 use anyhow::*;
 use aoc_common::*;
@@ -50,19 +50,19 @@ impl LavaPathState {
     }
 }
 
-impl Ord for LavaPathState {
-    fn cmp(&self, other: &Self) -> Ordering {
-        // comparing heat loss in reverse to minimize instead of maximize
-        other
-            .heat_loss
-            .cmp(&self.heat_loss)
-            .then_with(|| self.current_location.cmp(&other.current_location))
-    }
-}
+impl OptimizationState for LavaPathState {
+    type CacheKey = LavaPathCacheKey;
+    type Score = Reverse<usize>;
 
-impl PartialOrd for LavaPathState {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
+    fn cache_key(&self) -> LavaPathCacheKey {
+        LavaPathCacheKey {
+            current_location: self.current_location,
+            last_move: self.last_move,
+        }
+    }
+
+    fn score(&self) -> Reverse<usize> {
+        Reverse(self.heat_loss)
     }
 }
 
@@ -70,15 +70,6 @@ impl PartialOrd for LavaPathState {
 struct LavaPathCacheKey {
     current_location: Point2D,
     last_move: Option<LavaPathMove>,
-}
-
-impl From<LavaPathState> for LavaPathCacheKey {
-    fn from(value: LavaPathState) -> Self {
-        LavaPathCacheKey {
-            current_location: value.current_location,
-            last_move: value.last_move,
-        }
-    }
 }
 
 impl Problem {
@@ -124,25 +115,25 @@ impl Solution for Problem {
     type Part2 = usize;
 
     fn part1(&mut self) -> Result<Self::Part1> {
-        let solution = dijkstra::<LavaPathState, LavaPathCacheKey, _, _, _>(
+        let solution = dijkstra(
             LavaPathState::new(),
             |state| self.next_moves(state, 1, 3),
             |state| state.current_location == self.map.bounds.bottom_right(),
         )
         .unwrap();
 
-        Ok(solution.heat_loss)
+        Ok(solution.0)
     }
 
     fn part2(&self) -> Result<Self::Part2> {
-        let solution = dijkstra::<LavaPathState, LavaPathCacheKey, _, _, _>(
+        let solution = dijkstra(
             LavaPathState::new(),
             |state| self.next_moves(state, 4, 10),
             |state| state.current_location == self.map.bounds.bottom_right(),
         )
         .unwrap();
 
-        Ok(solution.heat_loss)
+        Ok(solution.0)
     }
 }
 

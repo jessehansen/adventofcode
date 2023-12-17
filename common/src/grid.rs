@@ -1,12 +1,12 @@
 use anyhow::*;
 use itertools::Itertools;
-use std::cmp::{max, min, Eq, Ord, Ordering, PartialEq};
+use std::cmp::{max, min, Eq, Ord, PartialEq, Reverse};
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::ops::{Index, IndexMut};
 use std::str::FromStr;
 
-use crate::{dijkstra, wrap_parse_error};
+use crate::{dijkstra, wrap_parse_error, OptimizationState};
 
 // contains helpers for grids and unsigned points
 // coordinates are laid out like this
@@ -362,35 +362,19 @@ struct ShortestPathState<T> {
     pt: Point2D,
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Hash)]
-struct ShortestPathCacheKey {
-    pt: Point2D,
-}
-
-impl<T> From<ShortestPathState<T>> for ShortestPathCacheKey {
-    fn from(value: ShortestPathState<T>) -> Self {
-        ShortestPathCacheKey { pt: value.pt }
-    }
-}
-
-impl<T> Ord for ShortestPathState<T>
+impl<T> OptimizationState for ShortestPathState<T>
 where
-    T: Ord,
+    T: Copy + Ord,
 {
-    fn cmp(&self, other: &Self) -> Ordering {
-        other
-            .distance
-            .cmp(&self.distance)
-            .then_with(|| self.pt.cmp(&other.pt))
-    }
-}
+    type CacheKey = Point2D;
+    type Score = Reverse<T>;
 
-impl<T> PartialOrd for ShortestPathState<T>
-where
-    T: Ord,
-{
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
+    fn cache_key(&self) -> Point2D {
+        self.pt
+    }
+
+    fn score(&self) -> Reverse<T> {
+        Reverse(self.distance)
     }
 }
 
@@ -400,7 +384,7 @@ where
 {
     // Dijkstra’s algorithm
     pub fn shortest_path(&self) -> T {
-        dijkstra::<ShortestPathState<T>, ShortestPathCacheKey, _, _, _>(
+        dijkstra(
             ShortestPathState {
                 distance: Default::default(),
                 pt: Point2D::ORIGIN,
@@ -414,7 +398,7 @@ where
             },
             |ShortestPathState { distance: _, pt }| *pt == self.bounds.bottom_right(),
         )
-        .map(|state| state.distance)
+        .map(|score| score.0)
         .unwrap_or_default()
     }
 }
