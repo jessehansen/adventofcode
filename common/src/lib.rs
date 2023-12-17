@@ -33,6 +33,9 @@ pub use best::*;
 mod math;
 pub use math::*;
 
+mod alg;
+pub use alg::*;
+
 pub trait Solution: std::str::FromStr
 where
     <Self as std::str::FromStr>::Err: std::fmt::Display,

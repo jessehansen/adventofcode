@@ -41,6 +41,7 @@ where
     TNextSteps: Iterator<Item = (TCurrent, TScore)>,
     FTerminates: Fn(&TCurrent) -> bool,
 {
+    // todo: I think this can just use the generic dijkstra function
     let mut scores = HashMap::new();
     let start_score: TScore = Default::default();
     scores.insert(start.clone(), start_score.clone());

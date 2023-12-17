@@ -1,13 +1,12 @@
 use anyhow::*;
 use itertools::Itertools;
 use std::cmp::{max, min, Eq, Ord, Ordering, PartialEq};
-use std::collections::BinaryHeap;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::ops::{Index, IndexMut};
 use std::str::FromStr;
 
-use crate::wrap_parse_error;
+use crate::{dijkstra, wrap_parse_error};
 
 // contains helpers for grids and unsigned points
 // coordinates are laid out like this
@@ -43,6 +42,18 @@ pub enum Direction {
     Left,
     Right,
     Down,
+}
+
+impl Direction {
+    pub fn opposite(self) -> Direction {
+        use Direction::*;
+        match self {
+            Left => Right,
+            Right => Left,
+            Up => Down,
+            Down => Up,
+        }
+    }
 }
 
 impl Point2D {
@@ -161,6 +172,31 @@ impl Point2D {
             Direction::Left => self.left(),
             Direction::Down => self.down(bounds.height),
             Direction::Right => self.right(bounds.width),
+        }
+    }
+
+    pub fn move_by(&self, dir: Direction, distance: usize, bounds: Bounds2D) -> Option<Point2D> {
+        let mut result = Some(*self);
+        for _ in 0..distance {
+            result = match result {
+                Some(pt) => pt.mv(dir, bounds),
+                None => None,
+            };
+        }
+        result
+    }
+
+    pub fn direction_to(&self, other: &Point2D) -> Option<Direction> {
+        if self.left() == Some(*other) {
+            Some(Direction::Left)
+        } else if self.right_unbounded() == *other {
+            Some(Direction::Right)
+        } else if self.up() == Some(*other) {
+            Some(Direction::Up)
+        } else if self.down_unbounded() == *other {
+            Some(Direction::Down)
+        } else {
+            None
         }
     }
 }
@@ -326,6 +362,17 @@ struct ShortestPathState<T> {
     pt: Point2D,
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Hash)]
+struct ShortestPathCacheKey {
+    pt: Point2D,
+}
+
+impl<T> From<ShortestPathState<T>> for ShortestPathCacheKey {
+    fn from(value: ShortestPathState<T>) -> Self {
+        ShortestPathCacheKey { pt: value.pt }
+    }
+}
+
 impl<T> Ord for ShortestPathState<T>
 where
     T: Ord,
@@ -353,47 +400,22 @@ where
 {
     // Dijkstra’s algorithm
     pub fn shortest_path(&self) -> T {
-        let mut dist = Grid2D::<Option<T>>::new_constant(self.bounds, None);
-        dist[Point2D::ORIGIN] = Default::default();
-
-        let mut heap = BinaryHeap::new();
-        heap.push(ShortestPathState {
-            distance: Default::default(),
-            pt: Point2D::ORIGIN,
-        });
-
-        // using a binary heap means we're always looking at the next best unvisited node
-        while let Some(ShortestPathState { distance, pt }) = heap.pop() {
-            if pt == self.bounds.bottom_right() {
-                return distance;
-            }
-
-            // if we're already above the previous best to this point, don't bother continuing
-            match dist[pt] {
-                Some(prev_dist) if distance > prev_dist => {
-                    continue;
-                }
-                _ => (),
-            }
-
-            for (pt, dist_there) in self.cardinal_neighbors(pt) {
-                let dist_next = distance + *dist_there;
-
-                // if this is the best distance calculated so far, push it on the heap
-                match dist[pt] {
-                    Some(prev_dist) if dist_next >= prev_dist => (),
-                    _ => {
-                        heap.push(ShortestPathState {
-                            distance: dist_next,
-                            pt,
-                        });
-                        dist[pt] = Some(dist_next);
-                    }
-                }
-            }
-        }
-
-        Default::default()
+        dijkstra::<ShortestPathState<T>, ShortestPathCacheKey, _, _, _>(
+            ShortestPathState {
+                distance: Default::default(),
+                pt: Point2D::ORIGIN,
+            },
+            |&ShortestPathState { distance, pt }| {
+                self.cardinal_neighbors(pt)
+                    .map(move |(pt, dist_there)| ShortestPathState {
+                        distance: distance + *dist_there,
+                        pt,
+                    })
+            },
+            |ShortestPathState { distance: _, pt }| *pt == self.bounds.bottom_right(),
+        )
+        .map(|state| state.distance)
+        .unwrap_or_default()
     }
 }
 
