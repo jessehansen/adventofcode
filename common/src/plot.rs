@@ -1,7 +1,7 @@
 use std::cmp::{Eq, Ord, PartialEq};
 use std::fmt;
 
-use crate::Direction;
+use crate::{Direction, Point2D};
 
 // contains helpers for graphs and signed points
 // coordinates are laid out like this:Copy
@@ -76,6 +76,16 @@ impl IPoint2D {
         }
     }
 
+    pub fn move_to(&self, direction: Direction, distance: i32) -> IPoint2D {
+        use Direction::*;
+        match direction {
+            Left => self.move_by(-distance, 0),
+            Right => self.move_by(distance, 0),
+            Up => self.move_by(0, distance),
+            Down => self.move_by(0, -distance),
+        }
+    }
+
     pub fn manhattan_distance(&self, other: IPoint2D) -> i32 {
         (other.x - self.x).abs() + (other.y - self.y).abs()
     }
@@ -107,6 +117,19 @@ impl fmt::Display for IPoint2D {
 impl fmt::Debug for IPoint2D {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{},{}", self.x, self.y,)
+    }
+}
+
+// NOTE: This is useful for accepting usize points where integer points are required (ex: shoelace
+// formula), but beware - this switches the meaning of "Up"
+impl TryFrom<Point2D> for IPoint2D {
+    type Error = anyhow::Error;
+
+    fn try_from(value: Point2D) -> Result<Self, Self::Error> {
+        Ok(IPoint2D {
+            x: value.x.try_into()?,
+            y: value.y.try_into()?,
+        })
     }
 }
 

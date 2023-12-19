@@ -19,7 +19,7 @@ use crate::{dijkstra, wrap_parse_error, OptimizationState};
 // x = 0
 // The * is at (x=4, y=3)
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Ord, PartialOrd)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct Point2D {
     pub x: usize,
     pub y: usize,
@@ -223,6 +223,12 @@ impl FromStr for Point2D {
 }
 
 impl fmt::Display for Point2D {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{},{}", self.x, self.y,)
+    }
+}
+
+impl fmt::Debug for Point2D {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{},{}", self.x, self.y,)
     }
@@ -571,7 +577,7 @@ impl<T> Grid2D<T> {
 
 impl<T> Grid2D<T>
 where
-    T: FromStr + Default,
+    T: FromStr,
     <T as FromStr>::Err: std::fmt::Display,
 {
     // this is a special case where each grid item is only represented by a single character

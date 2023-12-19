@@ -21,7 +21,7 @@ impl FromStr for Valve {
 
     fn from_str(contents: &str) -> Result<Valve> {
         // Valve {} has flow rate={}; tunnels lead to valves {}
-        let name = contents.substring(6, 2).to_string();
+        let name = contents[6..8].to_string();
         let (_, rest) = contents
             .split_once('=')
             .ok_or(anyhow!("malformed valve, no flow rate"))?;

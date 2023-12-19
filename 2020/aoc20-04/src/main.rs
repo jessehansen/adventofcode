@@ -134,12 +134,12 @@ fn valid_hgt(value: Option<&String>) -> bool {
     match value {
         Some(hgt_string) => {
             if hgt_string.ends_with("cm") {
-                match hgt_string.substring(0, hgt_string.len() - 2).parse::<u32>() {
+                match hgt_string[0..(hgt_string.len() - 2)].parse::<u32>() {
                     std::result::Result::Ok(height_cm) => (150..=193).contains(&height_cm),
                     _ => false,
                 }
             } else if hgt_string.ends_with("in") {
-                match hgt_string.substring(0, hgt_string.len() - 2).parse::<u32>() {
+                match hgt_string[0..(hgt_string.len() - 2)].parse::<u32>() {
                     std::result::Result::Ok(height_in) => (59..=76).contains(&height_in),
                     _ => false,
                 }

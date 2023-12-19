@@ -123,9 +123,14 @@ impl Solution for Problem {
             }
         }
 
-        let loop_area = self.loop_area(corners);
+        let loop_area = shoelace_loop_area(
+            corners
+                .iter()
+                .map(|pt| IPoint2D::try_from(*pt))
+                .collect::<Result<Vec<_>>>()?,
+        );
         // derived from pick's formula
-        Ok(loop_area - boundary_length / 2 + 1)
+        Ok(usize::try_from(loop_area)? - boundary_length / 2 + 1)
     }
 }
 
@@ -152,28 +157,6 @@ impl Problem {
             _ => None,
         }
     }
-
-    // shoelace formula
-    fn loop_area(&self, corners: Vec<Point2D>) -> usize {
-        let mut area: i32 = 0;
-        let len = corners.len();
-        // there's probably a smarter windowing function I could do here, but I'm tired
-        for i in 0..len {
-            let j = (i + 1) % len;
-            area += i32_from(corners[i].x) * i32_from(corners[j].y)
-                - i32_from(corners[j].x) * i32_from(corners[i].y);
-        }
-
-        usize_from(area.abs()) / 2
-    }
-}
-
-fn i32_from(other: usize) -> i32 {
-    i32::try_from(other).unwrap()
-}
-
-fn usize_from(other: i32) -> usize {
-    usize::try_from(other).unwrap()
 }
 
 #[cfg(test)]
