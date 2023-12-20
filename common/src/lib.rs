@@ -274,3 +274,34 @@ impl Display for HumanDuration {
         }
     }
 }
+
+// like std::iter::once, but two items
+pub fn twice<T>(first: T, second: T) -> Twice<T> {
+    Twice {
+        first: Some(first).into_iter(),
+        second: Some(second).into_iter(),
+    }
+}
+// like std::iter::once, but returning same type as Twice for easy usage in conditionals
+pub fn once<T>(value: T) -> Twice<T> {
+    Twice {
+        first: Some(value).into_iter(),
+        second: None.into_iter(),
+    }
+}
+
+pub struct Twice<T> {
+    first: std::option::IntoIter<T>,
+    second: std::option::IntoIter<T>,
+}
+
+impl<T> Iterator for Twice<T> {
+    type Item = T;
+
+    fn next(&mut self) -> Option<T> {
+        match self.first.next() {
+            Some(item) => Some(item),
+            _ => self.second.next(),
+        }
+    }
+}
