@@ -368,6 +368,26 @@ impl<T> Grid2D<T> {
 
         (0..self.bounds.height).map(move |row| &self.data[row][col])
     }
+
+    pub fn map<F, U>(&self, map_fn: F) -> Grid2D<U>
+    where
+        F: Fn((Point2D, &T)) -> U,
+    {
+        Grid2D {
+            bounds: self.bounds,
+            data: self
+                .data
+                .iter()
+                .enumerate()
+                .map(|(y, row)| {
+                    row.iter()
+                        .enumerate()
+                        .map(|(x, value)| map_fn((pt(x, y), value)))
+                        .collect()
+                })
+                .collect(),
+        }
+    }
 }
 
 // basically a reverse sorter for T, with the location along for the ride

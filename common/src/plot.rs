@@ -1,7 +1,9 @@
 use std::cmp::{Eq, Ord, PartialEq};
 use std::fmt;
+use std::hash::{Hash, Hasher};
+use std::ops::Add;
 
-use crate::{Direction, Point2D};
+use crate::{Bounds2D, Direction, Point2D};
 
 // contains helpers for graphs and signed points
 // coordinates are laid out like this:Copy
@@ -30,6 +32,10 @@ impl IPoint2D {
 
     pub fn cardinal_distance(&self, other: &IPoint2D) -> (i32, i32) {
         (self.x - other.x, self.y - other.y)
+    }
+
+    pub fn cardinal_neighbors(&self) -> Vec<Self> {
+        vec![self.up(), self.down(), self.left(), self.right()]
     }
 
     pub fn up(&self) -> IPoint2D {
@@ -106,6 +112,51 @@ impl IPoint2D {
         }
         points.into_iter()
     }
+
+    pub fn map_infinite_to_template_bounds(&self, template_bounds: &Bounds2D) -> (Self, Self) {
+        let width: i32 = template_bounds.width.try_into().unwrap();
+        let height: i32 = template_bounds.height.try_into().unwrap();
+        let x = self.x.rem_euclid(width);
+        let y = self.y.rem_euclid(height);
+        (
+            Self { x, y },
+            Self {
+                x: self.x - x,
+                y: self.y - y,
+            },
+        )
+    }
+}
+
+impl Add for IPoint2D {
+    type Output = IPoint2D;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+impl Add for &IPoint2D {
+    type Output = IPoint2D;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        IPoint2D {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+impl Add<IPoint2D> for &IPoint2D {
+    type Output = IPoint2D;
+
+    fn add(self, rhs: IPoint2D) -> Self::Output {
+        IPoint2D {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
 }
 
 impl fmt::Display for IPoint2D {
@@ -136,6 +187,107 @@ impl TryFrom<Point2D> for IPoint2D {
 #[inline]
 pub fn ipt(x: i32, y: i32) -> IPoint2D {
     IPoint2D { x, y }
+}
+
+// infinite points: moving left from 0 wraps to bounds
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub struct InfinitePoint2D {
+    pub coord: Point2D,
+    pub template_coord: IPoint2D,
+}
+
+impl Hash for InfinitePoint2D {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.coord.hash(state);
+        self.template_coord.hash(state);
+    }
+}
+
+impl InfinitePoint2D {
+    pub fn new(pt: Point2D) -> Self {
+        Self {
+            coord: pt,
+            template_coord: IPoint2D::ORIGIN,
+        }
+    }
+
+    pub fn cardinal_neighbors(&self, bounds: &Bounds2D) -> Vec<InfinitePoint2D> {
+        vec![
+            self.up(bounds),
+            self.left(bounds),
+            self.right(bounds),
+            self.down(bounds),
+        ]
+    }
+
+    pub fn up(&self, bounds: &Bounds2D) -> Self {
+        if let Some(up) = self.coord.up() {
+            Self {
+                coord: up,
+                template_coord: self.template_coord,
+            }
+        } else {
+            Self {
+                coord: Point2D {
+                    x: self.coord.x,
+                    y: bounds.height - 1,
+                },
+                template_coord: self.template_coord.up(),
+            }
+        }
+    }
+
+    pub fn left(&self, bounds: &Bounds2D) -> Self {
+        if let Some(left) = self.coord.left() {
+            Self {
+                coord: left,
+                template_coord: self.template_coord,
+            }
+        } else {
+            Self {
+                coord: Point2D {
+                    x: bounds.width - 1,
+                    y: self.coord.y,
+                },
+                template_coord: self.template_coord.left(),
+            }
+        }
+    }
+
+    pub fn down(&self, bounds: &Bounds2D) -> Self {
+        if let Some(down) = self.coord.down(bounds.height) {
+            Self {
+                coord: down,
+                template_coord: self.template_coord,
+            }
+        } else {
+            Self {
+                coord: Point2D {
+                    x: self.coord.x,
+                    y: 0,
+                },
+                template_coord: self.template_coord.down(),
+            }
+        }
+    }
+
+    pub fn right(&self, bounds: &Bounds2D) -> Self {
+        if let Some(right) = self.coord.right(bounds.width) {
+            Self {
+                coord: right,
+                template_coord: self.template_coord,
+            }
+        } else {
+            Self {
+                coord: Point2D {
+                    x: 0,
+                    y: self.coord.y,
+                },
+                template_coord: self.template_coord.right(),
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -180,5 +332,29 @@ mod tests {
         for pt in points {
             assert!(pt.manhattan_distance(point) <= 3);
         }
+    }
+
+    #[test]
+    fn test_map_infinite_within_template_bounds() {
+        let bounds = Bounds2D {
+            width: 10,
+            height: 10,
+        };
+        assert_eq!(
+            (ipt(1, 1), ipt(0, 0)),
+            ipt(1, 1).map_infinite_to_template_bounds(&bounds)
+        );
+        assert_eq!(
+            (ipt(1, 1), ipt(10, 0)),
+            ipt(11, 1).map_infinite_to_template_bounds(&bounds)
+        );
+        assert_eq!(
+            (ipt(1, 1), ipt(10, 10)),
+            ipt(11, 11).map_infinite_to_template_bounds(&bounds)
+        );
+        assert_eq!(
+            (ipt(1, 1), ipt(-10, -10)),
+            ipt(-9, -9).map_infinite_to_template_bounds(&bounds)
+        );
     }
 }
