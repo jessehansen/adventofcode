@@ -33,6 +33,9 @@ pub use math::*;
 mod alg;
 pub use alg::*;
 
+mod three_d;
+pub use three_d::*;
+
 pub trait Solution: std::str::FromStr
 where
     <Self as std::str::FromStr>::Err: std::fmt::Display,
