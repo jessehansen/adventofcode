@@ -353,20 +353,20 @@ impl<T> Grid2D<T> {
         &self.data[pt.y][pt.x]
     }
 
-    pub fn row(&self, row: usize) -> impl Iterator<Item = &T> {
+    pub fn row(&self, row: usize) -> impl Iterator<Item = (Point2D, &T)> {
         if row >= self.bounds.height {
             panic!("invalid row number");
         }
 
-        (0..self.bounds.width).map(move |col| &self.data[row][col])
+        (0..self.bounds.width).map(move |col| (pt(col, row), &self.data[row][col]))
     }
 
-    pub fn col(&self, col: usize) -> impl Iterator<Item = &T> {
+    pub fn col(&self, col: usize) -> impl Iterator<Item = (Point2D, &T)> {
         if col >= self.bounds.width {
             panic!("invalid column number");
         }
 
-        (0..self.bounds.height).map(move |row| &self.data[row][col])
+        (0..self.bounds.height).map(move |row| (pt(col, row), &self.data[row][col]))
     }
 
     pub fn map<F, U>(&self, map_fn: F) -> Grid2D<U>
@@ -501,6 +501,14 @@ impl<T> Index<Point2D> for Grid2D<T> {
     type Output = T;
 
     fn index(&self, point: Point2D) -> &Self::Output {
+        &self[&point]
+    }
+}
+
+impl<T> Index<&Point2D> for Grid2D<T> {
+    type Output = T;
+
+    fn index(&self, point: &Point2D) -> &Self::Output {
         if point.x >= self.bounds.width || point.y >= self.bounds.height {
             panic!("index out of bounds");
         }

@@ -65,10 +65,10 @@ impl FromStr for Problem {
             })
             .collect();
         let empty_rows = (0..map.bounds.height)
-            .filter(|row| map.row(*row).all(|&x| x == Empty))
+            .filter(|row| map.row(*row).all(|(_, &x)| x == Empty))
             .collect();
         let empty_cols = (0..map.bounds.width)
-            .filter(|col| map.col(*col).all(|&x| x == Empty))
+            .filter(|col| map.col(*col).all(|(_, &x)| x == Empty))
             .collect();
         Ok(Self {
             galaxies,
