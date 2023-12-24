@@ -332,6 +332,7 @@ where
 
 pub trait WrappedPatternParsable<T, P> {
     fn parse_split(&self, separator: P) -> Result<Vec<T>>;
+    fn parse_split_trim(&self, separator: P) -> Result<Vec<T>>;
     fn parse_pair(&self, separator: P) -> Result<(T, T)>;
 }
 
@@ -343,6 +344,12 @@ where
 {
     fn parse_split(&self, separator: P) -> Result<Vec<T>> {
         self.split(separator).map(|x| x.parse_wrapped()).collect()
+    }
+
+    fn parse_split_trim(&self, separator: P) -> Result<Vec<T>> {
+        self.split(separator)
+            .map(|x| x.trim().parse_wrapped())
+            .collect()
     }
 
     fn parse_pair(&self, separator: P) -> Result<(T, T)> {

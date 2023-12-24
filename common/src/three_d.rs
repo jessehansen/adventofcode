@@ -36,22 +36,18 @@ impl Point3D {
             z: self.z - 1,
         }
     }
+
+    pub fn to_f64_vec(&self) -> Vec<f64> {
+        vec![self.x as f64, self.y as f64, self.z as f64]
+    }
 }
 
 impl FromStr for Point3D {
     type Err = Error;
 
     fn from_str(point: &str) -> Result<Self> {
-        let parsed = point.parse_split(',')?;
-        if parsed.len() != 3 {
-            bail!("invalid 3d point");
-        }
-
-        Ok(Point3D {
-            x: parsed[0],
-            y: parsed[1],
-            z: parsed[2],
-        })
+        let parsed: Vec<usize> = point.parse_split(',')?;
+        parsed.try_into()
     }
 }
 
@@ -64,6 +60,21 @@ impl fmt::Display for Point3D {
 impl fmt::Debug for Point3D {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self)
+    }
+}
+
+impl TryFrom<Vec<usize>> for Point3D {
+    type Error = Error;
+
+    fn try_from(value: Vec<usize>) -> std::prelude::v1::Result<Self, Self::Error> {
+        if value.len() != 3 {
+            bail!("invalid value, must have len 3");
+        }
+        Ok(Point3D {
+            x: value[0],
+            y: value[1],
+            z: value[2],
+        })
     }
 }
 
@@ -132,17 +143,51 @@ impl From<(Point3D, Point3D)> for Cuboid {
     }
 }
 
-//
-// impl<I> TryFrom<I> for Cuboid
-// where
-//     I: IntoIterator<Item = Point3D>,
-// {
-//     type Error = Error;
-//
-//     fn try_from(value: I) -> Result<Self> {
-//         let mut iter = value.iter();
-//         let origin = value.next().ok_or_invalid()?;
-//         let terminex = value.next().ok_or_invalid()?;
-//         Ok(Cuboid { origin, terminex })
-//     }
-// }
+#[derive(Clone, Copy, Default, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct IVector3D {
+    pub dx: i64,
+    pub dy: i64,
+    pub dz: i64,
+}
+
+impl IVector3D {
+    pub fn to_f64_vec(&self) -> Vec<f64> {
+        vec![self.dx as f64, self.dy as f64, self.dz as f64]
+    }
+}
+
+impl FromStr for IVector3D {
+    type Err = Error;
+
+    fn from_str(point: &str) -> Result<Self> {
+        let parsed: Vec<i64> = point.parse_split(',')?;
+        parsed.try_into()
+    }
+}
+
+impl fmt::Display for IVector3D {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{},{},{}", self.dx, self.dy, self.dz)
+    }
+}
+
+impl fmt::Debug for IVector3D {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
+impl TryFrom<Vec<i64>> for IVector3D {
+    type Error = Error;
+
+    fn try_from(value: Vec<i64>) -> std::prelude::v1::Result<Self, Self::Error> {
+        if value.len() != 3 {
+            bail!("invalid value, must have len 3");
+        }
+        Ok(IVector3D {
+            dx: value[0],
+            dy: value[1],
+            dz: value[2],
+        })
+    }
+}
