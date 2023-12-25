@@ -433,7 +433,7 @@ where
             },
             |ShortestPathState { distance: _, pt }| *pt == self.bounds.bottom_right(),
         )
-        .map(|score| score.0)
+        .map(|state| state.distance)
         .unwrap_or_default()
     }
 }

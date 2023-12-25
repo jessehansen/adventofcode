@@ -53,7 +53,7 @@ pub fn dijkstra<TState, FNext, TI, FFinal>(
     start_state: TState,
     next: FNext,
     final_predicate: FFinal,
-) -> Option<TState::Score>
+) -> Option<TState>
 where
     TState: OptimizationState,
     FNext: Fn(&TState) -> TI,
@@ -66,7 +66,7 @@ where
 
     while let Some(OptimizationStateWrapper(state)) = heap.pop() {
         if final_predicate(&state) {
-            return Some(state.score());
+            return Some(state);
         }
 
         match cache.get(&state.cache_key()) {
