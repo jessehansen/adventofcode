@@ -7,7 +7,9 @@ use std::{
 
 use anyhow::*;
 use aoc_common::*;
-use rand::{thread_rng, Rng};
+use indicatif::ParallelProgressIterator;
+use rand::{seq::SliceRandom, thread_rng};
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 fn main() -> Result<()> {
     Problem::go()
@@ -143,40 +145,49 @@ impl Solution for Problem {
     type Part2 = usize;
 
     fn part1(&mut self) -> Result<Self::Part1> {
-        let mut rng = thread_rng();
-        let mut edge_counts = HashMap::new();
         // sample shortest paths between 300 random nodes, the 3 most encountered edges should be
         // the ones to cut
-        for _ in 0..300 {
-            let from = *self
-                .nodes
-                .keys()
-                .nth(rng.gen_range(0..self.nodes.len()))
-                .ok_or_invalid()?;
-            let to = *self
-                .nodes
-                .keys()
-                .nth(rng.gen_range(0..self.nodes.len()))
-                .ok_or_invalid()?;
+        println!("Sampling random paths...");
 
-            if let Some(path) = self.find_shortest_path(from, to) {
-                for steps in path.windows(2) {
-                    let key = (min(steps[0], steps[1]), max(steps[0], steps[1]));
-                    let entry = edge_counts.entry(key).or_insert(0);
-                    *entry += 1;
+        let sample_range: Vec<usize> = (0..50).collect();
+        let indices: Vec<usize> = (0..self.nodes.len()).collect();
+
+        let edge_counts = sample_range
+            .par_iter()
+            .progress_count(sample_range.len() as u64)
+            .map(|_| {
+                let mut rng = thread_rng();
+                let mut ixs = indices.choose_multiple(&mut rng, 2);
+                let from = *ixs.next().unwrap();
+                let to = *ixs.next().unwrap();
+
+                let mut edge_counts = HashMap::new();
+                if let Some(path) = self.find_shortest_path(from, to) {
+                    for steps in path.windows(2) {
+                        let key = (min(steps[0], steps[1]), max(steps[0], steps[1]));
+                        let entry = edge_counts.entry(key).or_insert(0);
+                        *entry += 1;
+                    }
                 }
-            }
-        }
+                edge_counts
+            })
+            .reduce(HashMap::new, |edge_counts, counts| {
+                let mut edge_counts = edge_counts.clone();
+                for (key, count) in counts.into_iter() {
+                    let entry = edge_counts.entry(key).or_insert(0);
+                    *entry += count;
+                }
+                edge_counts
+            });
 
         let mut edge_counts: Vec<_> = edge_counts.into_iter().collect();
-        edge_counts.sort_by(|a, b| b.1.cmp(&a.1));
+        edge_counts.sort_unstable_by(|a, b| b.1.cmp(&a.1));
 
         let mut edges_to_remove = vec![];
 
         for (edge, _) in &edge_counts[0..3] {
             edges_to_remove.push((edge.0, edge.1));
         }
-        dbg!(&edges_to_remove);
 
         for edge in edges_to_remove {
             self.nodes
@@ -190,15 +201,8 @@ impl Solution for Problem {
         }
 
         let group_1 = self.find_group(0);
-        let group_2 = self.find_group(
-            *self
-                .nodes
-                .keys()
-                .find(|node| !group_1.contains(node))
-                .unwrap(),
-        );
 
-        Ok(group_1.len() * group_2.len())
+        Ok(group_1.len() * (self.nodes.len() - group_1.len()))
     }
 
     fn part2(&self) -> Result<Self::Part2> {
