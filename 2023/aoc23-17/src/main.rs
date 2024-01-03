@@ -114,7 +114,7 @@ impl Solution for Problem {
         )
         .unwrap();
 
-        Ok(solution.0)
+        Ok(solution.heat_loss)
     }
 
     fn part2(&self) -> Result<Self::Part2> {
@@ -125,7 +125,7 @@ impl Solution for Problem {
         )
         .unwrap();
 
-        Ok(solution.0)
+        Ok(solution.heat_loss)
     }
 }
 
