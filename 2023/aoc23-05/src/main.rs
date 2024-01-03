@@ -39,6 +39,30 @@ impl GardenMap {
         }
         *source
     }
+
+    fn dest_range(&self, source: Vec<Range<usize>>) -> Vec<Range<usize>> {
+        let mut source = source;
+        let mut dest = vec![];
+        for rule in &self.rules {
+            let mut unmapped = vec![];
+            for source_range in &source {
+                if let Some(intersecting_range) = rule.source_range.intersect(source_range) {
+                    let delta = intersecting_range.start - rule.source_range.start;
+                    let mut difference = source_range.difference(&intersecting_range);
+                    dest.push(
+                        (rule.dest_range.start + delta)
+                            ..(rule.dest_range.start + delta + intersecting_range.len()),
+                    );
+                    unmapped.append(&mut difference);
+                } else {
+                    unmapped.push(source_range.clone());
+                }
+            }
+            source = unmapped;
+        }
+        dest.append(&mut source);
+        dest
+    }
 }
 
 struct MapRule {
@@ -99,7 +123,7 @@ impl Solution for Problem {
     }
 
     fn part2(&self) -> Result<Self::Part2> {
-        self.lowest_location(self.seeds.chunks(2).flat_map(|pairs| {
+        self.lowest_location_range(self.seeds.chunks(2).map(|pairs| {
             let start = pairs[0];
             let len = pairs[1];
             start..(start + len)
@@ -119,6 +143,23 @@ impl Problem {
                 let humidity = self.temperature_to_humidity_map.dest(&temp);
                 self.humitity_to_location_map.dest(&humidity)
             })
+            .min()
+            .ok_or_invalid()
+    }
+
+    fn lowest_location_range<T: Iterator<Item = Range<usize>>>(&self, seeds: T) -> Result<usize> {
+        let seeds: Vec<_> = seeds.collect();
+        let soil = self.seed_to_soil_map.dest_range(seeds);
+        let fertilizer = self.soil_to_fertilizer_map.dest_range(soil);
+        let water = self.fertilizer_to_water_map.dest_range(fertilizer);
+        let light = self.water_to_light_map.dest_range(water);
+        let temp = self.light_to_temparature_map.dest_range(light);
+        let humidity = self.temperature_to_humidity_map.dest_range(temp);
+        let location = self.humitity_to_location_map.dest_range(humidity);
+
+        location
+            .into_iter()
+            .map(|range| range.start)
             .min()
             .ok_or_invalid()
     }

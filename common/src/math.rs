@@ -1,4 +1,7 @@
-use std::ops::Rem;
+use std::{
+    cmp::{max, min},
+    ops::{Range, Rem},
+};
 
 use crate::IPoint2D;
 
@@ -47,4 +50,58 @@ pub fn shoelace_loop_area_64(vertices: Vec<IPoint2D>) -> i64 {
     }
 
     area.abs() / 2
+}
+
+pub trait RangeOperations {
+    type RangeOutput;
+
+    fn intersect(&self, other: &Self) -> Option<Self::RangeOutput>;
+    fn offset(&self, delta: usize) -> Self::RangeOutput;
+    fn difference(&self, other: &Self) -> Vec<Self::RangeOutput>;
+}
+
+impl RangeOperations for Range<usize> {
+    type RangeOutput = Self;
+
+    fn intersect(&self, other: &Self) -> Option<Self::RangeOutput> {
+        if self.start < other.end && self.end > other.start {
+            Some((max(self.start, other.start))..(min(self.end, other.end)))
+        } else {
+            None
+        }
+    }
+
+    fn offset(&self, delta: usize) -> Self::RangeOutput {
+        (self.start + delta)..(self.end + delta)
+    }
+
+    fn difference(&self, other: &Self) -> Vec<Self::RangeOutput> {
+        if self.start >= other.end || self.end <= other.start {
+            // no overlap
+            vec![self.clone()]
+        } else {
+            let mut diff = vec![];
+            if self.start < other.start {
+                diff.push((self.start)..(other.start));
+            }
+            if self.end > other.end {
+                diff.push((other.end)..(self.end))
+            }
+            diff
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn range_difference_tests() {
+        assert_eq!(vec![61..73], (60..73).difference(&(60..61)));
+        assert_eq!(vec![10..14, 17..20], (10..20).difference(&(14..17)));
+        assert_eq!(vec![90..95], (90..100).difference(&(95..110)));
+        assert_eq!(vec![1..10], (1..10).difference(&(95..110)));
+        assert_eq!(vec![91..100], (91..100).difference(&(1..10)));
+    }
 }

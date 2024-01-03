@@ -103,13 +103,13 @@ impl Solution for Problem {
         Ok(self
             .gear_locations
             .iter()
-            .filter_map(|pt| self.gear_ratio(*pt))
+            .filter_map(|pt| self.gear_ratio(pt))
             .sum())
     }
 }
 
 impl Problem {
-    fn gear_ratio(&self, pt: Point2D) -> Option<u32> {
+    fn gear_ratio(&self, pt: &Point2D) -> Option<u32> {
         if self.grid[pt] != Symbol('*') {
             panic!("invalid gear location");
         }
@@ -120,7 +120,7 @@ impl Problem {
             .filter(|(start, end, _)| {
                 start
                     .to(end)
-                    .any(|num_pt| num_pt.neighbors(self.grid.bounds).any(|other| other == pt))
+                    .any(|num_pt| num_pt.neighbors(self.grid.bounds).any(|other| &other == pt))
             })
             .collect();
 
@@ -151,9 +151,9 @@ mod tests {
     fn test_gear_ratio() -> Result<()> {
         let problem = Problem::from_str(SAMPLE)?;
 
-        assert_eq!(Some(16345), problem.gear_ratio(pt(3, 1)));
-        assert_eq!(Some(451490), problem.gear_ratio(pt(5, 8)));
-        assert_eq!(None, problem.gear_ratio(pt(3, 4)));
+        assert_eq!(Some(16345), problem.gear_ratio(&pt(3, 1)));
+        assert_eq!(Some(451490), problem.gear_ratio(&pt(5, 8)));
+        assert_eq!(None, problem.gear_ratio(&pt(3, 4)));
 
         Ok(())
     }
