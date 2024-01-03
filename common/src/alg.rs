@@ -43,7 +43,7 @@ where
     }
 }
 
-// General Dijkstra’s algorithm for min/maximization problems
+// General Dijkstra’s algorithm for shortest path problems
 // state should include:
 //  1. current location
 //  2. current output

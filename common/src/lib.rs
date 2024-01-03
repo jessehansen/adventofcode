@@ -21,8 +21,8 @@ pub use sparse_grid::*;
 mod plot;
 pub use plot::*;
 
-mod tree;
-pub use tree::*;
+mod graph;
+pub use graph::*;
 
 mod legacy;
 pub use legacy::*;

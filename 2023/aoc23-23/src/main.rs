@@ -88,28 +88,6 @@ impl FromStr for Problem {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-struct LongWalkState {
-    location: Point2D,
-    visited: HashSet<Point2D>,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-struct LongWalkCacheKey(Point2D, Vec<Point2D>);
-
-impl OptimizationState for LongWalkState {
-    type CacheKey = LongWalkCacheKey;
-    type Score = usize;
-
-    fn cache_key(&self) -> Self::CacheKey {
-        LongWalkCacheKey(self.location, self.visited.iter().copied().collect())
-    }
-
-    fn score(&self) -> Self::Score {
-        self.visited.len()
-    }
-}
-
 impl Problem {
     fn next_steps(&self, pt: &Point2D, visited: &[Point2D], slippery: bool) -> Vec<Point2D> {
         self.map[*pt]

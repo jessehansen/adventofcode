@@ -11,3 +11,5 @@ Cargo.lock
 
 # Don't commit input files
 input.txt
+
+flamegraph.svg
