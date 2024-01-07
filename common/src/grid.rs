@@ -59,6 +59,11 @@ impl Direction {
 impl Point2D {
     pub const ORIGIN: Point2D = Point2D { x: 0, y: 0 };
 
+    // useful for indexing into a vec of constant size
+    pub fn index(&self, width: usize) -> usize {
+        self.x + self.y * width
+    }
+
     fn bounded_relatives<T>(&self, bounds: Bounds2D, deltas: T) -> impl Iterator<Item = Point2D>
     where
         T: IntoIterator<Item = (i32, i32)>,
@@ -258,8 +263,40 @@ impl Bounds2D {
             .cartesian_product((0..self.width).rev())
             .map(move |(y, x)| pt(x, y))
     }
+
     pub fn bottom_right(&self) -> Point2D {
         pt(self.width - 1, self.height - 1)
+    }
+
+    pub fn len(&self) -> usize {
+        self.width * self.height
+    }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub struct Rect {
+    origin: Point2D,
+    terminex: Point2D,
+}
+
+impl Rect {
+    pub fn new(pt1: Point2D, pt2: Point2D) -> Rect {
+        Rect {
+            origin: pt(min(pt1.x, pt2.x), min(pt1.y, pt2.y)),
+            terminex: pt(max(pt1.x, pt2.x), max(pt1.y, pt2.y)),
+        }
+    }
+
+    pub fn contains(&self, pt: &Point2D) -> bool {
+        self.origin.x <= pt.x
+            && pt.x <= self.terminex.x
+            && self.origin.y <= pt.y
+            && pt.y <= self.terminex.y
     }
 }
 

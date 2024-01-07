@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 console = "0.15.0"
+fnv = "1.0.7"
 itertools = "0.10.3"
 reqwest = {version = "0.11.13", features = ["blocking"]}
 

@@ -1,8 +1,10 @@
 use std::{
     cmp::{Eq, Ord, Ordering, PartialOrd},
-    collections::{BinaryHeap, HashMap},
+    collections::BinaryHeap,
     ops::Add,
 };
+
+use fnv::FnvHashMap;
 
 pub trait OptimizationState {
     type CacheKey: Eq + std::hash::Hash;
@@ -60,7 +62,7 @@ where
     TI: IntoIterator<Item = TState>,
     FFinal: Fn(&TState) -> bool,
 {
-    let mut cache: HashMap<TState::CacheKey, TState::Score> = HashMap::new();
+    let mut cache: FnvHashMap<TState::CacheKey, TState::Score> = FnvHashMap::default();
     let mut heap: BinaryHeap<OptimizationStateWrapper<TState>> = BinaryHeap::new();
     heap.push(OptimizationStateWrapper(start_state));
 
@@ -130,8 +132,10 @@ where
     <TState as OptimizationState>::Score: Copy + Add<Output = <TState as OptimizationState>::Score>,
 {
     fn cmp(&self, other: &Self) -> Ordering {
-        // comparing heat loss in reverse to minimize instead of maximize
-        (self.state.score() + self.heuristic).cmp(&(other.state.score() + other.heuristic))
+        // comparing in reverse to minimize instead of maximize
+        let my_score = self.state.score() + self.heuristic;
+        let other_score = other.state.score() + other.heuristic;
+        other_score.cmp(&my_score)
     }
 }
 
@@ -145,12 +149,17 @@ where
     }
 }
 
+// usually a_star isn't worth it on these problems, the overhead from calling the heuristic
+// function almost always outweighs choosing the correct next node
+//
+// NOTE: OptimizationState impl must not use Reverse because heuristics are added to it, but should
+// still consider lower values as better
 pub fn a_star<TState, FNext, TI, FHeuristic, FFinal>(
     start_state: TState,
     next: FNext,
     h: FHeuristic,
     final_predicate: FFinal,
-) -> Option<TState::Score>
+) -> Option<TState>
 where
     TState: OptimizationState,
     FNext: Fn(&TState) -> TI,
@@ -160,7 +169,7 @@ where
     <TState as OptimizationState>::Score:
         Default + Copy + Add<Output = <TState as OptimizationState>::Score>,
 {
-    let mut cache: HashMap<TState::CacheKey, TState::Score> = HashMap::new();
+    let mut cache: FnvHashMap<TState::CacheKey, TState::Score> = FnvHashMap::default();
     let mut heap: BinaryHeap<AStarStateWrapper<TState>> = BinaryHeap::new();
     heap.push(AStarStateWrapper {
         state: start_state,
@@ -173,11 +182,13 @@ where
     }) = heap.pop()
     {
         if final_predicate(&state) {
-            return Some(state.score());
+            return Some(state);
         }
 
         match cache.get(&state.cache_key()) {
-            Some(prev_score) if state.score() < *prev_score => {
+            // note the comparison operators are swapped here, because score for a_star must not be
+            // reversed like dijkstra
+            Some(prev_score) if state.score() > *prev_score => {
                 continue;
             }
             _ => (),
@@ -187,7 +198,9 @@ where
             let key = next.cache_key();
             let score = next.score();
             match cache.get(&key) {
-                Some(prev_score) if score <= *prev_score => (),
+                // note the comparison operators are swapped here, because score for a_star must not be
+                // reversed like dijkstra
+                Some(prev_score) if score >= *prev_score => (),
                 _ => {
                     cache.insert(key, score);
                     let heuristic = h(&next);

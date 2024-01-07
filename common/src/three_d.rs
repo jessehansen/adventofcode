@@ -1,5 +1,6 @@
 use std::cmp::{max, min};
 use std::fmt;
+use std::ops::Range;
 use std::str::FromStr;
 
 use anyhow::*;
@@ -30,10 +31,14 @@ impl Point3D {
     }
 
     pub fn shift_z_down(&self) -> Point3D {
+        self.shift_z_down_by(1)
+    }
+
+    pub fn shift_z_down_by(&self, value: usize) -> Point3D {
         Point3D {
             x: self.x,
             y: self.y,
-            z: self.z - 1,
+            z: self.z - value,
         }
     }
 
@@ -93,18 +98,44 @@ impl Cuboid {
         min(self.origin.z, self.terminex.z)
     }
 
-    pub fn bottom_layer(&self) -> impl Iterator<Item = Point3D> {
-        let min_z = self.min_z();
-        Point3D {
-            x: self.origin.x,
-            y: self.origin.y,
-            z: min_z,
+    pub fn x_range(&self) -> Range<usize> {
+        if self.origin.x <= self.terminex.x {
+            (self.origin.x)..(self.terminex.x + 1)
+        } else {
+            (self.terminex.x)..(self.origin.x + 1)
         }
-        .to(&Point3D {
-            x: self.terminex.x,
-            y: self.terminex.y,
-            z: min_z,
-        })
+    }
+
+    pub fn y_range(&self) -> Range<usize> {
+        if self.origin.y <= self.terminex.y {
+            (self.origin.y)..(self.terminex.y + 1)
+        } else {
+            (self.terminex.y)..(self.origin.y + 1)
+        }
+    }
+
+    pub fn z_range(&self) -> Range<usize> {
+        if self.origin.z <= self.terminex.z {
+            (self.origin.z)..(self.terminex.z + 1)
+        } else {
+            (self.terminex.z)..(self.origin.z + 1)
+        }
+    }
+
+    pub fn bottom_layer(&self) -> Cuboid {
+        let min_z = self.min_z();
+        Cuboid {
+            origin: Point3D {
+                x: self.origin.x,
+                y: self.origin.y,
+                z: min_z,
+            },
+            terminex: Point3D {
+                x: self.terminex.x,
+                y: self.terminex.y,
+                z: min_z,
+            },
+        }
     }
 
     pub fn contains(&self, pt: &Point3D) -> bool {
@@ -127,6 +158,13 @@ impl Cuboid {
         Cuboid {
             origin: self.origin.shift_z_down(),
             terminex: self.terminex.shift_z_down(),
+        }
+    }
+
+    pub fn shift_down_by(&self, value: usize) -> Cuboid {
+        Cuboid {
+            origin: self.origin.shift_z_down_by(value),
+            terminex: self.terminex.shift_z_down_by(value),
         }
     }
 }

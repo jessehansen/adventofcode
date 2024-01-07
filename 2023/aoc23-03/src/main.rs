@@ -30,7 +30,28 @@ impl FromStr for GridSpace {
 
 use GridSpace::*;
 
-type Number = (Point2D, Point2D, u32);
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+struct Number {
+    start: Point2D,
+    end: Point2D,
+    value: u32,
+    adjacent: Rect,
+}
+
+impl Number {
+    fn new(start: Point2D, end: Point2D, value: u32, bounds: &Bounds2D) -> Number {
+        let ul = start.up().unwrap_or(start);
+        let ul = ul.left().unwrap_or(ul);
+        let dr = end.down(bounds.height).unwrap_or(end);
+        let dr = dr.right(bounds.width).unwrap_or(dr);
+        Number {
+            start,
+            end,
+            value,
+            adjacent: Rect::new(ul, dr),
+        }
+    }
+}
 
 struct Problem {
     grid: Grid2D<GridSpace>,
@@ -53,7 +74,7 @@ impl FromStr for Problem {
         for (pt, space) in grid.iter_horizontal() {
             if let Some(start) = cur_number_start {
                 if !matches!(space, Digit(_)) || pt.y != start.y {
-                    numbers.push((start, last_pt, cur_number));
+                    numbers.push(Number::new(start, last_pt, cur_number, &grid.bounds));
                     cur_number = 0;
                     cur_number_start = None;
                 }
@@ -70,7 +91,7 @@ impl FromStr for Problem {
             last_pt = pt;
         }
         if let Some(start) = cur_number_start {
-            numbers.push((start, last_pt, cur_number));
+            numbers.push(Number::new(start, last_pt, cur_number, &grid.bounds));
         }
 
         Ok(Self {
@@ -89,13 +110,15 @@ impl Solution for Problem {
         Ok(self
             .numbers
             .iter()
-            .filter(|(start, end, _)| {
-                start.to(end).any(|pt| {
+            .filter(|num| {
+                let start = num.start;
+                let end = num.end;
+                start.to(&end).any(|pt| {
                     pt.neighbors(self.grid.bounds)
                         .any(|pt| matches!(self.grid[pt], Symbol(_)))
                 })
             })
-            .map(|(_, _, value)| value)
+            .map(|num| num.value)
             .sum())
     }
 
@@ -103,31 +126,33 @@ impl Solution for Problem {
         Ok(self
             .gear_locations
             .iter()
-            .filter_map(|pt| self.gear_ratio(pt))
+            .map(|pt| self.gear_ratio(pt))
             .sum())
     }
 }
 
 impl Problem {
-    fn gear_ratio(&self, pt: &Point2D) -> Option<u32> {
+    fn gear_ratio(&self, pt: &Point2D) -> u32 {
         if self.grid[pt] != Symbol('*') {
             panic!("invalid gear location");
         }
 
-        let adjacent_numbers: Vec<&Number> = self
+        let (len, product) = self
             .numbers
             .iter()
-            .filter(|(start, end, _)| {
-                start
-                    .to(end)
-                    .any(|num_pt| num_pt.neighbors(self.grid.bounds).any(|other| &other == pt))
+            .filter_map(|num| {
+                if num.adjacent.contains(pt) {
+                    Some(num.value)
+                } else {
+                    None
+                }
             })
-            .collect();
+            .fold((0, 1), |acc, value| (acc.0 + 1, acc.1 * value));
 
-        if adjacent_numbers.len() > 1 {
-            Some(adjacent_numbers.iter().map(|(_, _, value)| value).product())
+        if len > 1 {
+            product
         } else {
-            None
+            0
         }
     }
 }
@@ -151,9 +176,9 @@ mod tests {
     fn test_gear_ratio() -> Result<()> {
         let problem = Problem::from_str(SAMPLE)?;
 
-        assert_eq!(Some(16345), problem.gear_ratio(&pt(3, 1)));
-        assert_eq!(Some(451490), problem.gear_ratio(&pt(5, 8)));
-        assert_eq!(None, problem.gear_ratio(&pt(3, 4)));
+        assert_eq!(16345, problem.gear_ratio(&pt(3, 1)));
+        assert_eq!(451490, problem.gear_ratio(&pt(5, 8)));
+        assert_eq!(0, problem.gear_ratio(&pt(3, 4)));
 
         Ok(())
     }

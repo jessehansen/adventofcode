@@ -47,6 +47,10 @@ where
     fn part2(&self) -> Result<Self::Part2>;
 
     fn go() -> Result<()> {
+        let (year, day) = get_year_and_day()?;
+
+        println!("AOC {year} Day {day}");
+
         let (mut solution, parse_time) = read_and_parse(parse_all::<Self>)?;
 
         let part1_time =

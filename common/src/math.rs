@@ -1,6 +1,6 @@
 use std::{
     cmp::{max, min},
-    ops::{Range, Rem},
+    ops::{Add, Range, Rem},
 };
 
 use crate::IPoint2D;
@@ -54,24 +54,34 @@ pub fn shoelace_loop_area_64(vertices: Vec<IPoint2D>) -> i64 {
 
 pub trait RangeOperations {
     type RangeOutput;
+    type Index;
 
+    fn overlaps(&self, other: &Self) -> bool;
     fn intersect(&self, other: &Self) -> Option<Self::RangeOutput>;
-    fn offset(&self, delta: usize) -> Self::RangeOutput;
+    fn offset(&self, delta: Self::Index) -> Self::RangeOutput;
     fn difference(&self, other: &Self) -> Vec<Self::RangeOutput>;
 }
 
-impl RangeOperations for Range<usize> {
+impl<Idx> RangeOperations for Range<Idx>
+where
+    Idx: Add<Output = Idx> + Ord + Copy,
+{
     type RangeOutput = Self;
+    type Index = Idx;
+
+    fn overlaps(&self, other: &Self) -> bool {
+        self.start < other.end && self.end > other.start
+    }
 
     fn intersect(&self, other: &Self) -> Option<Self::RangeOutput> {
-        if self.start < other.end && self.end > other.start {
+        if self.overlaps(other) {
             Some((max(self.start, other.start))..(min(self.end, other.end)))
         } else {
             None
         }
     }
 
-    fn offset(&self, delta: usize) -> Self::RangeOutput {
+    fn offset(&self, delta: Idx) -> Self::RangeOutput {
         (self.start + delta)..(self.end + delta)
     }
 

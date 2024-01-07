@@ -107,25 +107,25 @@ impl Solution for Problem {
     type Part2 = usize;
 
     fn part1(&mut self) -> Result<Self::Part1> {
-        let solution = dijkstra(
+        let bottom_right = self.map.bounds.bottom_right();
+        dijkstra(
             LavaPathState::new(),
             |state| self.next_moves(state, 1, 3),
-            |state| state.current_location == self.map.bounds.bottom_right(),
+            |state| state.current_location == bottom_right,
         )
-        .unwrap();
-
-        Ok(solution.heat_loss)
+        .map(|state| state.heat_loss)
+        .ok_or_invalid()
     }
 
     fn part2(&self) -> Result<Self::Part2> {
-        let solution = dijkstra(
+        let bottom_right = self.map.bounds.bottom_right();
+        dijkstra(
             LavaPathState::new(),
             |state| self.next_moves(state, 4, 10),
-            |state| state.current_location == self.map.bounds.bottom_right(),
+            |state| state.current_location == bottom_right,
         )
-        .unwrap();
-
-        Ok(solution.heat_loss)
+        .map(|state| state.heat_loss)
+        .ok_or_invalid()
     }
 }
 

@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet, VecDeque},
+    collections::{HashSet, VecDeque},
     fmt,
     str::FromStr,
 };
@@ -76,29 +76,38 @@ impl Space {
 
 struct Problem {
     map: Grid2D<Space>,
+    start: Point2D,
+    end: Point2D,
 }
 
 impl FromStr for Problem {
     type Err = Error;
 
     fn from_str(contents: &str) -> Result<Self> {
-        Ok(Self {
-            map: Grid2D::from_char_str(contents)?,
-        })
+        let map = Grid2D::from_char_str(contents)?;
+        let start = map
+            .row(0)
+            .find_map(|(pt, &space)| if space == Empty { Some(pt) } else { None })
+            .ok_or_invalid()?;
+        let end = map
+            .row(map.bounds.height - 1)
+            .find_map(|(pt, &space)| if space == Empty { Some(pt) } else { None })
+            .ok_or_invalid()?;
+        Ok(Self { map, start, end })
     }
 }
 
 impl Problem {
-    fn next_steps(&self, pt: &Point2D, visited: &[Point2D], slippery: bool) -> Vec<Point2D> {
+    fn next_steps(&self, pt: &Point2D, visited: &[bool], slippery: bool) -> Vec<Point2D> {
         self.map[*pt]
             .next_directions(slippery)
             .into_iter()
             .filter_map(|dir| {
                 let maybe_next = pt.mv(dir, self.map.bounds);
 
-                if maybe_next
-                    .is_some_and(|next| self.map[next] != Forest && !visited.contains(&next))
-                {
+                if maybe_next.is_some_and(|next| {
+                    self.map[next] != Forest && !visited[next.index(self.map.bounds.width)]
+                }) {
                     maybe_next
                 } else {
                     None
@@ -107,49 +116,38 @@ impl Problem {
             .collect()
     }
 
-    fn find_paths(&self, start: Point2D, end: Point2D) -> Vec<Vec<Point2D>> {
-        let mut paths = vec![vec![start]];
-        let mut completed_paths = vec![];
+    fn find_longest_path(&self, start: Point2D, end: Point2D) -> usize {
+        let mut paths = vec![(start, vec![false; self.map.bounds.len()])];
+        let mut result = 0;
 
-        while let Some(path) = paths.pop() {
-            let location = path.last().unwrap();
-            for path_forward in
-                self.next_steps(location, &path, true)
-                    .into_iter()
-                    .map(|next_step| {
-                        let mut path_forward = path.clone();
-                        path_forward.push(next_step);
-                        path_forward
-                    })
-            {
-                if path_forward.last() == Some(&end) {
-                    completed_paths.push(path_forward);
+        while let Some((location, visited)) = paths.pop() {
+            for next_step in self.next_steps(&location, &visited, true) {
+                let mut visited = visited.clone();
+                visited[next_step.index(self.map.bounds.width)] = true;
+                if next_step == end {
+                    result = result.max(visited.iter().filter(|x| **x).count());
                 } else {
-                    paths.push(path_forward);
+                    paths.push((next_step, visited));
                 }
             }
         }
 
-        completed_paths
+        result
     }
 
     // the input map is actually a series of long paths with forks. Build a map of each decision
     // point to the next paths, and the distance of each
-    fn find_forks(
-        &self,
-        start: Point2D,
-        end: Point2D,
-    ) -> HashMap<Point2D, HashSet<(Point2D, usize)>> {
+    fn find_forks(&self, start: Point2D, end: Point2D) -> Graph<Point2D, usize> {
         let mut points: VecDeque<(Point2D, Point2D)> = VecDeque::new();
         let mut connected: HashSet<(Point2D, (Point2D, usize))> = HashSet::new();
 
-        for step in self.next_steps(&start, &[], false) {
+        for step in self.next_steps(&start, &vec![false; self.map.bounds.len()], false) {
             points.push_back((start, step));
         }
 
         'outer: while let Some((sub_path_start, mut next_fork)) = points.pop_front() {
-            let mut visited = vec![];
-            visited.push(sub_path_start);
+            let mut visited = vec![false; self.map.bounds.len()];
+            visited[sub_path_start.index(self.map.bounds.width)] = true;
 
             let mut steps = 0;
             while self
@@ -160,10 +158,10 @@ impl Problem {
                 < 3
             {
                 steps += 1;
-                visited.push(next_fork);
+                visited[next_fork.index(self.map.bounds.width)] = true;
                 if let Some(new) = self.next_steps(&next_fork, &visited, false).first() {
                     next_fork = *new;
-                    visited.push(next_fork);
+                    visited[next_fork.index(self.map.bounds.width)] = true;
                     if next_fork == end {
                         connected.insert((sub_path_start, (end, steps + 1)));
                         break 'outer;
@@ -173,7 +171,7 @@ impl Problem {
                 }
             }
 
-            visited.push(next_fork);
+            visited[next_fork.index(self.map.bounds.width)] = true;
             connected.insert((sub_path_start, (next_fork, steps + 1)));
 
             for next_path_start in self.next_steps(&next_fork, &visited, false) {
@@ -181,54 +179,14 @@ impl Problem {
             }
         }
 
-        let mut shortened_graph: HashMap<Point2D, HashSet<(Point2D, usize)>> = HashMap::new();
+        let mut shortened_graph = Graph::default();
 
         for (src, (dest, steps)) in connected {
-            shortened_graph
-                .entry(src)
-                .or_default()
-                .insert((dest, steps));
-            shortened_graph
-                .entry(dest)
-                .or_default()
-                .insert((src, steps));
+            let src = shortened_graph.insert_unique_node(src);
+            let dest = shortened_graph.insert_unique_node(dest);
+            shortened_graph.connect(src, dest, steps);
         }
         shortened_graph
-    }
-
-    fn longest_path_from(
-        &self,
-        graph: &HashMap<Point2D, HashSet<(Point2D, usize)>>,
-        location: Point2D,
-        path: Vec<Point2D>,
-        steps: usize,
-    ) -> usize {
-        let target = pt(self.map.bounds.width - 2, self.map.bounds.height - 1);
-        if location == target {
-            return steps;
-        }
-        if path.contains(&location) {
-            return 0;
-        }
-        let mut next_path = path.clone();
-        next_path.push(location);
-
-        graph[&location]
-            .iter()
-            .map(|(point, additional_steps)| {
-                if !next_path.contains(point) {
-                    self.longest_path_from(
-                        graph,
-                        *point,
-                        next_path.clone(),
-                        steps + additional_steps,
-                    )
-                } else {
-                    0
-                }
-            })
-            .max()
-            .unwrap()
     }
 }
 
@@ -237,38 +195,17 @@ impl Solution for Problem {
     type Part2 = usize;
 
     fn part1(&mut self) -> Result<Self::Part1> {
-        let start = self
-            .map
-            .row(0)
-            .find_map(|(pt, &space)| if space == Empty { Some(pt) } else { None })
-            .ok_or_invalid()?;
-        let end = self
-            .map
-            .row(self.map.bounds.height - 1)
-            .find_map(|(pt, &space)| if space == Empty { Some(pt) } else { None })
-            .ok_or_invalid()?;
-        Ok(self
-            .find_paths(start, end)
-            .into_iter()
-            .map(|path| path.len() - 1)
-            .max()
-            .ok_or_invalid()?)
+        Ok(self.find_longest_path(self.start, self.end))
     }
 
     fn part2(&self) -> Result<Self::Part2> {
-        let start = self
-            .map
-            .row(0)
-            .find_map(|(pt, &space)| if space == Empty { Some(pt) } else { None })
-            .ok_or_invalid()?;
-        let end = self
-            .map
-            .row(self.map.bounds.height - 1)
-            .find_map(|(pt, &space)| if space == Empty { Some(pt) } else { None })
-            .ok_or_invalid()?;
-
-        let graph = self.find_forks(start, end);
-        Ok(self.longest_path_from(&graph, start, vec![], 0))
+        let graph = self.find_forks(self.start, self.end);
+        graph
+            .longest_path(
+                graph.find_node_id(&self.start).unwrap(),
+                graph.find_node_id(&self.end).unwrap(),
+            )
+            .ok_or_invalid()
     }
 }
 

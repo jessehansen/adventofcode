@@ -8,14 +8,14 @@ fn main() -> Result<()> {
 }
 
 struct Problem {
-    graph: UnweightedGraph<String>,
+    graph: UnweightedGraphX<String>,
 }
 
 impl FromStr for Problem {
     type Err = Error;
 
     fn from_str(contents: &str) -> Result<Self> {
-        let mut graph = UnweightedGraph::new();
+        let mut graph = UnweightedGraphX::default();
         for line in contents.lines() {
             let (node, connections) = line.split_once(": ").ok_or_invalid()?;
             graph.add_edges_bidi(
