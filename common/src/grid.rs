@@ -276,6 +276,15 @@ impl Bounds2D {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
+
+    pub fn corners(&self) -> Vec<Point2D> {
+        vec![
+            Point2D::ORIGIN,
+            pt(0, self.height - 1),
+            pt(self.width - 1, 0),
+            pt(self.width - 1, self.height - 1),
+        ]
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
