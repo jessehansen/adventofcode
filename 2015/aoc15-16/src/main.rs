@@ -120,33 +120,3 @@ impl Solution for Problem {
         bail!("couldn't find sue")
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn sample_part1() -> Result<()> {
-        let mut problem = Problem::from_str(SAMPLE)?;
-
-        let result = problem.part1()?;
-
-        assert_eq!(0, result);
-
-        Ok(())
-    }
-
-    #[test]
-    fn sample_part2() -> Result<()> {
-        let problem = Problem::from_str(SAMPLE)?;
-
-        let result = problem.part2()?;
-
-        assert_eq!(0, result);
-
-        Ok(())
-    }
-
-    const SAMPLE: &str = "\
-";
-}
