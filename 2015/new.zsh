@@ -8,4 +8,5 @@ done
 cargo new $project_name
 cd $project_name
 cp -fr ../template.rs src/main.rs
-echo "aoc_common = { path =\"../../common\" }" >> Cargo.toml
+
+echo "anyhow = \"1.0.75\"\naoc_common = { path =\"../../common\" }" >> Cargo.toml
