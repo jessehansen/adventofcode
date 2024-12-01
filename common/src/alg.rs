@@ -31,7 +31,7 @@ where
     TState: OptimizationState,
 {
     fn cmp(&self, other: &Self) -> Ordering {
-        // comparing heat loss in reverse to minimize instead of maximize
+        // comparing in reverse to minimize instead of maximize
         self.0.score().cmp(&other.0.score())
     }
 }
