@@ -2,24 +2,117 @@ use std::str::FromStr;
 
 use anyhow::*;
 use aoc_common::*;
-use lazy_static::lazy_static;
-use regex::Regex;
 
 fn main() -> Result<()> {
     Problem::go()
 }
 
+#[derive(Debug)]
+enum Call {
+    Mul(usize, usize),
+    Do,
+    Dont,
+}
+
+#[derive(Debug)]
+enum State {
+    Start,
+    M,
+    U,
+    L,
+    MulParen,
+    MulArg1Digits { start: usize },
+    MulComma { a: usize },
+    MulArg2Digits { a: usize, start: usize },
+    Mul { a: usize, b: usize },
+    D,
+    O,
+    DoParen,
+    Do,
+    N,
+    Apos,
+    T,
+    DontParen,
+    Dont,
+}
+
+impl State {
+    fn consume(self, input: &str, pos: usize, c: char) -> State {
+        use State::*;
+
+        // parsing logic is really simple since m or d are only present at the start of a token -
+        // any time we get an m or a d we start over in the state "chain", then all we need to do
+        // is look for the next valid character in the chain and move to the corresponding state or
+        // back to start
+        //
+        // Example state movement:
+        // "mumul(1,2)"
+        // Start -> M -> U -> M -> U -> L -> MulParen -> MulArg1Digits -> MulComma -> MulArg2Digits -> Mul
+        // "do()"
+        // Start -> D -> O -> DoParen -> Do
+        // "don't()"
+        // Start -> D -> O -> N -> Apos -> T -> DontParen -> Dont
+        // "mul[1,2]"
+        // Start -> M -> U -> L -> Start...
+        //
+        // Any invalid next character returns the state to "Start"
+        match (self, c) {
+            (_, 'm') => M,
+            (M, 'u') => U,
+            (U, 'l') => L,
+            (L, '(') => MulParen,
+            (MulParen, '0'..='9') => MulArg1Digits { start: pos },
+            (MulArg1Digits { start }, '0'..='9') => MulArg1Digits { start },
+            (MulArg1Digits { start }, ',') => MulComma {
+                a: input[start..pos].parse().unwrap(),
+            },
+            (MulComma { a }, '0'..='9') => MulArg2Digits { a, start: pos },
+            (MulArg2Digits { a, start }, '0'..='9') => MulArg2Digits { a, start },
+            (MulArg2Digits { a, start }, ')') => Mul {
+                a,
+                b: input[start..pos].parse().unwrap(),
+            },
+
+            (_, 'd') => D,
+            (D, 'o') => O,
+            (O, '(') => DoParen,
+            (DoParen, ')') => Do,
+
+            (O, 'n') => N,
+            (N, '\'') => Apos,
+            (Apos, 't') => T,
+            (T, '(') => DontParen,
+            (DontParen, ')') => Dont,
+
+            _ => Start,
+        }
+    }
+}
+
 struct Problem {
-    input: String,
+    calls: Vec<Call>,
 }
 
 impl FromStr for Problem {
     type Err = Error;
 
     fn from_str(contents: &str) -> Result<Self> {
-        Ok(Self {
-            input: contents.to_string(),
-        })
+        let mut calls = vec![];
+        let mut state = State::Start;
+
+        for (pos, c) in contents.char_indices() {
+            state = state.consume(contents, pos, c);
+            if let Some(call) = match state {
+                State::Mul { a, b } => Some(Call::Mul(a, b)),
+                State::Do => Some(Call::Do),
+                State::Dont => Some(Call::Dont),
+                _ => None,
+            } {
+                calls.push(call);
+            }
+        }
+
+        Ok(Self { calls })
     }
 }
 
@@ -28,43 +121,33 @@ impl Solution for Problem {
     type Part2 = usize;
 
     fn part1(&mut self) -> Result<Self::Part1> {
-        lazy_static! {
-            static ref MUL_CALL: Regex = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
-        }
-        Ok(MUL_CALL
-            .captures_iter(&self.input)
-            .map(|c| {
-                let (_, [a, b]) = c.extract();
-                // don't need safety here since regex is strict
-                a.parse::<usize>().unwrap() * b.parse::<usize>().unwrap()
+        Ok(self
+            .calls
+            .iter()
+            .map(|c| match c {
+                Call::Mul(a, b) => a * b,
+                _ => 0,
             })
             .sum::<usize>())
     }
 
     fn part2(&self) -> Result<Self::Part2> {
-        lazy_static! {
-            static ref VALID_CALL: Regex = Regex::new(r"mul\(\d+,\d+\)|do\(\)|don't\(\)").unwrap();
-        }
         let mut sum = 0;
         let mut enabled = true;
-        for m in VALID_CALL.find_iter(&self.input) {
-            match m.as_str() {
-                "do()" => {
+
+        for call in &self.calls {
+            match call {
+                Call::Mul(a, b) if enabled => {
+                    sum += a * b;
+                }
+                Call::Do => {
                     enabled = true;
                 }
-                "don't()" => {
+                Call::Dont => {
                     enabled = false;
                 }
-                mul_call if enabled => {
-                    // don't need safety here since regex is strict
-                    let args: Vec<usize> = mul_call
-                        .substring(4, mul_call.len() - 5)
-                        .parse_split(",")
-                        .unwrap();
-                    sum += args[0] * args[1];
-                }
-                _ => (),
-            };
+                _ => {}
+            }
         }
         Ok(sum)
     }
