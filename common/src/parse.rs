@@ -47,7 +47,7 @@ pub fn parse_split<T, P>(input: &str, separator: P) -> Result<Vec<T>>
 where
     T: std::str::FromStr,
     <T as std::str::FromStr>::Err: std::fmt::Display,
-    P: for<'a> Pattern<'a>,
+    P: Pattern,
 {
     input
         .split(separator)
@@ -89,13 +89,13 @@ where
         .collect()
 }
 
-pub fn parse_pair<'a, T0, T1, P>(contents: &'a str, separator: P) -> Result<(T0, T1)>
+pub fn parse_pair<T0, T1, P>(contents: &str, separator: P) -> Result<(T0, T1)>
 where
     T0: std::str::FromStr,
     <T0 as std::str::FromStr>::Err: std::fmt::Display,
     T1: std::str::FromStr,
     <T1 as std::str::FromStr>::Err: std::fmt::Display,
-    P: Pattern<'a>,
+    P: Pattern,
 {
     let mut parts = contents.split(separator);
     Ok((
@@ -164,8 +164,8 @@ where
 }
 
 // grabs the 2 items at ix0 and ix1, in a string separated by separator
-pub fn grab_2<'a, T0, T1, P: Pattern<'a>>(
-    contents: &'a str,
+pub fn grab_2<T0, T1, P: Pattern>(
+    contents: &str,
     separator: P,
     ix0: usize,
     ix1: usize,
@@ -279,14 +279,14 @@ where
 }
 
 pub trait Substring {
-    fn substring(&self, start_index: usize, end_index: usize) -> &str;
+    fn substring(&self, start_index: usize, length: usize) -> &str;
 }
 
 impl Substring for str {
-    fn substring(&self, start_index: usize, end_index: usize) -> &str {
+    fn substring(&self, start_index: usize, length: usize) -> &str {
         let (_, rest) = self.split_at(start_index);
 
-        let (substr, _) = rest.split_at(end_index);
+        let (substr, _) = rest.split_at(length);
 
         substr
     }
@@ -340,7 +340,7 @@ impl<T, P> WrappedPatternParsable<T, P> for str
 where
     T: std::str::FromStr,
     <T as std::str::FromStr>::Err: std::fmt::Display,
-    P: for<'a> Pattern<'a>,
+    P: Pattern,
 {
     fn parse_split(&self, separator: P) -> Result<Vec<T>> {
         self.split(separator).map(|x| x.parse_wrapped()).collect()

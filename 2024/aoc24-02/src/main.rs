@@ -22,34 +22,22 @@ impl FromStr for Report {
 }
 
 fn is_safe_pair(a: &[usize]) -> bool {
-    match a[0].abs_diff(a[1]) {
-        1 => true,
-        2 => true,
-        3 => true,
-        _ => false,
-    }
+    matches!(a[0].abs_diff(a[1]), 1..=3)
 }
 
 impl Report {
     fn is_safe(&self) -> bool {
-        self.data.windows(2).all(|pair| is_safe_pair(pair))
+        self.data.windows(2).all(is_safe_pair)
             && (self.data.windows(2).all(|pair| pair[0] > pair[1])
                 || self.data.windows(2).all(|pair| pair[0] < pair[1]))
     }
 
-    fn is_safe_tolerant(&self) -> bool {
-        if self.is_safe() {
-            return true;
-        }
-        for ix in 0..self.data.len() {
+    fn combinations_omitting_datum(&self) -> impl Iterator<Item = Report> + use<'_> {
+        (0..self.data.len()).map(|ix| {
             let mut data = self.data.clone();
             data.remove(ix);
-            let new_report = Self { data };
-            if new_report.is_safe() {
-                return true;
-            }
-        }
-        false
+            Report { data }
+        })
     }
 }
 
@@ -76,7 +64,13 @@ impl Solution for Problem {
     }
 
     fn part2(&self) -> Result<Self::Part2> {
-        Ok(self.reports.iter().filter(|r| r.is_safe_tolerant()).count())
+        Ok(self
+            .reports
+            .iter()
+            // even though we technically don't need to check is_safe again here,
+            // it's actually (very slightly) faster to check & not copy the data
+            .filter(|r| r.is_safe() || r.combinations_omitting_datum().any(|c| c.is_safe()))
+            .count())
     }
 }
 
