@@ -195,6 +195,19 @@ impl Point2D {
         }
     }
 
+    pub fn move_by_delta(&self, dx: i32, dy: i32, bounds: Bounds2D) -> Option<Point2D> {
+        let new_x = self.x as i32 + dx;
+        let new_y = self.y as i32 + dy;
+
+        if new_x < 0 || new_x >= bounds.width as i32 {
+            return None;
+        }
+        if new_y < 0 || new_y >= bounds.height as i32 {
+            return None;
+        }
+        Some(pt(new_x as usize, new_y as usize))
+    }
+
     pub fn direction_to(&self, other: &Point2D) -> Option<Direction> {
         if self.left() == Some(*other) {
             Some(Direction::Left)
