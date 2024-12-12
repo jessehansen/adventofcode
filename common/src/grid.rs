@@ -54,6 +54,16 @@ impl Direction {
             Down => Up,
         }
     }
+
+    pub fn clockwise90(self) -> Direction {
+        use Direction::*;
+        match self {
+            Up => Right,
+            Right => Down,
+            Down => Left,
+            Left => Up,
+        }
+    }
 }
 
 impl Point2D {
