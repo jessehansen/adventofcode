@@ -308,6 +308,10 @@ impl Bounds2D {
             pt(self.width - 1, self.height - 1),
         ]
     }
+
+    pub fn contains(&self, pt: &Point2D) -> bool {
+        pt.x < self.width && pt.y < self.height
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]

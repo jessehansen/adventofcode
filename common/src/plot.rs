@@ -173,13 +173,32 @@ impl fmt::Debug for IPoint2D {
 
 // NOTE: This is useful for accepting usize points where integer points are required (ex: shoelace
 // formula), but beware - this switches the meaning of "Up"
+impl TryFrom<&Point2D> for IPoint2D {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &Point2D) -> Result<Self, Self::Error> {
+        Ok(IPoint2D {
+            x: value.x.try_into()?,
+            y: value.y.try_into()?,
+        })
+    }
+}
+
 impl TryFrom<Point2D> for IPoint2D {
     type Error = anyhow::Error;
 
     fn try_from(value: Point2D) -> Result<Self, Self::Error> {
-        Ok(IPoint2D {
-            x: value.x.try_into()?,
-            y: value.y.try_into()?,
+        IPoint2D::try_from(&value)
+    }
+}
+
+impl TryInto<Point2D> for IPoint2D {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> Result<Point2D, Self::Error> {
+        Ok(Point2D {
+            x: self.x.try_into()?,
+            y: self.y.try_into()?,
         })
     }
 }
