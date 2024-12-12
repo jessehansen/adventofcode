@@ -1,6 +1,7 @@
 #![feature(pattern)]
 
 use std::fmt::{self, Display};
+use std::io::{stdout, Write};
 use std::path::Path;
 use std::time::{Duration, Instant};
 use std::{env, fs};
@@ -144,6 +145,7 @@ where
         println!();
     }
     println!("{}", style(result).bold());
+    stdout().flush()?;
 
     Ok(elapsed)
 }
