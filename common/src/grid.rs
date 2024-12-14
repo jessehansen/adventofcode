@@ -44,6 +44,13 @@ pub enum Direction {
     Down,
 }
 
+pub const CARDINAL_DIRECTIONS: [Direction; 4] = [
+    Direction::Up,
+    Direction::Left,
+    Direction::Right,
+    Direction::Down,
+];
+
 impl Direction {
     pub fn opposite(self) -> Direction {
         use Direction::*;
@@ -393,6 +400,11 @@ impl<T> Grid2D<T> {
 
     pub fn neighbors(&self, pt: Point2D) -> impl Iterator<Item = (Point2D, &T)> {
         pt.neighbors(self.bounds)
+            .map(|pt| (pt, &self.data[pt.y][pt.x]))
+    }
+
+    pub fn cardinal_neighbor(&self, pt: Point2D, dir: Direction) -> Option<(Point2D, &T)> {
+        pt.cardinal_neighbor(dir, self.bounds)
             .map(|pt| (pt, &self.data[pt.y][pt.x]))
     }
 
