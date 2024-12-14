@@ -1,7 +1,7 @@
 use std::cmp::{Eq, Ord, PartialEq};
 use std::fmt;
 use std::hash::{Hash, Hasher};
-use std::ops::Add;
+use std::ops::{Add, Mul};
 
 use crate::{Bounds2D, Direction, Point2D};
 
@@ -155,6 +155,17 @@ impl Add<IPoint2D> for &IPoint2D {
         IPoint2D {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
+        }
+    }
+}
+
+impl Mul<i32> for IPoint2D {
+    type Output = IPoint2D;
+
+    fn mul(self, rhs: i32) -> Self::Output {
+        IPoint2D {
+            x: self.x * rhs,
+            y: self.y * rhs,
         }
     }
 }
